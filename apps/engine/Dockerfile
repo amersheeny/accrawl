@@ -12,14 +12,14 @@
 ARG GOOGLE_CHROME_VERSION=151.0.7922.137-1
 ARG GOOGLE_CHROME_SHA256=e6dabf044cf9cd0279cfe86efa431682c18bfc06d06339ce055aaa87ae871727
 
-FROM cgr.dev/chainguard/node:latest-dev@sha256:39708a466eb9e1c4a49abc6931dc8aaf8d3d4565fe6977a53bff0ce1c357a405 AS build
+FROM cgr.dev/chainguard/node:latest-dev@sha256:0cb568f2870d37a9c2a95901bf04d9fe121cfce1b3360c89a540cd75c4c96566 AS build
 USER 0
 COPY scripts/install-current-node.sh /usr/local/bin/install-current-node
 RUN /usr/local/bin/install-current-node
 ENV PATH=/opt/node-current/bin:$PATH
 RUN test "$(node --version)" = "v26.7.0" \
  && test "$(npm --version)" = "12.0.2" \
- && test "$(pnpm --version)" = "11.21.0"
+ && test "$(pnpm --version)" = "11.22.0"
 WORKDIR /repo
 COPY . .
 RUN --mount=type=cache,id=accrawl-pnpm-v11,target=/root/.local/share/pnpm/store/v11,sharing=locked \
@@ -35,7 +35,7 @@ RUN --mount=type=cache,id=accrawl-pnpm-v11,target=/root/.local/share/pnpm/store/
  && test "$(grep -c '^const DOMException = globalThis.DOMException$' "$fetch_blob_path")" = "1" \
  && test "$(grep -c "node-domexception" "$fetch_blob_path")" = "0"
 
-FROM cgr.dev/chainguard/node:latest-dev@sha256:39708a466eb9e1c4a49abc6931dc8aaf8d3d4565fe6977a53bff0ce1c357a405 AS chrome-package
+FROM cgr.dev/chainguard/node:latest-dev@sha256:0cb568f2870d37a9c2a95901bf04d9fe121cfce1b3360c89a540cd75c4c96566 AS chrome-package
 USER 0
 # Real Google Chrome (not Playwright's bundled Chromium) — different TLS fingerprint. Download the
 # versioned package from Google's signed repository and verify the package digest published in its
@@ -52,7 +52,7 @@ RUN mkdir -p /tmp/google-chrome-package /chrome-root \
  && xz --decompress --stdout data.tar.xz \
     | tar -xf - -C /chrome-root ./opt/google/chrome
 
-FROM cgr.dev/chainguard/rust:latest-dev@sha256:04ff740c14814353701c10bec4e79bac5d94f10c3e54369e2688bfaf54662092 AS rav1e-toolchain
+FROM cgr.dev/chainguard/rust:latest-dev@sha256:c0836ade760d0d0718deae8c1ca12dba37b6913f1bf42e2002147a02b25eaf97 AS rav1e-toolchain
 USER 0
 # gtk-3's current image-loader graph reaches rav1e. Rebuild rav1e's current stable C ABI with the
 # current Rust toolchain and dependency graph: the packaged CLI embeds abandoned/vulnerable crates,
@@ -190,7 +190,7 @@ fi
 echo "rav1e installed artifact manifest: ${digest_a}"
 EOF
 
-FROM cgr.dev/chainguard/node:latest@sha256:f6c05914c890eb9a36836503015b21a38f54eca322b5de9a3ef475b32d7f4172 AS chrome-runtime
+FROM cgr.dev/chainguard/node:latest@sha256:8bfea508c3b8af20865728e06311a088c4dee31052fca6acb5ac6ea7712aeda6 AS chrome-runtime
 USER 0
 COPY --from=build /opt/node-current/bin/node /usr/bin/node
 COPY --from=build /usr/lib/libatomic.so.1* /usr/lib/

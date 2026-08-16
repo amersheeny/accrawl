@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "contractId": "td-parity-14",
-  "revision": "2026-08-16.3",
-  "changeRecord": "The supported-currency enum becomes every current ISO-4217 code the runtime knows, read from ICU rather than kept by hand. It previously held 31 codes, described in a comment as one FX provider reference set and justified by a file that does not exist in this repository; there is no FX layer here at all, and storage has always validated only the three-letter shape. Because the model is CONSTRAINED to the enum, the 131 absent codes were not rejected but MISLABELLED: an account denominated in dirhams, riyals, naira, rupees, dong or new Taiwan dollars had to be reported under some other currency, silently, with every derived figure wrong. The list now covers 162 codes and a test fails when the runtime knows one the list does not, so it cannot fall behind again. No other schema field, requirement, description, prompt, identity rule or accumulation rule changes; nothing that validated before is rejected now, because the set only grew. Pins moved: apps/engine/src/ai/schema.ts. Previous revision: 2026-08-16.2.",
+  "revision": "2026-08-16.4",
+  "changeRecord": "Dependency freshness only. The repository requires every dependency surface to be the latest stable release, and the pre-push audit refused the publication push with eight stale pins: the package manager, the node installer script, the PostgreSQL image, three Chainguard build images and a runtime image, an XML parser override, and the Android HTTP client. The pinned file here is the Android build file, whose HTTP client moves from 5.4.0 to 5.5.0. No product code changes: no prompt, schema, transaction-identity rule, accumulation rule, gate or relay path, and the Companion source that this contract pins is untouched. Verified by the full suites after the bump. Pins moved: companion/android/app/build.gradle.kts. Previous revision: 2026-08-16.3.",
   "baselineRevision": "ee1f6bf05dae9c6deb856cd6703fd00f463338b5",
   "baselineSourceDigests": {
     "transactionPrompt": "f3b4a27eb90dfd67b77c651dc81f0d2e56cba223d202bb17b4d67b9f0c969f0c",
@@ -142,7 +142,7 @@
     },
     {
       "path": "companion/android/app/build.gradle.kts",
-      "sha256": "7976ee26644c643c78e7894a011f4ac3c7d9ef9d531a6a1b5f33d58665700d9f"
+      "sha256": "36f94746f9d0689b8dfa53bb9721932e7d0aa50c15a39ac7c8f18b947b2210b2"
     },
     {
       "path": "companion/android/app/src/main/AndroidManifest.xml",

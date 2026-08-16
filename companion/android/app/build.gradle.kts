@@ -115,7 +115,7 @@ flutter {
 dependencies {
     // OkHttp's WebSocket client drives the device-proxy tunnel WS to the engine (TunnelService). It's the
     // standard Android WS client; no WS-specific module is needed (WebSocket support ships in core okhttp3).
-    implementation("com.squareup.okhttp3:okhttp:5.4.0")
+    implementation("com.squareup.okhttp3:okhttp:5.5.0")
     implementation("androidx.appcompat:appcompat:1.8.0")
     implementation("com.google.firebase:firebase-messaging:24.1.1")
 

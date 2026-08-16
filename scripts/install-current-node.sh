@@ -29,7 +29,7 @@ tar -xzf "${archive}" -C /opt/node-current --strip-components 1
 rm "${archive}"
 
 NPM_CONFIG_PREFIX=/opt/node-current \
-  /opt/node-current/bin/npm install --global --ignore-scripts npm@12.0.2 pnpm@11.21.0
+  /opt/node-current/bin/npm install --global --ignore-scripts npm@12.0.2 pnpm@11.22.0
 test "$(/opt/node-current/bin/node --version)" = "v${NODE_VERSION}"
 test "$(/opt/node-current/bin/npm --version)" = "12.0.2"
 test "$(/opt/node-current/bin/pnpm --version)" = "11.21.0"

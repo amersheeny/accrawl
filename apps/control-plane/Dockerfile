@@ -12,14 +12,14 @@
 
 # Build the public contracts and control plane, then emit a self-contained
 # production bundle at /out.
-FROM cgr.dev/chainguard/node:latest-dev@sha256:39708a466eb9e1c4a49abc6931dc8aaf8d3d4565fe6977a53bff0ce1c357a405 AS build
+FROM cgr.dev/chainguard/node:latest-dev@sha256:0cb568f2870d37a9c2a95901bf04d9fe121cfce1b3360c89a540cd75c4c96566 AS build
 USER 0
 COPY scripts/install-current-node.sh /usr/local/bin/install-current-node
 RUN /usr/local/bin/install-current-node
 ENV PATH=/opt/node-current/bin:$PATH
 RUN test "$(node --version)" = "v26.7.0" \
  && test "$(npm --version)" = "12.0.2" \
- && test "$(pnpm --version)" = "11.21.0"
+ && test "$(pnpm --version)" = "11.22.0"
 WORKDIR /repo
 COPY . .
 RUN --mount=type=cache,id=accrawl-pnpm-v11,target=/root/.local/share/pnpm/store/v11,sharing=locked \
@@ -35,7 +35,7 @@ RUN --mount=type=cache,id=accrawl-pnpm-v11,target=/root/.local/share/pnpm/store/
  && test "$(grep -c '^const DOMException = globalThis.DOMException$' "$fetch_blob_path")" = "1" \
  && test "$(grep -c "node-domexception" "$fetch_blob_path")" = "0"
 
-FROM cgr.dev/chainguard/node:latest@sha256:f6c05914c890eb9a36836503015b21a38f54eca322b5de9a3ef475b32d7f4172 AS runtime
+FROM cgr.dev/chainguard/node:latest@sha256:8bfea508c3b8af20865728e06311a088c4dee31052fca6acb5ac6ea7712aeda6 AS runtime
 USER 0
 COPY --from=build /opt/node-current/bin/node /usr/bin/node
 COPY --from=build /usr/lib/libatomic.so.1* /usr/lib/

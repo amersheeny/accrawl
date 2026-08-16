@@ -2,14 +2,14 @@
 # Builds the web SPA (pnpm monorepo) and bakes it into a Caddy image that also proxies the API.
 # Build context = repo ROOT:
 #   docker build -f infra/Caddy.Dockerfile -t accrawl-web .
-FROM cgr.dev/chainguard/node:latest-dev@sha256:39708a466eb9e1c4a49abc6931dc8aaf8d3d4565fe6977a53bff0ce1c357a405 AS build
+FROM cgr.dev/chainguard/node:latest-dev@sha256:0cb568f2870d37a9c2a95901bf04d9fe121cfce1b3360c89a540cd75c4c96566 AS build
 USER 0
 COPY scripts/install-current-node.sh /usr/local/bin/install-current-node
 RUN /usr/local/bin/install-current-node
 ENV PATH=/opt/node-current/bin:$PATH
 RUN test "$(node --version)" = "v26.7.0" \
  && test "$(npm --version)" = "12.0.2" \
- && test "$(pnpm --version)" = "11.21.0"
+ && test "$(pnpm --version)" = "11.22.0"
 WORKDIR /repo
 COPY . .
 # Deployed build stamp (git short SHA), threaded in by the launcher. Declared right before the SPA build so
@@ -21,7 +21,7 @@ RUN pnpm install --frozen-lockfile \
  && pnpm --filter @accrawl/contracts build \
  && pnpm --filter @accrawl/web build
 
-FROM cgr.dev/chainguard/go:latest-dev@sha256:acd5088274d279f3343deff04b61ccf040327272e81eaeb33f4ccb0753d9a1c9 AS caddy-build
+FROM cgr.dev/chainguard/go:latest-dev@sha256:1b4f5070161bab10121583073ff8ee03fdc06af0c0056672e081175d20f4742b AS caddy-build
 USER 0
 ARG CADDY_VERSION=2.11.4
 ARG CADDY_COMMIT=e2eee6a7fce366321294c9c2a79f3146891dcbdf

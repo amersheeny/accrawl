@@ -9,7 +9,7 @@
     "url": "https://github.com/amersheeny/accrawl"
   },
   "homepage": "https://github.com/amersheeny/accrawl",
-  "packageManager": "pnpm@11.21.0",
+  "packageManager": "pnpm@11.22.0",
   "engines": {
     "node": ">=26.7.0"
   },
