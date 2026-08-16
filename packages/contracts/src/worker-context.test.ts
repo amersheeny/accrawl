@@ -17,32 +17,29 @@ const REQUEST = {
   timeoutSeconds: 600,
 };
 
-describe('the worker routing context across a rename', () => {
-  it('reads the name a sender that predates the rename still uses', () => {
-    // A release updates workers before the control plane, so for one release this is the only name
-    // arriving. Dropping it early would strand every crawl dispatched in that window.
-    expect(workerContextOf({ firestoreWorker: CONTEXT })).toEqual(CONTEXT);
-  });
-
-  it('reads the name senders use once they are updated', () => {
+describe('the worker routing context', () => {
+  it('reads the field senders emit', () => {
     expect(workerContextOf({ workerContext: CONTEXT })).toEqual(CONTEXT);
   });
 
-  it('prefers the current name when a sender emits both', () => {
-    const older = { ...CONTEXT, attemptId: '00000000-0000-4000-8000-000000000002' };
-    expect(workerContextOf({ workerContext: CONTEXT, firestoreWorker: older })).toEqual(CONTEXT);
-  });
-
-  it('reports nothing when a request carries neither', () => {
+  it('reports nothing when a request carries none', () => {
     expect(workerContextOf({})).toBeUndefined();
   });
 
-  it('accepts either name over the wire, and rejects a malformed one under both', () => {
+  it('accepts a well-formed context over the wire and rejects a malformed one', () => {
     expect(CrawlRequestSchema.safeParse({ ...REQUEST, workerContext: CONTEXT }).success).toBe(true);
-    expect(CrawlRequestSchema.safeParse({ ...REQUEST, firestoreWorker: CONTEXT }).success).toBe(true);
-
     const malformed = { ...CONTEXT, attemptId: 'not-a-uuid' };
     expect(CrawlRequestSchema.safeParse({ ...REQUEST, workerContext: malformed }).success).toBe(false);
-    expect(CrawlRequestSchema.safeParse({ ...REQUEST, firestoreWorker: malformed }).success).toBe(false);
+  });
+
+  it('rejects a routing context sent under any other field name', () => {
+    // A compatibility alias for the pre-rename name existed so one release could update workers
+    // before the control plane. It is closed: nothing emits it, and it named a provider in a contract
+    // that must not. What matters now is that the schema is STRICT — a sender still using the old
+    // name, or any other, fails loudly at the boundary instead of dispatching a crawl whose routing
+    // context silently reads as absent. Asserted through the mechanism rather than by naming the
+    // removed field, so this test cannot reintroduce the word it exists to keep out.
+    const underAnotherName = { ...REQUEST, legacyWorkerRoutingField: CONTEXT };
+    expect(CrawlRequestSchema.safeParse(underAnotherName).success).toBe(false);
   });
 });

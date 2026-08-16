@@ -262,16 +262,6 @@ export const EXCEPTIONS = [
   // A field name kept for exactly one release, because a release updates workers before the control
   // plane and the old name is what a not-yet-updated sender emits. The parity contract records the
   // change, so it quotes it too.
-  {
-    token: 'firestore',
-    reason: 'a deprecated field name accepted for one release, and the record of why it changed',
-    paths: [
-      'packages/contracts/src/types.ts',
-      'packages/contracts/src/schemas.ts',
-      'packages/contracts/src/worker-context.test.ts',
-      'parity/td-parity-14/manifest.json',
-    ],
-  },
   // A review that records a rename has to quote the name that was replaced, or it documents nothing
   // and cannot be checked by whoever reads it next. These are the reviews the copy gate points at as
   // the provenance of a decision, so they are named one by one rather than by directory: a review

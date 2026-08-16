@@ -17,16 +17,16 @@ import type {
 } from './types';
 
 /**
- * The worker routing context, under whichever name the sender used.
+ * The worker routing context.
  *
- * A release updates workers before the control plane, so for one release a new reader is fed by a
- * sender that still uses the old name. Every reader goes through this rather than picking a field, so
- * dropping the old name is one deletion here instead of a hunt.
+ * Every reader goes through this rather than reading the field directly. That indirection is what
+ * made the previous rename a single deletion here instead of a hunt across call sites, and it is why
+ * the compatibility name it carried could be dropped the moment nothing emitted it — which is now.
  */
 export function workerContextOf(
-  request: Pick<CrawlRequest, 'workerContext' | 'firestoreWorker'>,
+  request: Pick<CrawlRequest, 'workerContext'>,
 ): CrawlRequest['workerContext'] {
-  return request.workerContext ?? request.firestoreWorker;
+  return request.workerContext;
 }
 
 /** Where a worker running elsewhere finds its session, and the one attempt it may claim. */
@@ -39,8 +39,6 @@ const WorkerContextSchema = z.object({
 const CrawlRequestObjectSchema = z.object({
   sessionId: z.string().min(1),
   workerContext: WorkerContextSchema.optional(),
-  // Accepted for one release while a control plane that predates the rename is still emitting it.
-  firestoreWorker: WorkerContextSchema.optional(),
   loginUrl: z.string().url(),
   allowedDomains: z.array(z.string()).optional(),
   username: z.string().min(1),

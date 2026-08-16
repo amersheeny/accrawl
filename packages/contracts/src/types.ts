@@ -50,20 +50,6 @@ export interface CrawlRequest {
     runtimePartitionId: string;
     attemptId: string;
   };
-  /**
-   * The same thing under the name it used to have.
-   *
-   * A release updates workers before the control plane, so for one release a new worker is fed by a
-   * control plane that still emits the old name. Readers take whichever is present; the next release
-   * drops this, once nothing emits it.
-   *
-   * @deprecated use {@link CrawlRequest.workerContext}
-   */
-  firestoreWorker?: {
-    namespace: string;
-    runtimePartitionId: string;
-    attemptId: string;
-  };
   /** Institution login URL */
   loginUrl: string;
   /** Registrable domains (SSO/CDN) the browser may reach beyond loginUrl's eTLD+1. Drives the
