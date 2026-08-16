@@ -23,7 +23,8 @@
  */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -81,7 +82,7 @@ function looksGzipped(bytes) {
  * must say which file, not return nothing found.
  */
 function textOf(relativePath) {
-  const absolute = path.join(ROOT, relativePath);
+  const absolute = path.resolve(ROOT, relativePath);
   try {
     if (!statSync(absolute).isFile()) return null;
   } catch {
@@ -177,7 +178,10 @@ test('the scan reads INSIDE a compressed file', () => {
   const planted = gunzipSync(gzipSync(Buffer.from('a log line naming firebase\n', 'utf8'))).toString('utf8');
   assert.match(planted, /firebase/);
 
-  const archive = path.join(ROOT, 'node_modules', '.provider-neutral-archive-selfcheck.gz');
+  // Written to the OS temp directory, not into the repository: node_modules does not exist in a fresh
+  // clone, and a check that only runs where the author already installed is the exact failure this file
+  // is about. Caught by cloning and running it.
+  const archive = path.join(mkdtempSync(path.join(tmpdir(), 'accrawl-neutral-')), 'selfcheck.gz');
   writeFileSync(archive, gzipSync(Buffer.from('deployment log: firebase project\n', 'utf8')));
   try {
     const text = textOf(path.relative(ROOT, archive));
@@ -187,7 +191,7 @@ test('the scan reads INSIDE a compressed file', () => {
       'a provider name planted inside a compressed file must be visible to the scan',
     );
   } finally {
-    rmSync(archive, { force: true });
+    rmSync(path.dirname(archive), { force: true, recursive: true });
   }
 });
 

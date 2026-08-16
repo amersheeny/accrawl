@@ -35,15 +35,24 @@ jobs:
       - name: the working tree names no provider
         run: node --test scripts/provider-neutral-policy.test.mjs
 
-      # What someone who clones this would get. Expected to fail until the history rewrite lands; it is
-      # here from the start so that the day it passes is recorded, rather than the day someone remembers
-      # to add it.
+      # What someone who clones this would get. It passes: the project was published from a single root
+      # commit precisely because no edit to a tree can remove what earlier commits already carried.
       - name: history carries no provider or deployment identity
         run: node --test scripts/provider-neutral-history.test.mjs
 
       # The same question the commit hook asks, against this push's own changes — so a commit made with
       # --no-verify, or on a machine with no hooks installed, is still answered for.
+      #
+      # When HEAD *is* the root commit, resetting to the root stages nothing and the check reviews an
+      # empty diff — which is what this step did the moment the project was republished from one commit.
+      # Detaching HEAD instead leaves the index intact against no parent, so every file reads as added
+      # and the whole codebase is the change under review.
       - name: this push introduces nothing that must not be here
         run: |
-          git reset --soft "$(git rev-list --max-parents=0 HEAD | tail -1)"
+          root="$(git rev-list --max-parents=0 HEAD | tail -1)"
+          if [ "$root" = "$(git rev-parse HEAD)" ]; then
+            git update-ref -d HEAD
+          else
+            git reset --soft "$root"
+          fi
           node scripts/check-staged-provider-neutral.mjs
