@@ -1,0 +1,9 @@
+[[IgnoredVulns]]
+id = "GHSA-4r6h-8v6p-xvw6"
+ignoreUntil = 2026-10-26
+reason = "False positive for the authoritative SheetJS CDN build 0.20.3. The vendor advisory affects versions through 0.19.2 and fixes the issue in 0.19.3; OSV's npm range has no fixed event because npm stopped publishing SheetJS after 0.18.5."
+
+[[IgnoredVulns]]
+id = "GHSA-5pgg-2g8v-p4x9"
+ignoreUntil = 2026-10-26
+reason = "False positive for the authoritative SheetJS CDN build 0.20.3. The vendor advisory affects versions through 0.20.1 and fixes the issue in 0.20.2; OSV's npm range has no fixed event because npm stopped publishing SheetJS after 0.18.5."

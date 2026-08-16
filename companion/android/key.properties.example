@@ -1,0 +1,4 @@
+storeFile=/absolute/path/to/accrawl-companion-release.jks
+storePassword=replace-me
+keyAlias=accrawl-companion
+keyPassword=replace-me

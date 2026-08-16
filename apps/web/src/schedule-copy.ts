@@ -1,0 +1,22 @@
+/** Independently reviewed copy for connection crawl-schedule controls. */
+export const SCHEDULE_COPY = {
+  automaticCrawls: 'Automatic crawls',
+  manualOnly: 'Manual only',
+  daily: 'Daily',
+  weekly: 'Weekly',
+  monthly: 'Monthly',
+  localTime: 'Local time',
+  dayOfWeek: 'Day of week',
+  dayOfMonth: 'Day of month',
+  lastDay: 'Last day',
+  timezone: 'Time zone',
+  editSchedule: 'Edit schedule',
+  editScheduleTitle: 'Edit automatic crawl schedule',
+  saveSchedule: 'Save schedule',
+  scheduleUpdated: 'Schedule updated.',
+  noAutomaticCrawls: 'No automatic crawls',
+  manualOnlyHint: 'Run crawls manually with Crawl now.',
+  unverifiedHint: 'Automatic crawls start after you confirm the sign-in domain.',
+  nextAttempt: 'Next crawl attempt:',
+  invalid: 'Choose a valid frequency, time, and time zone.',
+} as const;

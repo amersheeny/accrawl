@@ -1,0 +1,1 @@
+ALTER TABLE "connections" ADD COLUMN "crawl_schedule_claim" uuid;

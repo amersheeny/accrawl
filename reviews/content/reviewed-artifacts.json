@@ -1,0 +1,37 @@
+{
+  "DEPLOY.md": {
+    "sha256": "052094b1d63103b2da8ef5dc16f8629f773c4dcd5638d697e239e575bb182738",
+    "review": {
+      "runId": "3b1cf242-d6a9-482a-a9d3-71809a23c35b",
+      "transcript": "reviews/content/content-review-3b1cf242-d6a9-482a-a9d3-71809a23c35b.md"
+    }
+  },
+  "README.md": {
+    "sha256": "fa7c113733c173b8aef9ece9affe49e29df261828e248badf3889bd35c7e98cd",
+    "review": {
+      "runId": "3b1cf242-d6a9-482a-a9d3-71809a23c35b",
+      "transcript": "reviews/content/content-review-3b1cf242-d6a9-482a-a9d3-71809a23c35b.md"
+    }
+  },
+  "apps/engine/README.md": {
+    "sha256": "1da951619ac662f27bd0d36ba72660742c01ce90592f99b2d43a65d42bb2bbcc",
+    "review": {
+      "runId": "3b1cf242-d6a9-482a-a9d3-71809a23c35b",
+      "transcript": "reviews/content/content-review-3b1cf242-d6a9-482a-a9d3-71809a23c35b.md"
+    }
+  },
+  "companion/README.md": {
+    "review": {
+      "runId": "content-review-20260814-capability-named-settings",
+      "transcript": "reviews/content/content-review-20260814-capability-named-settings.md"
+    },
+    "sha256": "369c5e5a94b6c4915b4199e111dc9b26ad101c3ae3757f4a7b9873795720ffc0"
+  },
+  "docs/hosted-cell.md": {
+    "review": {
+      "runId": "3b27696d-69b6-49ba-92f9-e651e0282a7b",
+      "transcript": "reviews/content/3b27696d-69b6-49ba-92f9-e651e0282a7b.md"
+    },
+    "sha256": "eda0a3a609098cc9849ffa2b16e7d9f42ce8d118ec110b055959f44c96d6b425"
+  }
+}

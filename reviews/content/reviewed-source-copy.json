@@ -1,0 +1,1046 @@
+{
+  "accessRevokedDuringRequest": {
+    "occurrences": [
+      {
+        "count": 3,
+        "file": "apps/control-plane/src/routes/companion.ts"
+      },
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/devices.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9e5b-152b-7543-bc6b-e963e28f5c44",
+      "transcript": "reviews/content/019f9e5b-152b-7543-bc6b-e963e28f5c44.md"
+    },
+    "sha256": "baa9c8007504068f7a92c18a5f6d58e07e460568d62854e3dbc7f6a07cd46ad8",
+    "text": "access is no longer authorized"
+  },
+  "activePairingRequestNotFound": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/devices.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "8f41cba85c9c12e9dfbcfcf0b03e348cd32ee58be320544759343b0666966792",
+    "text": "This pairing request is no longer active. Start pairing again."
+  },
+  "api.balanceAsOf": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/openapi/spec.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "e88b3fe5d24dc6e5bd9254afbfb4f6ab931d0450c9587781fc2eec998c410be7",
+    "text": "When the institution said this balance was observed. Absent when it did not say."
+  },
+  "api.connectionSummary": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/openapi/spec.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "a20e7dd03c31af4754adf0f2cfdae682544aba727a15892fec8f125cf7cb471e",
+    "text": "One entry in the connection directory: the institution it links to (name, type and logo, ready to display), the connection’s status and nickname, and the day it last synced."
+  },
+  "api.connectionsEndpoint": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/openapi/spec.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "2c4da3bfe1e107a1091d5adb213d5c6b75936c5131732eee134e2810471d9dcf",
+    "text": "The connections this credential may read: only the ones it was granted. Each entry carries the connection id, its institution’s name, type and logo, the status, the nickname, and the day it last synced. Requires read:data."
+  },
+  "api.connectionsList": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/openapi/spec.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "08ade4921692256ff194bc3e3ab04ddb9df68ad8f599d281339091b7d6c3e906",
+    "text": "The connections this credential may read: only the ones it was granted."
+  },
+  "api.institutionId": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/openapi/spec.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "126da904b458f73445cadbf8bfc3307e2782f5437b514a3da999d5c789327c59",
+    "text": "Stable slug — a lookup key, never a label to show a person."
+  },
+  "api.institutionLogoUrl": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/openapi/spec.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "97d3214fa381e9372f7694270e185319efbc1b463d7ff65dc82a55277a2ddef3",
+    "text": "Institution logo URL, or null. Third-party content: Accrawl checks only that it is a well-formed URL. Use it as an image source; do not fetch it server-side or treat what it returns as trusted."
+  },
+  "api.institutionName": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/openapi/spec.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "976784926ac079297f4abe3154aca2ac437b1a09db64aea9d07de22f4b02a8a8",
+    "text": "The institution’s display name."
+  },
+  "api.lastSyncedAt": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/openapi/spec.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "593aa3c7cf036ea3dcaae0180df40872acc751bda8ed8ec191874c268e03cdb4",
+    "text": "The UTC day (YYYY-MM-DD) this connection last synced successfully, or null if none has. Use it to show your users how current the data is."
+  },
+  "api.security": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/openapi/spec.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "f83c1bf2473f5aa3dbb5c3f6a0a69c9acd160147d9b3bbfce881dbff23554239",
+    "text": "A scoped Accrawl credential: a manually issued API key or an OAuth access token, both sent as `Authorization: Bearer acck_…`. Missing/invalid → 401; valid but lacking `read:data` → 403; valid but not granted the connection → 403."
+  },
+  "api.title": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/openapi/spec.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "212a6f1581a0c99c714df57cde2c24cfaf0711b7ff97b394bfb405dc533759ae",
+    "text": "Accrawl Data API"
+  },
+  "auth.apiKeyInvalid": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "190ae98803c083cf84f97d7de082117a18e78f6279446297b3fb0d6f56c13f83",
+    "text": "invalid or revoked api key"
+  },
+  "auth.apiKeyRequired": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "e0b95211a6425a438e030e2c4f0f939617fda0216a573b4413b83da95728e214",
+    "text": "api key required"
+  },
+  "auth.authRequired": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "cbac8bee7536352a619dcc5fe4f7a57e7b30f3447f0f5927628ace5e00c64b35",
+    "text": "authentication required"
+  },
+  "auth.dataOwner": {
+    "occurrences": [
+      {
+        "count": 3,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "0ba0fddf1c0280f3e42a5574829f881ade3cce42fa1bb881b1d3fca0fed77732",
+    "text": "This account can’t open financial data. Sign in with the account that owns these connections."
+  },
+  "auth.deviceTokenInvalid": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "b7a7d28e3d0fb4dbdf047de09253ac6f7cdbcc1b554a90e7f9148e4ec853bbc4",
+    "text": "invalid or revoked device token"
+  },
+  "auth.deviceTokenRequired": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "c194b09e43e1b1d7570f24999a0d94ba6855307267bbb76aefa3d4a83194aed1",
+    "text": "device token required"
+  },
+  "auth.hostedSetting": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "671878e90b68da1ff1b7db9cc917f8a5b26f019a8f20b4088605aa8b2fe6b6ee",
+    "text": "this setting is managed by the hosted service"
+  },
+  "auth.missingScope": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "9da8143d875df25c1f4ef46975c944c9fdf93afe1a1a799ecc00680dbdf5e4b6",
+    "text": "missing required scope: ${…}"
+  },
+  "auth.organizationAdmin": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "bfb25f144fe8d78ae0e1893cba6ad10019cc656cf0013dc93b2a7dd7ec2bff48",
+    "text": "Only an organisation administrator can do this. Sign in with an organisation administrator account or ask one for help."
+  },
+  "auth.platformAdmin": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "775fea14bbf5a8c2ba2f203a9b946e0dc72e52aedd54237fc577889322691087",
+    "text": "Only a platform administrator can do this. Sign in with a platform administrator account or ask one for help."
+  },
+  "auth.readOnly": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "e3536385c84000830d6e67bd421929482127e89cd9899c25b7d733e4c0034c65",
+    "text": "the public API is read-only"
+  },
+  "auth.selectOrganization": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "62f484136d025fc8f49ac701fcefb4f03f0c1fae450d443683fbe982f76b70d3",
+    "text": "Select a recipient organisation before continuing."
+  },
+  "auth.signIn": {
+    "occurrences": [
+      {
+        "count": 4,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "73c27c81d39848a002a19d217154ffdae0b3ee7736c2087a70e191f9366712e7",
+    "text": "Sign in to continue."
+  },
+  "auth.signInOrApiKey": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "7a68eaec3f6d2db68bf1af271d2da6370b480b1e5f641d2e8cb6574ef666c6ff",
+    "text": "Sign in to continue, or authenticate with a valid API key."
+  },
+  "auth.signInOrDevice": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/auth/middleware.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260804-read-only-api",
+      "transcript": "reviews/content/content-review-20260804-read-only-api.md"
+    },
+    "sha256": "23024a3dd12af6ad3f326b15881e6645a021d8fb2635f97976d90a510a470b3e",
+    "text": "Sign in to continue, or authenticate with a paired companion device."
+  },
+  "companionHttpsRequired": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/companion.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "81bac828d451c86dfc64bf3b11ee59ac3c34b5e281853df942283eb7e8e0b55f",
+    "text": "Use HTTPS to access financial data in the companion app."
+  },
+  "companionNavigation": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/web/src/main.tsx"
+      }
+    ],
+    "review": {
+      "runId": "019fb915-2331-7b22-9314-e6756a580f96",
+      "transcript": "reviews/content/content-review-20260731-companion-download.md"
+    },
+    "sha256": "1dadb3284b8b358259ac6c0d3fb12e6884aa8d566282a1277d2a06a026d12c4f",
+    "text": "Companion"
+  },
+  "connectionGrantUnavailable": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/auth.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "1679630affd8802ab667a4941cb8ed2f93dfb0aacfd916a9d892a71415be98ab",
+    "text": "Access to one or more connections is unavailable. Refresh and try again."
+  },
+  "crawlCompletionDeadline": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/orchestration/run-crawl.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9e0d-6362-7ec1-920b-32f638d677d6",
+      "transcript": "reviews/content/019f9e0d-6362-7ec1-920b-32f638d677d6.md"
+    },
+    "sha256": "8999d21eb41bb1fd8f9f141cac5586e125a896a65c65fd78fbf84afa4ee81036",
+    "text": "The crawl didn’t finish within the allowed time."
+  },
+  "crawlConnectionNotReady": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/orchestration/run-crawl.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9e0d-6362-7ec1-920b-32f638d677d6",
+      "transcript": "reviews/content/019f9e0d-6362-7ec1-920b-32f638d677d6.md"
+    },
+    "sha256": "7416e8c348a23c89bfb096e6ed31919c3bb82ffbad6e41aa5d6fb4ac3a1c63da",
+    "text": "This connection must be enabled and signed in before the crawl can start."
+  },
+  "crawlLoginAddressMismatch": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/orchestration/run-crawl.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9e0d-6362-7ec1-920b-32f638d677d6",
+      "transcript": "reviews/content/019f9e0d-6362-7ec1-920b-32f638d677d6.md"
+    },
+    "sha256": "06c1cdbddcb1f4eb6b5083efe1f58c8f485c66ad84b8ff70fd9da363a979e0e9",
+    "text": "The saved login address doesn’t match this institution’s domain."
+  },
+  "crawlLoginDomainUnverified": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/orchestration/run-crawl.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9e0d-6362-7ec1-920b-32f638d677d6",
+      "transcript": "reviews/content/019f9e0d-6362-7ec1-920b-32f638d677d6.md"
+    },
+    "sha256": "3d0848be70070f13bc175212242bb28a2cac544949351f34fb37a34e1473b0f9",
+    "text": "This institution’s login domain hasn’t been verified, so the crawl can’t start."
+  },
+  "crawlNotFound": {
+    "occurrences": [
+      {
+        "count": 10,
+        "file": "apps/control-plane/src/routes/sessions.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd8-adb5-70b0-a970-4ea3cb891461",
+      "transcript": "reviews/content/019f9dd8-adb5-70b0-a970-4ea3cb891461.md"
+    },
+    "sha256": "6d1aee2480ba15ab189c54a38acb71cb32b985e1e92f5295cdcd7f5790444fa3",
+    "text": "We couldn’t find this crawl. Refresh the page; it may have already ended or been removed."
+  },
+  "crawlPhoneNotGranted": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/orchestration/run-crawl.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9e0d-6362-7ec1-920b-32f638d677d6",
+      "transcript": "reviews/content/019f9e0d-6362-7ec1-920b-32f638d677d6.md"
+    },
+    "sha256": "c32b1332cddc31ef4e46b25cc3dff77edeb30989c798f249c23df556019710c7",
+    "text": "None of the paired phones is allowed to crawl this connection."
+  },
+  "crawlPhoneRoutingNotConfigured": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/orchestration/run-crawl.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9e0d-6362-7ec1-920b-32f638d677d6",
+      "transcript": "reviews/content/019f9e0d-6362-7ec1-920b-32f638d677d6.md"
+    },
+    "sha256": "f419c802dd84459f1908a2bbc42f67e5b7f5e2cf46141ef004eb2ae072dc0ec2",
+    "text": "Accrawl isn’t configured to route crawls through a phone’s network."
+  },
+  "crawlSafetyCheckBlocked": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/orchestration/run-crawl.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9e0d-6362-7ec1-920b-32f638d677d6",
+      "transcript": "reviews/content/019f9e0d-6362-7ec1-920b-32f638d677d6.md"
+    },
+    "sha256": "b21feaee0717d3abf1d8e45cdfe37e56c52c593181bd271db1b3a7d7e2310e79",
+    "text": "The crawl can’t start until its safety check passes."
+  },
+  "delete_connection_during_crawl": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/connections.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9bd7-ad66-7131-b816-b8f1290db269",
+      "transcript": "reviews/content/019f9bd7-ad66-7131-b816-b8f1290db269.md"
+    },
+    "sha256": "c237882d472b206031710fa2f436215d33f20346a186fc7b1bab7dfcebab3b63",
+    "text": "Wait for the crawl to finish or stop before deleting this connection."
+  },
+  "deviceAlreadyRevoked": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/devices.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "a6f1609517f52d36f0ec0a6894c4a76dea67e504cf161b472ea93ed30f0737b1",
+    "text": "This device’s access has already been revoked."
+  },
+  "institutionAlreadyPublished": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/institutions.ts"
+      }
+    ],
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    },
+    "sha256": "ee92c2ae57886e6fe65ec363c6015d400c336ab306e6e54d9a54dfdd706bb20d",
+    "text": "This institution is already published."
+  },
+  "institutionPublishScanRequired": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/institutions.ts"
+      }
+    ],
+    "review": {
+      "runId": "019fb1f2-6558-7590-b9f0-014261bbfc4d",
+      "transcript": "reviews/content/019fb1f2-6558-7590-b9f0-014261bbfc4d.md"
+    },
+    "sha256": "41bbfe00dac261eaeec9d319a77531a48ed09d52be3918db9d472d93d7bb3cd3",
+    "text": "Resolve any Safety check issues, then wait for it to pass before you Publish a copy."
+  },
+  "institutionPublishedCopyExists": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/institutions.ts"
+      }
+    ],
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    },
+    "sha256": "8d5795159c8c4ea41dba9f711f50c0fa3d003f08c933835402daac6c6ab53e9e",
+    "text": "A published copy of ${…} already exists in this Accrawl workspace."
+  },
+  "invalidPagination": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/control-plane/src/routes/accounts.ts"
+      },
+      {
+        "count": 6,
+        "file": "apps/control-plane/src/routes/companion.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9e0d-6362-7ec1-920b-32f638d677d6",
+      "transcript": "reviews/content/019f9e0d-6362-7ec1-920b-32f638d677d6.md"
+    },
+    "sha256": "d76d742437d7871637e275f924e181c2c911581cddfba985aad33bbed5968655",
+    "text": "The page request is invalid. Refresh and try again."
+  },
+  "invalidPairingRequest": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/control-plane/src/routes/devices.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "2aaa06ecb9f612939ac87c066f03f597b41daac3cbf8094d5cbe8607ab414eee",
+    "text": "This pairing request is invalid. Start pairing again."
+  },
+  "invalidRefreshToken": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/control-plane/src/routes/oauth.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "dffeadb5a2fc7f6e965022e63ff04b9ecaa916e5ec024d55768a39488decd51b",
+    "text": "Your sign-in session is invalid. Sign in again."
+  },
+  "missing_screenshot_second_storage_path": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/sessions.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9bdc-3501-7641-9bfc-f72f3ca58ad9",
+      "transcript": "reviews/content/019f9bdc-3501-7641-9bfc-f72f3ca58ad9.md"
+    },
+    "sha256": "a3eec3055086764a8d5dad0042150919944655f68f5e3d7f3db194121fc6ace7",
+    "text": "screenshot file not found"
+  },
+  "oauthClientAuthenticationRequired": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/control-plane/src/routes/oauth.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-E6892342-8C3B-42EF-87DB-15EC116F1319",
+      "transcript": "reviews/content/content-review-E6892342-8C3B-42EF-87DB-15EC116F1319.md"
+    },
+    "sha256": "f4ea956fe92f24e79d56c4605d0e54dca1badacc94c79c0aa6c0180d99308f63",
+    "text": "client authentication required"
+  },
+  "oauthInvalidClientCode": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/control-plane/src/routes/oauth.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-E6892342-8C3B-42EF-87DB-15EC116F1319",
+      "transcript": "reviews/content/content-review-E6892342-8C3B-42EF-87DB-15EC116F1319.md"
+    },
+    "sha256": "4a4077fd35121ad457e8caf0d0d88ed579474e7eb26e96f5f18c0dd6d0a78e5e",
+    "text": "invalid_client"
+  },
+  "oauthInvalidRequestCode": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/oauth.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-E6892342-8C3B-42EF-87DB-15EC116F1319",
+      "transcript": "reviews/content/content-review-E6892342-8C3B-42EF-87DB-15EC116F1319.md"
+    },
+    "sha256": "b60a3d831403c74a83abf12737ffc87fce7fe1035f022dbdf44b29a3b12ee5db",
+    "text": "invalid_request"
+  },
+  "operator_cancelled_job_diagnostic": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/scheduling/scheduler.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9bed-4399-7711-b7a3-b19f263a7d82",
+      "transcript": "reviews/content/019f9bed-4399-7711-b7a3-b19f263a7d82.md"
+    },
+    "sha256": "d7be1564db8dd7ece193d04c52f9a92d24fa5cf1442d9b4000b09c5b0d1a79c6",
+    "text": "cancelled by operator"
+  },
+  "organizationInternalNotFound": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/control-plane/src/routes/organization-shares.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "b1fae0bc653c7abd9aacf26952c721b3925d15275c200334fdedbb844db6f04b",
+    "text": "We couldn’t find that organisation. Refresh and try again."
+  },
+  "otpAccessRevokedDuringRequest": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/sessions.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9e61-3420-7f31-90c3-ecff06ab9ea4",
+      "transcript": "reviews/content/019f9e61-3420-7f31-90c3-ecff06ab9ea4.md"
+    },
+    "sha256": "baa9c8007504068f7a92c18a5f6d58e07e460568d62854e3dbc7f6a07cd46ad8",
+    "text": "access is no longer authorized"
+  },
+  "pairingHttpsRequired": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/control-plane/src/routes/devices.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "d96ba4e8fbf0615146cab2d0cf0bd7fd059cb4d3f2d584b4429b58c69f5a2932",
+    "text": "Use HTTPS to pair the companion app."
+  },
+  "pairingRequestNotFound": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/control-plane/src/routes/devices.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "e7cdf72d572bff90387d9dbad45376431e7fdedf60e87376d882c629849a0f6d",
+    "text": "This pairing request is no longer available. Start pairing again."
+  },
+  "publicWebhookRequired": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/webhooks.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "3cc953576595ef8efbd0a030b66bba4a31c795f12d6a1c0fdddf7adc3a0e8ec5",
+    "text": "Enter a public HTTPS webhook URL. URLs for private networks or cloud metadata services are not allowed."
+  },
+  "push_not_configured_for_companion": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/devices.ts"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260814-push-not-configured",
+      "transcript": "reviews/content/content-review-20260814-push-not-configured.md"
+    },
+    "sha256": "214e7e317593bf1b9ee34043e4818819c805d223e35bed7d08a00064eaf6a4a5",
+    "text": "this deployment does not send Companion wake-ups"
+  },
+  "refreshTokenExpired": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/oauth.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "6e4359635aa72fc2c0f3e943e0c82ed5d66fed507ebc2c132c20afa58681c351",
+    "text": "Your sign-in session has expired. Sign in again."
+  },
+  "refreshTokenReuse": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/control-plane/src/routes/oauth.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "0d5777473b12d6b697063a501dc284fda92705ef07f94fe9652aceb0a47b2e62",
+    "text": "We detected a security issue with your sign-in session and revoked access. Sign in again."
+  },
+  "refreshTokenRevoked": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/oauth.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9dd6-e018-7f83-ae6a-cb5b30d52047",
+      "transcript": "reviews/content/019f9dd6-e018-7f83-ae6a-cb5b30d52047.md"
+    },
+    "sha256": "ff792b20d1f906dd11cfb933f937a80b9f2bc5e10343abe39ad1ae7fbc3b7b36",
+    "text": "Your sign-in session has been revoked. Sign in again."
+  },
+  "scheduleEditorCancel": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/web/src/crawl-schedule.tsx"
+      }
+    ],
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-docs",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule-docs.md"
+    },
+    "sha256": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27",
+    "text": "Cancel"
+  },
+  "view_crawl_progress_links": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/web/src/session-pages.tsx"
+      }
+    ],
+    "review": {
+      "runId": "019f9bdc-e33b-7101-a28f-0a48082cc31c",
+      "transcript": "reviews/content/019f9bdc-e33b-7101-a28f-0a48082cc31c.md"
+    },
+    "sha256": "948a0a1479dc19f8cb09d3b5b35ae0b20034c2a4d10b4732afe6e7d12fd64ca7",
+    "text": "view crawl progress"
+  },
+  "worker_start_or_interruption_failure": {
+    "occurrences": [
+      {
+        "count": 2,
+        "file": "apps/control-plane/src/scheduling/scheduler.ts"
+      }
+    ],
+    "review": {
+      "runId": "019f9bed-e82a-7810-9fe9-98bdc490ae10",
+      "transcript": "reviews/content/019f9bed-e82a-7810-9fe9-98bdc490ae10.md"
+    },
+    "sha256": "6321bc925436361523040e64af56ae727cf7f4620bfc0bd53de4af6a8cbb13c5",
+    "text": "The crawl didn’t start or was interrupted. Try running the crawl again."
+  },
+  "setup_code_invalid_message": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/setup.ts"
+      }
+    ],
+    "review": {
+      "runId": "3b27696d-69b6-49ba-92f9-e651e0282a7b",
+      "transcript": "reviews/content/3b27696d-69b6-49ba-92f9-e651e0282a7b.md"
+    },
+    "sha256": "1fd0ab26fee2d2adef28ea74f7c3ac2eb37d186f3a972376477f26dab7e42216",
+    "text": "The setup code is missing or does not match this deployment. Use this deployment's SETUP_CLAIM_TOKEN value."
+  },
+  "setup_code_not_configured_message": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/setup.ts"
+      }
+    ],
+    "review": {
+      "runId": "3b27696d-69b6-49ba-92f9-e651e0282a7b",
+      "transcript": "reviews/content/3b27696d-69b6-49ba-92f9-e651e0282a7b.md"
+    },
+    "sha256": "260c86cc529faed416319c755a47bb556794289afb4db12bcd986d66cf24396e",
+    "text": "This deployment has no setup code configured. Set SETUP_CLAIM_TOKEN and restart Accrawl before trying again."
+  },
+  "setup_code_invalid_code": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/setup.ts"
+      }
+    ],
+    "review": {
+      "runId": "3b27696d-69b6-49ba-92f9-e651e0282a7b",
+      "transcript": "reviews/content/3b27696d-69b6-49ba-92f9-e651e0282a7b.md"
+    },
+    "sha256": "b5b0b7ec7bddf73f3f37b58a7775d1cb5a3af811d5751aadf13b9271180fc8b2",
+    "text": "setup_code_invalid"
+  },
+  "setup_code_not_configured_code": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/setup.ts"
+      }
+    ],
+    "review": {
+      "runId": "3b27696d-69b6-49ba-92f9-e651e0282a7b",
+      "transcript": "reviews/content/3b27696d-69b6-49ba-92f9-e651e0282a7b.md"
+    },
+    "sha256": "1b17feb9219a1187e8895a189f04d44b974a7a75268fbd42f3f6c37328c9dbd6",
+    "text": "setup_code_not_configured"
+  },
+  "sms_relay_limit": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/sessions.ts"
+      }
+    ],
+    "review": {
+      "runId": "3b27696d-69b6-49ba-92f9-e651e0282a7b",
+      "transcript": "reviews/content/3b27696d-69b6-49ba-92f9-e651e0282a7b.md"
+    },
+    "sha256": "0e9e9a7bf7c1849ef5fa7803d6e09b0055690c891bcc4121fdde753e9646698f",
+    "text": "Accrawl has received the maximum of 10 relayed SMS messages for this session. Enter the code manually in the Accrawl console."
+  },
+  "web_setup_code_field": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/web/src/pages.tsx"
+      }
+    ],
+    "review": {
+      "runId": "3b27696d-69b6-49ba-92f9-e651e0282a7b",
+      "transcript": "reviews/content/3b27696d-69b6-49ba-92f9-e651e0282a7b.md"
+    },
+    "sha256": "6f277ebd346b79a64b01999e5c01a1586256538388e7ca3753233cc2424b0620",
+    "text": "Setup code"
+  },
+  "web_setup_code_help": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/web/src/pages.tsx"
+      }
+    ],
+    "review": {
+      "runId": "3b27696d-69b6-49ba-92f9-e651e0282a7b",
+      "transcript": "reviews/content/3b27696d-69b6-49ba-92f9-e651e0282a7b.md"
+    },
+    "sha256": "a3f1d0d59d48eb8a08819202b6d0db49223adca476d20cd5629c37f52547a0ff",
+    "text": "./setup.sh saved this code in .env as SETUP_CLAIM_TOKEN. Enter it to confirm you have access to this deployment's configuration before setting its first password."
+  },
+  "web_setup_code_required": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/web/src/pages.tsx"
+      }
+    ],
+    "review": {
+      "runId": "3b27696d-69b6-49ba-92f9-e651e0282a7b",
+      "transcript": "reviews/content/3b27696d-69b6-49ba-92f9-e651e0282a7b.md"
+    },
+    "sha256": "f6c9a2a78f6ab3eefbb8e33bd861a6ad1828c971862d5ea645b8194a0b52e5d1",
+    "text": "Enter this deployment's setup code."
+  },
+  "crawl_key_requires_expiry": {
+    "occurrences": [
+      {
+        "count": 1,
+        "file": "apps/control-plane/src/routes/auth.ts"
+      }
+    ],
+    "review": {
+      "runId": "3b27696d-69b6-49ba-92f9-e651e0282a7b",
+      "transcript": "reviews/content/3b27696d-69b6-49ba-92f9-e651e0282a7b.md"
+    },
+    "sha256": "81dd1b83ebfc3131f1972880b62f6adf59e5af6614a71e3c3f4c1f18ee669c06",
+    "text": "a key that can start a crawl must expire"
+  },
+  "web.sourceLink.label": {
+    "text": "Source code (AGPL-3.0)",
+    "sha256": "7061cafbad07984503727f7a4c1ff8a818f3a55442d66ea4ad6c32a83690431f",
+    "review": {
+      "runId": "7e2dfb52-adb2-47b3-8187-72073b918c16",
+      "transcript": "reviews/content/content-review-7e2dfb52-adb2-47b3-8187-72073b918c16.md"
+    },
+    "occurrences": [
+      {
+        "file": "apps/web/src/main.tsx",
+        "count": 1
+      }
+    ]
+  },
+  "web.sourceLink.title": {
+    "text": "View or download the source code for this Accrawl deployment.",
+    "sha256": "29116dc63a27d12b0bb55e01472f6ab4585dce5693fd2c0167d0c991a6cdd68a",
+    "review": {
+      "runId": "7e2dfb52-adb2-47b3-8187-72073b918c16",
+      "transcript": "reviews/content/content-review-7e2dfb52-adb2-47b3-8187-72073b918c16.md"
+    },
+    "occurrences": [
+      {
+        "file": "apps/web/src/main.tsx",
+        "count": 1
+      }
+    ]
+  }
+}

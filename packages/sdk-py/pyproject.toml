@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling==1.32.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "accrawl"
+version = "0.1.0"
+description = "Official Python client for the Accrawl Provider API — trigger crawls, poll sessions, submit OTPs, read accounts/transactions/positions, and verify webhooks. Zero dependencies (stdlib only)."
+readme = "README.md"
+license = "AGPL-3.0-only"
+requires-python = ">=3.9"
+dependencies = []
+
+[tool.hatch.build.targets.wheel]
+packages = ["accrawl"]

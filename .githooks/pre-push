@@ -1,0 +1,8 @@
+#!/bin/sh
+# Everything the commit-time gate cannot see: the repository as a whole, and the history someone who
+# clones it will get. Slower, so it runs here rather than on every commit.
+set -eu
+
+node --test scripts/provider-neutral-policy.test.mjs
+pnpm deps:check
+pnpm --filter @accrawl/web copy:check

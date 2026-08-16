@@ -1,0 +1,13 @@
+# Keep the Cloud Build / docker build context small. Without this file the build
+# context would include node_modules (hundreds of MB), local run artifacts, and git.
+node_modules
+dist
+runs
+logs
+.git
+.gitignore
+.env
+.env.*
+*.log
+*.md
+**/*.test.ts

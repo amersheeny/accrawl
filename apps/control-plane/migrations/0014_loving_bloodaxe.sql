@@ -1,0 +1,2 @@
+DROP INDEX "sessions_active_connection_uq";--> statement-breakpoint
+CREATE UNIQUE INDEX "sessions_active_connection_uq" ON "sessions" USING btree ("connection_id") WHERE status in ('starting','logging_in','navigating','waiting_for_otp','extracting','cancelling');

@@ -1,0 +1,216 @@
+{
+  "formatVersion": 1,
+  "contractId": "td-parity-14",
+  "revision": "2026-08-16.3",
+  "changeRecord": "The supported-currency enum becomes every current ISO-4217 code the runtime knows, read from ICU rather than kept by hand. It previously held 31 codes, described in a comment as one FX provider reference set and justified by a file that does not exist in this repository; there is no FX layer here at all, and storage has always validated only the three-letter shape. Because the model is CONSTRAINED to the enum, the 131 absent codes were not rejected but MISLABELLED: an account denominated in dirhams, riyals, naira, rupees, dong or new Taiwan dollars had to be reported under some other currency, silently, with every derived figure wrong. The list now covers 162 codes and a test fails when the runtime knows one the list does not, so it cannot fall behind again. No other schema field, requirement, description, prompt, identity rule or accumulation rule changes; nothing that validated before is rejected now, because the set only grew. Pins moved: apps/engine/src/ai/schema.ts. Previous revision: 2026-08-16.2.",
+  "baselineRevision": "ee1f6bf05dae9c6deb856cd6703fd00f463338b5",
+  "baselineSourceDigests": {
+    "transactionPrompt": "f3b4a27eb90dfd67b77c651dc81f0d2e56cba223d202bb17b4d67b9f0c969f0c",
+    "transactionSchema": "ac8425da7d1b66a66668f21f0c109e7c680b5d147a886ccc64b76396224e0425",
+    "transactionAccumulator": "cea1d2df73873797f5ab39b2a0dc8ea28ece49cb6467b2e689e7ac6617d59a52",
+    "errorRecoveryAccumulator": "060f1374da4554fa122ca6c5cfdc5e10abb940a63b79e8f136fdf7b8e2afba36",
+    "otpWakeSender": "03ddd702ed37688c71f9042537deb32ef8ada571b1e0c4d00e9e3ab7a96a8129",
+    "nativePushReceiver": "7aa3a3ed28eaae42cb8cee18f77ffa138d3b873071b8ff823f9d359a7aa012f5",
+    "otpServiceLifecycle": "f1d34eefb6758b48aebe656243544b8d7244a69eca0a1a6ce87875349db10bbd",
+    "tunnelServiceLifecycle": "923ecdbf938ea592da4f431c18d898e5357def0e874f088ec438c8e151895ded"
+  },
+  "allowedDivergences": {
+    "transactionHistoryWindow": {
+      "laterCrawlUtcCalendarDays": 7,
+      "comparisonInputUtcCalendarDays": 7,
+      "firstCrawlComparisonInput": "empty"
+    },
+    "syntheticTransactionIdentity": {
+      "additionalAcceptedPrefix": "occurrence:"
+    },
+    "modelContext": {
+      "exactProviderAccountIdContext": true,
+      "accountScopedPositionIdentity": true
+    },
+    "securityAdaptations": {
+      "serverSideRawSmsExtraction": true,
+      "senderActiveSessionAndRequestEpochBinding": true,
+      "ambiguousSmsSessionRefusal": true,
+      "symmetricCrossSourceRawMessageDedupe": true,
+      "genericActiveCountNotificationCopy": true,
+      "permissionSourceRegistrationAfterMidSessionGrant": true,
+      "authoritativeActiveSessionPollingRecovery": true,
+      "deviceApiReauthorizationBeforeServiceStart": true,
+      "urlAndSecretRedactionBeforeTelemetryOrMemory": true,
+      "factOnlyOtpTelemetry": true,
+      "dnsAndMutationNavigationSafety": true,
+      "downloadArtifactCleanup": true
+    },
+    "executionArchitecture": {
+      "fullCrawlWithoutScopeParameter": true,
+      "singleExecutionCancellationAndSessionFencing": true,
+      "transactionHistoryIntegrityTransport": true
+    },
+    "modelControls": {
+      "gemini3Temperature": 0,
+      "optionalPerCrawlThinkingOverride": true
+    },
+    "normalizedAccountExtensions": [
+      "available",
+      "limit",
+      "creditCardLiability",
+      "pensionDetail"
+    ]
+  },
+  "generatedArtifactDigests": {
+    "completeFirstCrawlPrompt": "74b0970dcf805b595841e9f097a4d7b2797b718690d767c25241c6d8021231d9",
+    "completeLaterCrawlPrompt": "f9ec23ba73203cb6d02414ed7b8aa9f2c3680cf53eaef28c1234ac71696955e4",
+    "completeStepFunctionSchema": "11a162b957d4f6184e6503cef58ffe5e057914e5a90524b057d9c602fc6a3d7a",
+    "accumulatorResults": "521c57fb4bdbf7b2391efe8c8524f797790373bbdfd52ac826258c31e829922e",
+    "modelSampling": "f574d004ca46a15812f189a16b4ea9443a91d73a9494062f7e217aee7b977f22",
+    "sharedSemanticResults": "79746dcf7d3ac10316c2f61a99c5abb94f5e95c66cb59361733b4421e2aacda2"
+  },
+  "artifacts": [
+    {
+      "path": "parity/td-parity-14/engine-vectors.json",
+      "sha256": "b33cd227dff47e4a429fc290585fdee9ae4eabd327a234d1caa57bbc5b852f32"
+    },
+    {
+      "path": "companion/android/app/src/test/resources/td-parity-14/companion-lifecycle-vectors.json",
+      "sha256": "660bc75f6d00838bacb33e7fa686cdab146b846d38ff8c266579eb4aac816a8b"
+    }
+  ],
+  "sourcePins": [
+    {
+      "path": "apps/control-plane/src/notifications/companion-wake.ts",
+      "sha256": "0bf06039d24d1ac18cfbf65f6274a909df6cd86e902eb376e6d2e32e3463f397"
+    },
+    {
+      "path": "apps/control-plane/src/notifications/companion-push.ts",
+      "sha256": "dda63215b8b2ca50d76bf98de4ace3c4e4c8688ff56f9c099a4268ee3ea4fde0"
+    },
+    {
+      "path": "apps/control-plane/src/orchestration/run-crawl.ts",
+      "sha256": "399125b21117b1b7fb474fb66c160631f7f1c763efe8aad37b407645cb325a49"
+    },
+    {
+      "path": "apps/control-plane/src/data/plan-crawl-results.ts",
+      "sha256": "a8bd4afe3933c9b4c938c4e465b1d4ea340d62d104cfd8a87086a148ae5658a7"
+    },
+    {
+      "path": "apps/control-plane/src/data/store-crawl.ts",
+      "sha256": "5d824a43fe9b49520f02ce7dbf0d8751d13c764f785702041762d1ed8ec191b7"
+    },
+    {
+      "path": "apps/control-plane/src/data/tx-identity.ts",
+      "sha256": "1954bffc0acbc00e59789961e22aeab99c654900e850fdc2b000a9baff66046d"
+    },
+    {
+      "path": "packages/contracts/src/transaction-history.ts",
+      "sha256": "a2f39e8c993d3efa0bcb88809083330a42cb57edf5f42800ac201b9b2d9b9e46"
+    },
+    {
+      "path": "apps/engine/src/ai/prompts.ts",
+      "sha256": "f51b6d4cf8968773d3d8aad9d458c118203ade5759223b204db626e12b043df7"
+    },
+    {
+      "path": "apps/engine/src/ai/schema.ts",
+      "sha256": "2fdaca7102a7eb40e26137e270a5acea07253c3af555d0ff0803befecf005305"
+    },
+    {
+      "path": "apps/engine/src/agent/agent-loop.ts",
+      "sha256": "7ff3f757089c951e3ecd8f7dfbd21fe577de7554c1b336cf90af41e750517508"
+    },
+    {
+      "path": "apps/engine/src/agent/error-recovery.ts",
+      "sha256": "1d18fa7619f2dd725bfd04b0a10cdca370cd4e71de0f9d35a28633f9a8a053fc"
+    },
+    {
+      "path": "apps/engine/src/crawl-executor.ts",
+      "sha256": "74ff2d7fa1cb540da97c53a085f863ebc0309e56b07ba9a145f3afe45df8876a"
+    },
+    {
+      "path": "apps/engine/src/utils/transaction-window.ts",
+      "sha256": "6bbe06a53784d44b4fe6353fc4983d73bfb787dd6c044a7856614f65331fda3b"
+    },
+    {
+      "path": "apps/engine/src/ai/client.ts",
+      "sha256": "7a140efa02fb9ccde5470a163f854a2bb68e96b3b5c584c4c6e5f75db1fe4613"
+    },
+    {
+      "path": "apps/engine/src/ai/reliability.ts",
+      "sha256": "404499e191060e97823ccf306ef811ca80f04f99f773b68e8d38506598a90e5f"
+    },
+    {
+      "path": "apps/engine/src/ai/providers/gemini.ts",
+      "sha256": "3902f0518966e9ddef7bea4c32abcb9e9ea27a6ebb524cd9fbf79078e5e83ee9"
+    },
+    {
+      "path": "companion/android/app/build.gradle.kts",
+      "sha256": "7976ee26644c643c78e7894a011f4ac3c7d9ef9d531a6a1b5f33d58665700d9f"
+    },
+    {
+      "path": "companion/android/app/src/main/AndroidManifest.xml",
+      "sha256": "375d5855b794efb2174f25e44218e1f05a168ec5893001c7c884f470efe37070"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/CompanionFcmService.kt",
+      "sha256": "6cd002e51ff9a02d20f45a68db9798e7980369267f56c81eb4860290f1d62e44"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/PushRegistration.kt",
+      "sha256": "a58a47af470382c30e8020b9c5ac0795a7b0a10bcf9e03f4caa9fb3869453860"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/CompanionWakeMessage.kt",
+      "sha256": "ba13ec28fd1995518292983d87cde59913b0412ff0be85511d9a741395133045"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/CompanionSessionRecovery.kt",
+      "sha256": "1179eabcc1b2050554510670eb5e1191a2114c2a479e54ea13076756c4ea98e2"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/CompanionNotificationPolicy.kt",
+      "sha256": "4cb83e7ef40c6da45aceac01c094305b82a293b9ed6b635bbf146d3f962a070c"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/CompanionNotifications.kt",
+      "sha256": "5eea8e754107b9478ad73f675eede562fb1d0f5bd9b178b2d8af1cbb316e7b3b"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/NativeRelay.kt",
+      "sha256": "e34956505f901a74ba3f79e3184b6ea02d8864a274a372bd4c66c812383f421d"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/OtpSessionQueue.kt",
+      "sha256": "86873996f847f7a8b1480e4acef72285ec3198cd274614ba47a4d1811b27d693"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/RelayService.kt",
+      "sha256": "d0be5f86908445029d2b11d0267e7916ef66a7829feb8bd96c086ff774cffc7b"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/SmsContentObserver.kt",
+      "sha256": "0bc0cd918d545d9f22260a1df2c440d875b67d7ce929406d61e68b5bcbbc445e"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/SmsDeliveryDeduplicator.kt",
+      "sha256": "a77769474ec458f90566fb3bef25177fef8a063fc7abb24fcc96225572bec0b2"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/SmsReceiver.kt",
+      "sha256": "acb46fb1586aefcec1c64eb0dba54cd098e5f082327f04e1c57bc3c4757b477d"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/SmsSessionEligibility.kt",
+      "sha256": "b9242797164918224d34f1add2388cdde301185a70ff4e600cd22041f647a941"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/TunnelSessionRegistry.kt",
+      "sha256": "0aeb09700456c2e22990459aa469d69f4d425cf717fa01a09828a51c9b8c1030"
+    },
+    {
+      "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/TunnelService.kt",
+      "sha256": "46fd736551d1188ed4e9036c42fb8b103fa16c8efe9a3d0e474d41aac873f256"
+    },
+    {
+      "path": "companion/lib/main.dart",
+      "sha256": "5984dab833500f0e1e31ee735ce16ca6014ce02e3c980834cdcb87d9c2f67755"
+    }
+  ]
+}

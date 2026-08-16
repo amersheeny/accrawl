@@ -1,0 +1,66 @@
+# Build context is the repo root for the monorepo Docker builds; keep it lean + reproducible.
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+.git
+**/.git
+**/*.log
+runs
+**/runs
+**/.env
+**/.env.*
+**/.npmrc
+**/.netrc
+**/.ssh
+**/.aws
+**/.docker/config.json
+**/credentials
+**/secrets
+**/*credentials*.json
+**/*service-account*.json
+**/*service_account*.json
+**/application_default_credentials.json
+**/id_rsa
+**/id_dsa
+**/id_ecdsa
+**/id_ed25519
+**/*.jks
+**/*.keystore
+**/*.pem
+**/*.p12
+**/*.pfx
+**/*.key
+**/.terraform
+**/*.tfplan
+**/*plan*.json
+**/*.tfvars
+!**/*.tfvars.example
+**/*.tfvars.json
+!**/*.tfvars.json.example
+**/*.tfstate
+**/*.tfstate.*
+**/crash.log
+**/crash.*.log
+apps/web/dist
+
+# Mobile (Flutter/Android) build output — NONE of it belongs in a server-image build context. Without
+# this, `companion/build` (the ~3GB APK output left by the companion e2e) is copied into every image
+# build, bloating the context and (on a tight disk) failing the copy with "no space left on device".
+companion/build
+companion/.dart_tool
+companion/**/.gradle
+companion/android/.gradle
+companion/android/app/build
+**/*.apk
+
+# OCR language data downloaded at runtime by the e2e leak scan (never part of an image).
+**/*.traineddata
+
+# Both Dockerfiles COPY . . — and COPY reads the working tree, so a gitignored credential is still in
+# the build context. Matched by SHAPE rather than by vendor filename: the pattern keeps the file out
+# without this repository having to name whose file it is.
+key.properties
+*-services.json
+service-account.json
+*-service-account*.json

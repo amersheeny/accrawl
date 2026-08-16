@@ -1,0 +1,461 @@
+{
+  "formatVersion": 1,
+  "wakeRouting": [
+    {
+      "id": "otp-wake",
+      "payload": {
+        "sessionId": "otp-1",
+        "institutionId": "bank-a",
+        "institutionName": "Bank A",
+        "connectionName": "Current account",
+        "otpSenderPattern": "BANKA",
+        "otpRequestEpoch": "7"
+      },
+      "expected": {
+        "kind": "otp",
+        "sessionId": "otp-1",
+        "institutionId": "bank-a",
+        "institutionName": "Bank A",
+        "connectionName": "Current account",
+        "otpSenderPattern": "BANKA",
+        "otpRequestEpoch": 7
+      }
+    },
+    {
+      "id": "tunnel-wake",
+      "payload": {
+        "type": "tunnel",
+        "sessionId": "tunnel-1",
+        "institutionId": "broker-a",
+        "institutionName": "Broker A"
+      },
+      "expected": {
+        "kind": "tunnel",
+        "sessionId": "tunnel-1",
+        "institutionId": "broker-a",
+        "institutionName": "Broker A",
+        "connectionName": null
+      }
+    },
+    {
+      "id": "missing-session",
+      "payload": {
+        "otpRequestEpoch": "1"
+      },
+      "expected": null
+    },
+    {
+      "id": "negative-epoch",
+      "payload": {
+        "sessionId": "otp-bad",
+        "otpRequestEpoch": "-1"
+      },
+      "expected": null
+    },
+    {
+      "id": "malformed-epoch",
+      "payload": {
+        "sessionId": "otp-bad",
+        "otpRequestEpoch": "not-a-number"
+      },
+      "expected": null
+    },
+    {
+      "id": "unknown-route",
+      "payload": {
+        "type": "unknown",
+        "sessionId": "unknown-1"
+      },
+      "expected": null
+    }
+  ],
+  "otpQueue": {
+    "sessions": {
+      "a1": {
+        "sessionId": "a1",
+        "institutionId": "bank-a",
+        "institutionName": "Bank A",
+        "otpRequestEpoch": 1
+      },
+      "a2": {
+        "sessionId": "a2",
+        "institutionId": "bank-a",
+        "institutionName": "Bank A",
+        "otpRequestEpoch": 2
+      },
+      "b1": {
+        "sessionId": "b1",
+        "institutionId": "bank-b",
+        "institutionName": "Bank B",
+        "otpRequestEpoch": 1
+      },
+      "blank": {
+        "sessionId": " ",
+        "institutionId": "bank-c",
+        "institutionName": "Bank C",
+        "otpRequestEpoch": 1
+      }
+    },
+    "operations": [
+      {
+        "op": "add",
+        "session": "a1",
+        "expectedResult": "START",
+        "expectedActive": ["a1"],
+        "expectedPending": []
+      },
+      {
+        "op": "add",
+        "session": "a2",
+        "expectedResult": "QUEUE",
+        "expectedActive": ["a1"],
+        "expectedPending": ["a2"]
+      },
+      {
+        "op": "add",
+        "session": "b1",
+        "expectedResult": "START",
+        "expectedActive": ["a1", "b1"],
+        "expectedPending": ["a2"]
+      },
+      {
+        "op": "add",
+        "session": "a1",
+        "expectedResult": "DUPLICATE",
+        "expectedActive": ["a1", "b1"],
+        "expectedPending": ["a2"]
+      },
+      {
+        "op": "add",
+        "session": "blank",
+        "expectedResult": "REJECTED",
+        "expectedActive": ["a1", "b1"],
+        "expectedPending": ["a2"]
+      },
+      {
+        "op": "finish",
+        "sessionId": "missing",
+        "expectedFinished": null,
+        "expectedPromoted": null,
+        "expectedActive": ["a1", "b1"],
+        "expectedPending": ["a2"]
+      },
+      {
+        "op": "finish",
+        "sessionId": "a1",
+        "expectedFinished": "a1",
+        "expectedPromoted": "a2",
+        "expectedActive": ["b1", "a2"],
+        "expectedPending": []
+      },
+      {
+        "op": "finish",
+        "sessionId": "a2",
+        "expectedFinished": "a2",
+        "expectedPromoted": null,
+        "expectedActive": ["b1"],
+        "expectedPending": []
+      },
+      {
+        "op": "finish",
+        "sessionId": "b1",
+        "expectedFinished": "b1",
+        "expectedPromoted": null,
+        "expectedActive": [],
+        "expectedPending": []
+      }
+    ]
+  },
+  "tunnelRegistry": [
+    {
+      "op": "add",
+      "sessionId": "tunnel-a",
+      "value": "old",
+      "expected": true,
+      "expectedValues": ["old"]
+    },
+    {
+      "op": "add",
+      "sessionId": "tunnel-a",
+      "value": "duplicate",
+      "expected": false,
+      "expectedValues": ["old"]
+    },
+    {
+      "op": "remove",
+      "sessionId": "tunnel-a",
+      "value": "stale",
+      "expected": null,
+      "expectedValues": ["old"]
+    },
+    {
+      "op": "remove",
+      "sessionId": "tunnel-a",
+      "value": "old",
+      "expected": "old",
+      "expectedValues": []
+    },
+    {
+      "op": "add",
+      "sessionId": "tunnel-a",
+      "value": "new",
+      "expected": true,
+      "expectedValues": ["new"]
+    },
+    {
+      "op": "remove",
+      "sessionId": "tunnel-a",
+      "value": "old",
+      "expected": null,
+      "expectedValues": ["new"]
+    },
+    {
+      "op": "remove",
+      "sessionId": "tunnel-a",
+      "value": "new",
+      "expected": "new",
+      "expectedValues": []
+    },
+    {
+      "op": "add",
+      "sessionId": " ",
+      "value": "malformed",
+      "expected": false,
+      "expectedValues": []
+    }
+  ],
+  "smsEligibility": [
+    {
+      "id": "only-sessions-active-when-the-SMS-arrived-are-eligible",
+      "smsReceivedAtMillis": 2000,
+      "sessions": [
+        { "sessionId": "older", "startedAtMillis": 1000 },
+        { "sessionId": "same-time", "startedAtMillis": 2000 },
+        { "sessionId": "newer", "startedAtMillis": 3000 }
+      ],
+      "expectedSessionIds": ["older", "same-time"]
+    },
+    {
+      "id": "a-session-without-a-recorded-start-is-ineligible",
+      "smsReceivedAtMillis": 2000,
+      "sessions": [
+        { "sessionId": "missing", "startedAtMillis": null }
+      ],
+      "expectedSessionIds": []
+    }
+  ],
+  "smsDeliveryDeduplication": [
+    {
+      "id": "a-failed-first-source-leaves-the-fallback-free-to-succeed",
+      "operations": [
+        {
+          "op": "attempt",
+          "source": "broadcast",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1000,
+          "expected": true
+        },
+        {
+          "op": "attempt",
+          "source": "observer",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1100,
+          "expected": true
+        },
+        {
+          "op": "accept",
+          "source": "observer",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1200
+        },
+        {
+          "op": "attempt",
+          "source": "broadcast",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1300,
+          "expected": false
+        }
+      ]
+    },
+    {
+      "id": "one-accepted-source-suppresses-exactly-one-opposite-source-signal",
+      "operations": [
+        {
+          "op": "attempt",
+          "source": "broadcast",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1000,
+          "expected": true
+        },
+        {
+          "op": "accept",
+          "source": "broadcast",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1100
+        },
+        {
+          "op": "attempt",
+          "source": "observer",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1200,
+          "expected": false
+        },
+        {
+          "op": "attempt",
+          "source": "observer",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1300,
+          "expected": true
+        }
+      ]
+    },
+    {
+      "id": "a-promoted-session-cannot-inherit-the-previous-session-marker",
+      "operations": [
+        {
+          "op": "accept",
+          "source": "broadcast",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1000
+        },
+        {
+          "op": "attempt",
+          "source": "observer",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-2",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1100,
+          "expected": true
+        }
+      ]
+    },
+    {
+      "id": "a-distinct-provider-timestamp-identifies-a-distinct-SMS",
+      "operations": [
+        {
+          "op": "accept",
+          "source": "broadcast",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1000
+        },
+        {
+          "op": "attempt",
+          "source": "observer",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 20000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1100,
+          "expected": true
+        }
+      ]
+    },
+    {
+      "id": "an-opposite-source-signal-outside-the-window-is-new",
+      "operations": [
+        {
+          "op": "accept",
+          "source": "broadcast",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1000
+        },
+        {
+          "op": "attempt",
+          "source": "observer",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 31000,
+          "expected": true
+        }
+      ]
+    },
+    {
+      "id": "terminal-clear-cannot-suppress-a-later-attempt",
+      "operations": [
+        {
+          "op": "accept",
+          "source": "broadcast",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1000
+        },
+        { "op": "clear" },
+        {
+          "op": "attempt",
+          "source": "observer",
+          "sender": "BANK",
+          "body": "Code 123456",
+          "receivedAtMillis": 10000,
+          "sessionId": "session-1",
+          "otpRequestEpoch": 3,
+          "nowMillis": 1100,
+          "expected": true
+        }
+      ]
+    }
+  ],
+  "notificationPolicy": [
+    { "event": "otp", "activeCount": 2, "expected": "otp:2" },
+    { "event": "otp", "activeCount": 0, "expected": "none" },
+    { "event": "tunnel", "activeCount": 3, "expected": "tunnel:3" },
+    { "event": "tunnel", "activeCount": 0, "expected": "none" },
+    { "event": "relay-accepted", "expected": "none" },
+    { "event": "relay-failed", "expected": "none" },
+    { "event": "access-invalid", "expected": "none" },
+    { "event": "otp-waiting", "expected": "none" },
+    { "event": "proxy-unavailable", "expected": "none" }
+  ]
+}

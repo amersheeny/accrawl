@@ -1,0 +1,2 @@
+companion/vendor/** linguist-vendored whitespace=-trailing-space,cr-at-eol
+patches/*.patch whitespace=-space-before-tab

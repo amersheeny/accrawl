@@ -1,0 +1,7 @@
+#!/bin/sh
+# The one gate that runs before anything exists. It reads the index, so it is the last moment a
+# provider name — or a deployment's own identity — can still be kept out of this repository rather
+# than removed from it afterwards.
+set -eu
+
+node scripts/check-staged-provider-neutral.mjs

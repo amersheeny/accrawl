@@ -1,0 +1,658 @@
+{
+  "hosted.crawlRequestBodyMustBeEmpty": {
+    "text": "Request body fields aren’t supported; a crawl or refresh retrieves all financial data supported for the connection.",
+    "sha256": "71d5eadd45f0210df9666467ddf953df886b301000938b89f73eca1eff104cda",
+    "review": {
+      "runId": "019fb3b8-781b-7771-ba81-85776dd9b26a",
+      "transcript": "reviews/content/019fb3b8-781b-7771-ba81-85776dd9b26a.md"
+    }
+  },
+  "cancelling": {
+    "text": "Stopping",
+    "sha256": "a71ee1d4ac5c2b7a820bdc4c3ac45e38885f52b41b4bfd3f5cd1328ce600f940",
+    "review": {
+      "runId": "019f9b81-9116-7e10-8b46-4fb02743f570",
+      "transcript": "reviews/content/019f9b81-9116-7e10-8b46-4fb02743f570.md"
+    }
+  },
+  "hosted.refreshAlreadyRunning": {
+    "text": "A refresh is already running for this connection.",
+    "sha256": "8b226697689377c295428e14da89ffa0e25df8fa4224f1731bab202f266105e0",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.crawlAlreadyRunning": {
+    "text": "A crawl is already running for this connection.",
+    "sha256": "6068bfa89a67a175dbd9b9729bf691250f00077011008af30778013116b45b55",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.apiKeyCannotAccessConnection": {
+    "text": "This API key cannot access this connection.",
+    "sha256": "607eaa930a7b6dddd27fee486534b317d981106808d6edcf90213faed0b4a639",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.connectionNotFound": {
+    "text": "Connection not found.",
+    "sha256": "1d64f52277ec806f4c0293e0fdaf36f4585620ee20ae080dd3f0c319e79f630f",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.refreshSessionEnded": {
+    "text": "This refresh can no longer start because its session has ended.",
+    "sha256": "309d59e3245956bd24b00509f9fb62302f641afa4eb6f9adc9f5f5fa68120565",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.crawlSessionEnded": {
+    "text": "This crawl expired before it could start. Start a new crawl.",
+    "sha256": "182735e383ebeff817268579522dbc841eba6a88cf1b425fd3df37895722d6c2",
+    "review": {
+      "runId": "content-review-20260731-crawl-ui-nouns",
+      "transcript": "reviews/content/content-review-20260731-crawl-ui-nouns.md"
+    }
+  },
+  "hosted.refreshStartFailure": {
+    "text": "We couldn't start this refresh. Try again later.",
+    "sha256": "b085bebad3fb500b9dc4d89516173efe9c3bf916cfe2dc951aa33683ea422b63",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.crawlStartFailure": {
+    "text": "We couldn't start this crawl. Try again later.",
+    "sha256": "191811639bf59e0298f69f16e9902c3ea53acf4182f7b7ed16e32781321c5c5f",
+    "review": {
+      "runId": "CSR-CONTENT-REVIEW-1",
+      "transcript": "reviews/content/CSR-CONTENT-REVIEW-1.md"
+    }
+  },
+  "hosted.refreshUnexpectedFailure": {
+    "text": "We couldn't complete this refresh. Try again later.",
+    "sha256": "f4779d32c9a509293e227f7da0d4e4136d677124814e9fb9060ba4aa99b0abc0",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.crawlUnexpectedFailure": {
+    "text": "We couldn't complete this crawl. Try again later.",
+    "sha256": "9ed3f91305636465625d9135f40935d9d7afd4c42c4a90c4bd81d5c00fa75d64",
+    "review": {
+      "runId": "content-review-20260731-crawl-ui-nouns",
+      "transcript": "reviews/content/content-review-20260731-crawl-ui-nouns.md"
+    }
+  },
+  "hosted.crawlStopped": {
+    "text": "This crawl was stopped.",
+    "sha256": "eb1e82c910805712bb83a9b52be468c69c1faa63e00b82d455fdfe5369854655",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.waitingForCompanion": {
+    "text": "Waiting for Accrawl Companion to connect…",
+    "sha256": "401e10e75c7cded0cd0e843b5633d9af5bc8a7ebfcd4b3520bb1e9434f398ca9",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.enteringOneTimeCode": {
+    "text": "Entering the one-time code…",
+    "sha256": "2e1546bb61adb20f5fd78ecdab11b95b1f51ef3aa6a4e16d961a56e5cf788edb",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.institutionUnavailable": {
+    "text": "This institution is unavailable. Contact support before trying again.",
+    "sha256": "e1e073da3dba106da7c7fc677470c04b01d4675a5d4c474bc4dbd8b22a606301",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.connectionCredentialsUnavailable": {
+    "text": "This connection’s sign-in details are unavailable. Contact support before trying again.",
+    "sha256": "4b7978867414a6e80d2b978e704609f898688c5f445565c6164432370574ad69",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.crawlConnectionNotReady": {
+    "text": "This connection must be enabled and signed in before the crawl can start.",
+    "sha256": "7416e8c348a23c89bfb096e6ed31919c3bb82ffbad6e41aa5d6fb4ac3a1c63da",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.crawlLoginDomainUnverified": {
+    "text": "This institution’s login domain hasn’t been verified, so the crawl can’t start.",
+    "sha256": "3d0848be70070f13bc175212242bb28a2cac544949351f34fb37a34e1473b0f9",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.crawlLoginAddressMismatch": {
+    "text": "The saved login address doesn’t match this institution’s domain.",
+    "sha256": "06c1cdbddcb1f4eb6b5083efe1f58c8f485c66ad84b8ff70fd9da363a979e0e9",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.crawlSafetyCheckBlocked": {
+    "text": "The crawl can’t start until its safety check passes.",
+    "sha256": "b21feaee0717d3abf1d8e45cdfe37e56c52c593181bd271db1b3a7d7e2310e79",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.crawlPhoneRoutingNotConfigured": {
+    "text": "Accrawl isn’t configured to route crawls through a phone’s network.",
+    "sha256": "f419c802dd84459f1908a2bbc42f67e5b7f5e2cf46141ef004eb2ae072dc0ec2",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "hosted.crawlCompletionDeadline": {
+    "text": "The crawl didn’t finish within the allowed time.",
+    "sha256": "8999d21eb41bb1fd8f9f141cac5586e125a896a65c65fd78fbf84afa4ee81036",
+    "review": {
+      "runId": "content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB",
+      "transcript": "reviews/content/content-review-B4214F7D-50EA-455A-910E-F962EFD3EFDB.md"
+    }
+  },
+  "sharing.nav": {
+    "text": "Data access",
+    "sha256": "0ea0a94581f65df69f5a9f36ceb4adc5096b0424637f1c5f67bf3321a44799cd",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.heading": {
+    "text": "Organisations and apps with access",
+    "sha256": "8ccb880ebe1d8473061c4445d859df8096d4a71858f9b7c1b75136083aad70f9",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.intro": {
+    "text": "Review the organisations and apps that currently have access to your Accrawl data. You can revoke access at any time.",
+    "sha256": "397ab176e4c211160ad7ca3b58e8c6d30f20c659b629d2e30c5d3f124c843374",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.activeHeading": {
+    "text": "Active access",
+    "sha256": "8b293c54e418dc894a1e58b5d1a282abe9cc8be618bad0a5cb566975cf08c702",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.noAccessHeading": {
+    "text": "No active access",
+    "sha256": "bc55694a8d88225b7bca85e5cdde031b70d92b2a3b2da0c93f0bc535832487bb",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.noAccessBody": {
+    "text": "No organisations or apps currently have access to your Accrawl data.",
+    "sha256": "6b3953ae9a0fbdf24b3eb9a4133fc27635362d211c12a40c6438e1a8934333d6",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.sharedConnections": {
+    "text": "Connections shared",
+    "sha256": "b05e1eb768b5927b79da5eb934e601443fc395fa60ff1c3864f44178462921a1",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.permissions": {
+    "text": "Permissions",
+    "sha256": "abccc78cc93c07931feccfbd0665c003373b48334fd8d4cf5c6d0c714e68f26e",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.readDataPermission": {
+    "text": "Read your shared accounts, balances, transactions and holdings",
+    "sha256": "9251e0df74d5cd69e26d6dbee057bc79312fd48662672a370ada79a5586a5304",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.balancesPermission": {
+    "text": "Account names and balances",
+    "sha256": "c39e47a06334e85e1e81cf4bd4033ca0660922bd555d291be4b80d53b1df7a18",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.transactionsPermission": {
+    "text": "Transactions",
+    "sha256": "3e5136fd4b11c0dd3c1443977567433fb03e46134450d9a368d80c7ebf207a5f",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.holdingsPermission": {
+    "text": "Investment holdings",
+    "sha256": "e4af0e458ceacd2398b1b807d596d071d959cc88e0f193f9a3f7df27d8a23899",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.accessGranted": {
+    "text": "Access granted",
+    "sha256": "3a6a2dbef5819d65b000095c776bc4c1a52a5e55786b4f9f5d5a9a93eade0bee",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.accessEnds": {
+    "text": "Access ends",
+    "sha256": "5bfa3156924f476c33efa9f205f12f84a6728b1717b96fd33442fc798654d206",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.statusActive": {
+    "text": "Active",
+    "sha256": "92340695899bd2d86223e4a007620e0d6502fc0e08809773634c7e0743764a9c",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.revoke": {
+    "text": "Revoke access",
+    "sha256": "ab292ddb87d6ffacdf9d9de6f78f8e24993a7836f4705d021278af71d27a444a",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.revokeHeading": {
+    "text": "Revoke access for {organisationName}?",
+    "sha256": "7c822c121d37a69df115d669092172cec70c1a60e2e9e657fcac35a780906f5e",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.revokeBody": {
+    "text": "This will stop {organisationName} from accessing data from the connections you shared. You’ll need to approve access again to restore it.",
+    "sha256": "0fa5f5d2fa1a8f661a95b5c3a9a093623fcd147e82ce466483a3f07aa785996f",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.confirmRevoke": {
+    "text": "Revoke access",
+    "sha256": "ab292ddb87d6ffacdf9d9de6f78f8e24993a7836f4705d021278af71d27a444a",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.revokeSuccess": {
+    "text": "{organisationName} no longer has access.",
+    "sha256": "539b3c3c23ad089f1716450c8d59d2edac2352409622cbec006198175ca31ee4",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.loadError": {
+    "text": "We couldn’t load your active access. Try again.",
+    "sha256": "0c2f8a8a63e04a9fc5a279182aebf44f62c89b3f1d9a607499a088793b1be0db",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.revokeError": {
+    "text": "We couldn’t revoke access. Try again.",
+    "sha256": "041a2afb8d2b2c3b1429d9f1c7931045aa5e86df0afe695cf3ae89272e62b60c",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "sharing.unknownOrganisation": {
+    "text": "Unknown organisation",
+    "sha256": "2bdf747c56aef2658536e0fdcfea4cf5425147da625affab57682dee6d986b0a",
+    "review": {
+      "runId": "content-review-20260731-data-access",
+      "transcript": "reviews/content/content-review-20260731-data-access.md"
+    }
+  },
+  "hosted.oauthInvalidRegistration": {
+    "text": "Some registration fields are invalid.",
+    "sha256": "f964fd2119357ab0f08b06ac69bd0f9a23bd365abec84e0d5eccca4be6d44caa",
+    "review": {
+      "runId": "content-review-17F5FD7D-6A72-41C5-BE31-B8DA6E650BBA",
+      "transcript": "reviews/content/content-review-17F5FD7D-6A72-41C5-BE31-B8DA6E650BBA.md"
+    }
+  },
+  "hosted.oauthRequestVerificationFailed": {
+    "text": "We couldn’t verify this request. Reload the page and try again.",
+    "sha256": "15f10d6b6f6da1b74e0fd4630aec76fbb5fd4c1dc80e96080e03163b866fdd65",
+    "review": {
+      "runId": "content-review-17F5FD7D-6A72-41C5-BE31-B8DA6E650BBA",
+      "transcript": "reviews/content/content-review-17F5FD7D-6A72-41C5-BE31-B8DA6E650BBA.md"
+    }
+  },
+  "hosted.oauthRegistrationOutcomeUnknown": {
+    "text": "We couldn’t confirm whether the app was registered. Refresh the page and check the registered apps list before trying again. If a confidential app appears and you did not receive its client secret, delete that app registration and register a replacement.",
+    "sha256": "5c03a0c7f03bfdf0b55f6a3510cd5892ef8b1233641b6fc56c09107009e0ba3b",
+    "review": {
+      "runId": "content-review-17F5FD7D-6A72-41C5-BE31-B8DA6E650BBA",
+      "transcript": "reviews/content/content-review-17F5FD7D-6A72-41C5-BE31-B8DA6E650BBA.md"
+    }
+  },
+  "institution.publishedBadge": {
+    "text": "Published",
+    "sha256": "2ef42ec21d9300dd21ae3c7ca3711806cce3003fa4edafd22ee744fe86599799",
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    }
+  },
+  "institution.privateYoursBadge": {
+    "text": "Private · yours",
+    "sha256": "dffaaf8e3b96a4d2ef1fa4bfb28d8bd9944f05f71eb3aec73db4a2f2590661f2",
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    }
+  },
+  "institution.privateAnotherUsersBadge": {
+    "text": "Private · another user’s",
+    "sha256": "73ab41e46775471fa3583a821bc8e39383e9bcd548088d6458dc812c3ccf53ea",
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    }
+  },
+  "institution.publishAction": {
+    "text": "Publish a copy",
+    "sha256": "3631e16e9d7ec63bdc5906ea9073a0fd5f358a66d0f5a0edb5cc10fc6c957b5f",
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    }
+  },
+  "institution.publishHeading": {
+    "text": "Publish a copy of {institution name}?",
+    "sha256": "e9d7da044629e8761d79cd278f8819937b6ac450412725744eda1234300fc771",
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    }
+  },
+  "institution.publishBody": {
+    "text": "This creates a separate published copy that everyone signed in to this Accrawl workspace can use. The original private institution remains private and unchanged. Other users cannot edit the published copy.",
+    "sha256": "cd1951c4722a6b84a7f33feecd122e53fcbbf1695cc081d9f8aede41269ab041",
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    }
+  },
+  "institution.confirmPublish": {
+    "text": "Publish copy",
+    "sha256": "11db644bafb0d6b46fcd44263c9dc02b6bfd505a3a85ec50dbf920597df9a348",
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    }
+  },
+  "institution.publishSuccess": {
+    "text": "A copy of {institution name} is now published for everyone in this Accrawl workspace.",
+    "sha256": "6baeb1bcac6423471afad226422d0fa39409041f66253cfbbdb25b3563c058d6",
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    }
+  },
+  "institution.publishFailure": {
+    "text": "Couldn’t publish a copy of {institution name}.",
+    "sha256": "6fc2059bc2cc3c8cdedbf12c89e3caf7597e2fc25e9a0c0853b4e7d51dbe4203",
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    }
+  },
+  "institution.alreadyPublished": {
+    "text": "This institution is already published.",
+    "sha256": "ee92c2ae57886e6fe65ec363c6015d400c336ab306e6e54d9a54dfdd706bb20d",
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    }
+  },
+  "institution.duplicatePublishedCopy": {
+    "text": "A published copy of {institution name} already exists in this Accrawl workspace.",
+    "sha256": "e654f84df66d6d3fccc37242125932e2fe41fe5408c7eb5d6fb16e7c27b66b8b",
+    "review": {
+      "runId": "019fb192-cfef-7562-903e-410b3bffd4e3",
+      "transcript": "reviews/content/019fb192-cfef-7562-903e-410b3bffd4e3.md"
+    }
+  },
+  "controlPlaneInstitution.safetyCheckStale": {
+    "text": "The institution changed while the Safety check was running. Run the Safety check again.",
+    "sha256": "1973dd01416737cac7494afe410ccda733706aca2e230ef35a44f64b7ac641c0",
+    "review": {
+      "runId": "019fb1fc-e8a3-7d41-8d65-381afd806e4a",
+      "transcript": "reviews/content/019fb1fc-e8a3-7d41-8d65-381afd806e4a.md"
+    }
+  },
+  "controlPlaneInstitution.notFound": {
+    "text": "institution not found",
+    "sha256": "0a735256a69802bc8eb808a2745a6e667bfb2c960192657442985725163d5ddc",
+    "review": {
+      "runId": "019fb202-d4e5-7a13-8720-147da78d89b8",
+      "transcript": "reviews/content/019fb202-d4e5-7a13-8720-147da78d89b8.md"
+    }
+  },
+  "hosted.scheduleInvalid": {
+    "text": "Choose a valid frequency, time, and time zone.",
+    "sha256": "2068d3ee0a1da620e2ae20ab879211715a715c349ad7f665fb3926ce72ad8ad7",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.automaticCrawls": {
+    "text": "Automatic crawls",
+    "sha256": "9f09487b6967f778f652705d119ab7201ccddf241373542be079c05bc0560c1b",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.manualOnly": {
+    "text": "Manual only",
+    "sha256": "be1016ce6ded1a1d0c3ef50b965cc567e44aac82cba0d31a58df0a9175a7163e",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.daily": {
+    "text": "Daily",
+    "sha256": "b36c2611dcdfa190ede846948d9aba8f39581de0177cbd98586506019f979b75",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.weekly": {
+    "text": "Weekly",
+    "sha256": "2975132481a7a6957cfa95055d04e706f21f1a613f448d0a17463f2eacca4636",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.monthly": {
+    "text": "Monthly",
+    "sha256": "9b11f6b707d2a03e0265465f32520bc1bc213de121de958539662d0ec1453fcb",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.localTime": {
+    "text": "Local time",
+    "sha256": "2397ec601845e36c4239b6055dcd47c8efd19ff2c6d7bbdd6bc4036e80ff0d3b",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.dayOfWeek": {
+    "text": "Day of week",
+    "sha256": "a757b228061803e1c62536570d874c84fa0b17a0a4c1c0b1afb2350937bb637a",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.dayOfMonth": {
+    "text": "Day of month",
+    "sha256": "d15f47202352035b71e1bd723ccfafa012b7b3c86573f54468e0f63849739915",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.lastDay": {
+    "text": "Last day",
+    "sha256": "a4e24bc476c8577306d696c7a5d5f34e09e4411d53d712611bcec5663388d62d",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.timezone": {
+    "text": "Time zone",
+    "sha256": "b9fe1464783e1c0d3a12dbde2686e883482a4fa03f33351af3e576d7a9d32fe0",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.editSchedule": {
+    "text": "Edit schedule",
+    "sha256": "559b3708d9b1b2a017b9e0b3e52b7e4125ade8c12084b6d7fbd64ef61b81a46a",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.editScheduleTitle": {
+    "text": "Edit automatic crawl schedule",
+    "sha256": "11979f84f27f1746493f4354473b6b511fd2b46f2097c7057976cf2559d93f9b",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.saveSchedule": {
+    "text": "Save schedule",
+    "sha256": "387f355f83e2679c18a587ad4a913919e525160286023f5b0f05c6ef3840d807",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.scheduleUpdated": {
+    "text": "Schedule updated.",
+    "sha256": "cd256adec4e1509c6aaf3092363f681f8d542bc7c2f438a5d83d3d093bd3fb4a",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.noAutomaticCrawls": {
+    "text": "No automatic crawls",
+    "sha256": "bcdd33f7ea8062c8dae894928901a024daf359a367abf0620bfaf03c416a9ab9",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.manualOnlyHint": {
+    "text": "Run crawls manually with Crawl now.",
+    "sha256": "9a301ca47f0cf058f5b71686a32b1b01d524a084309613f7c3b989e01e812214",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.unverifiedHint": {
+    "text": "Automatic crawls start after you confirm the sign-in domain.",
+    "sha256": "1b12cecd72721067da3140c5ecc86e717efa37b4a6a89d03f66acce443c7b6d9",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.nextAttempt": {
+    "text": "Next crawl attempt:",
+    "sha256": "282dc67a4925fe010281e64f90d92819b567d31df4f51d42d3cae60b1b254707",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  },
+  "schedule.invalid": {
+    "text": "Choose a valid frequency, time, and time zone.",
+    "sha256": "2068d3ee0a1da620e2ae20ab879211715a715c349ad7f665fb3926ce72ad8ad7",
+    "review": {
+      "runId": "content-review-20260801-crawl-schedule-v2",
+      "transcript": "reviews/content/content-review-20260801-crawl-schedule.md"
+    }
+  }
+}

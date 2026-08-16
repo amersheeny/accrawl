@@ -1,0 +1,29 @@
+{
+  "name": "@accrawl/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Official TypeScript client for the Accrawl Provider API — trigger crawls, poll sessions, submit OTPs, read accounts/transactions/positions, and verify webhooks. Zero runtime dependencies.",
+  "license": "AGPL-3.0-only",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

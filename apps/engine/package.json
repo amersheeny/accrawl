@@ -1,0 +1,54 @@
+{
+  "name": "@accrawl/engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Accrawl crawl engine \u2014 logs into a financial institution via Playwright + a Gemini agent and returns normalized accounts, positions, and transactions.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=26.7.0"
+  },
+  "dependencies": {
+    "@accrawl/contracts": "workspace:*",
+    "@google/genai": "^2.17.1",
+    "express": "^5.2.1",
+    "jose": "^6.2.9",
+    "playwright": "^1.62.1",
+    "sharp": "^0.35.3",
+    "tldts": "^7.4.10",
+    "ws": "^8.21.3",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "zod": "^4.4.3"
+  },
+  "optionalDependencies": {
+    "postgres": "^3.4.9"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.117.1",
+    "@electric-sql/pglite": "^0.5.5",
+    "@electric-sql/pglite-socket": "^0.2.8",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.2.0",
+    "@types/ws": "^8.18.1",
+    "jsdom": "^30.0.1",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

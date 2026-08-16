@@ -1,0 +1,38 @@
+# Accrawl — domain/TLS overlay. Layer it on top of docker-compose.yml to serve a public domain with
+# automatic HTTPS instead of plain HTTP on :8088:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d --build
+#
+# You normally never type that — `./accrawl` and `setup.sh` add `-f docker-compose.tls.yml` automatically
+# whenever ACCRAWL_DOMAIN is set in .env. This overlay:
+#   • switches Caddy from the plain :8088 host mapping to 80 + 443 (Caddy's ACME needs both reachable);
+#   • points the Caddy site at ${ACCRAWL_DOMAIN} so it obtains + serves a real certificate (HTTP-01 /
+#     TLS-ALPN), redirecting HTTP→HTTPS;
+#   • persists issued certificates + the ACME account in a named volume so they survive restarts (avoids
+#     re-issuing on every recreate and hitting Let's Encrypt rate limits).
+#
+# Requirements for live issuance: ACCRAWL_DOMAIN's DNS A/AAAA record must point at THIS host, and ports 80
+# and 443 must be reachable from the internet.
+name: accrawl
+
+services:
+  caddy:
+    # `!override` REPLACES the base ports list (compose otherwise CONCATENATES ports across files, which
+    # would leave the plain :8088 host mapping published alongside 80/443). This drops :8088 entirely.
+    ports: !override
+      - "80:80"
+      - "443:443"
+    environment:
+      # Serve this exact hostname → Caddy automatic HTTPS on 80/443. `:?` fails loudly (rather than serving
+      # an empty/plain site) if the overlay is ever used without ACCRAWL_DOMAIN set.
+      ACCRAWL_SITE_ADDRESS: ${ACCRAWL_DOMAIN:?set ACCRAWL_DOMAIN in .env to use domain/TLS mode}
+      # Optional ACME account-email directive, derived by the launcher from ACCRAWL_TLS_EMAIL (empty = no
+      # account email; certs still issue, just no expiry-notice emails).
+      ACCRAWL_ACME_GLOBAL: ${ACCRAWL_ACME_GLOBAL:-}
+    volumes:
+      - caddy_data:/data      # issued certificates + ACME account key — MUST persist across restarts
+      - caddy_config:/config  # Caddy's autosaved JSON config
+
+volumes:
+  caddy_data:
+  caddy_config:

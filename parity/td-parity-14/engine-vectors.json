@@ -1,0 +1,349 @@
+{
+  "formatVersion": 1,
+  "fixedClock": "2026-08-03T12:00:00.000Z",
+  "expectedWindows": {
+    "firstCrawlCutoff": "2026-05-05",
+    "laterCrawlCutoff": "2026-07-27"
+  },
+  "sharedSemanticVectors": {
+    "receivedHistoryOrder": [
+      "source-third",
+      "source-first",
+      "source-second"
+    ],
+    "positionBalanceReconciliation": {
+      "account": {
+        "providerAccountId": "portfolio-a",
+        "name": "Study Fund",
+        "description": "",
+        "currency": "EUR",
+        "type": "study_fund",
+        "balance": 100
+      },
+      "historyLikeValues": [100, 95, 90],
+      "signedHoldingValues": [60, 40, -30],
+      "signedHoldingBalance": 70,
+      "expectedSignal": "RECONCILIATION_CHECK"
+    },
+    "tickerInferenceDescription": "The security's real MARKET TICKER as it trades on its exchange — e.g. AAPL, GOOG, PLTR, SPY. This is the public exchange symbol, NOT the provider's internal security number. The ticker is usually visible in the holding row, often embedded in the name (e.g. \"AAPLE COM(AAPL)\" → AAPL, \"QUALCOMM(QCOM)\" → QCOM, \"PYPL US\" → PYPL, \"GOOG US\" → GOOG); use that. If the row shows only a company name for a well-known listed security, use that company's known exchange ticker. Leave this field empty ONLY when the security genuinely has no public market ticker (e.g. a locally-listed mutual or tracking fund identified solely by name or an internal provider number).",
+    "positionValueDescription": {
+      "pinned": "Current market value of THIS single holding only, in its native currency (approximately quantity × current unit price), read from this row's own value cell. NEVER the account or portfolio total — if several rows would share one identical value, you are copying the wrong cell. Not a per-unit price, not profit/loss.",
+      "allowedTransformations": []
+    },
+    "recoveryAccumulation": {
+      "allowedTransformations": [],
+      "initial": {
+        "providerAccountId": "account-a",
+        "providerTransactionId": "REF-RECOVERY",
+        "bookingDate": "2026-07-29",
+        "amount": -10,
+        "currency": "GBP",
+        "description": "Initial row",
+        "isPending": false
+      },
+      "retry": {
+        "providerAccountId": "account-a",
+        "providerTransactionId": "REF-RECOVERY",
+        "bookingDate": "2026-07-30",
+        "amount": -25,
+        "currency": "GBP",
+        "description": "Recovery row",
+        "isPending": false
+      },
+      "expected": {
+        "resultType": "continue",
+        "stored": [
+          {
+            "account": "account-a",
+            "id": "NONE",
+            "date": "2026-07-29",
+            "amount": -10,
+            "existingCanonicalId": null,
+            "count": null
+          },
+          {
+            "account": "account-a",
+            "id": "NONE",
+            "date": "2026-07-30",
+            "amount": -25,
+            "existingCanonicalId": null,
+            "count": null
+          }
+        ],
+        "demotedIdentityKeys": [],
+        "signals": []
+      }
+    },
+    "defaultThinking": {
+      "interactionsGemini2": "low",
+      "interactionsGemini3": "medium",
+      "generateContentGemini2Budget": 5000,
+      "generateContentGemini3Level": "MEDIUM"
+    }
+  },
+  "accumulatorScenarios": [
+    {
+      "id": "largest-explicit-count-survives-a-stutter",
+      "steps": [
+        [
+          {
+            "providerAccountId": "account-a",
+            "providerTransactionId": "NONE",
+            "bookingDate": "2026-07-30",
+            "amount": -12.5,
+            "currency": "GBP",
+            "description": "Coffee shop",
+            "isPending": false,
+            "count": 2
+          },
+          {
+            "providerAccountId": "account-a",
+            "providerTransactionId": "NONE",
+            "bookingDate": "2026-07-30",
+            "amount": -12.5,
+            "currency": "GBP",
+            "description": "Coffee shop",
+            "isPending": false,
+            "count": 3
+          }
+        ]
+      ],
+      "expected": {
+        "stored": [
+          {
+            "account": "account-a",
+            "id": "NONE",
+            "date": "2026-07-30",
+            "amount": -12.5,
+            "existingCanonicalId": null,
+            "count": 3
+          }
+        ],
+        "expandedCount": 3,
+        "expandedRowsWithoutCount": 3,
+        "signals": ["stutter"]
+      }
+    },
+    {
+      "id": "a-full-page-reread-does-not-sum-counts",
+      "steps": [
+        [
+          {
+            "providerAccountId": "account-a",
+            "providerTransactionId": "NONE",
+            "bookingDate": "2026-07-30",
+            "amount": -12.5,
+            "currency": "GBP",
+            "description": "Coffee shop",
+            "isPending": false,
+            "count": 2
+          }
+        ],
+        [
+          {
+            "providerAccountId": "account-a",
+            "providerTransactionId": "NONE",
+            "bookingDate": "2026-07-30",
+            "amount": -12.5,
+            "currency": "GBP",
+            "description": "Coffee shop",
+            "isPending": false,
+            "count": 2
+          }
+        ]
+      ],
+      "expected": {
+        "stored": [
+          {
+            "account": "account-a",
+            "id": "NONE",
+            "date": "2026-07-30",
+            "amount": -12.5,
+            "existingCanonicalId": null,
+            "count": 2
+          }
+        ],
+        "expandedCount": 2,
+        "expandedRowsWithoutCount": 2,
+        "signals": []
+      }
+    },
+    {
+      "id": "bank-identifiers-remain-account-scoped",
+      "steps": [
+        [
+          {
+            "providerAccountId": "account-a",
+            "providerTransactionId": "REF-7",
+            "bookingDate": "2026-07-31",
+            "amount": -20,
+            "currency": "GBP",
+            "description": "Grocer",
+            "isPending": false
+          },
+          {
+            "providerAccountId": "account-b",
+            "providerTransactionId": "REF-7",
+            "bookingDate": "2026-07-31",
+            "amount": -20,
+            "currency": "GBP",
+            "description": "Grocer",
+            "isPending": false
+          }
+        ]
+      ],
+      "expected": {
+        "stored": [
+          {
+            "account": "account-a",
+            "id": "REF-7",
+            "date": "2026-07-31",
+            "amount": -20,
+            "existingCanonicalId": null,
+            "count": null
+          },
+          {
+            "account": "account-b",
+            "id": "REF-7",
+            "date": "2026-07-31",
+            "amount": -20,
+            "existingCanonicalId": null,
+            "count": null
+          }
+        ],
+        "expandedCount": 2,
+        "expandedRowsWithoutCount": 2,
+        "signals": []
+      }
+    },
+    {
+      "id": "a-recycled-bank-reference-demotes-to-content-identity",
+      "steps": [
+        [
+          {
+            "providerAccountId": "account-a",
+            "providerTransactionId": "REF-RECYCLED",
+            "bookingDate": "2026-07-29",
+            "amount": -10,
+            "currency": "GBP",
+            "description": "First row",
+            "isPending": false
+          },
+          {
+            "providerAccountId": "account-a",
+            "providerTransactionId": "REF-RECYCLED",
+            "bookingDate": "2026-07-30",
+            "amount": -25,
+            "currency": "GBP",
+            "description": "Second row",
+            "isPending": false
+          }
+        ]
+      ],
+      "expected": {
+        "stored": [
+          {
+            "account": "account-a",
+            "id": "NONE",
+            "date": "2026-07-29",
+            "amount": -10,
+            "existingCanonicalId": null,
+            "count": null
+          },
+          {
+            "account": "account-a",
+            "id": "NONE",
+            "date": "2026-07-30",
+            "amount": -25,
+            "existingCanonicalId": null,
+            "count": null
+          }
+        ],
+        "expandedCount": 2,
+        "expandedRowsWithoutCount": 2,
+        "signals": ["recycled-bank-id"]
+      }
+    },
+    {
+      "id": "an-update-and-a-new-row-with-equal-content-stay-distinct",
+      "steps": [
+        [
+          {
+            "providerAccountId": "account-a",
+            "providerTransactionId": "NONE",
+            "bookingDate": "2026-08-01",
+            "amount": -8,
+            "currency": "GBP",
+            "description": "Transit",
+            "isPending": false,
+            "existingCanonicalId": "occurrence:scope:old-row"
+          },
+          {
+            "providerAccountId": "account-a",
+            "providerTransactionId": "NONE",
+            "bookingDate": "2026-08-01",
+            "amount": -8,
+            "currency": "GBP",
+            "description": "Transit",
+            "isPending": false
+          }
+        ]
+      ],
+      "expected": {
+        "stored": [
+          {
+            "account": "account-a",
+            "id": "NONE",
+            "date": "2026-08-01",
+            "amount": -8,
+            "existingCanonicalId": null,
+            "count": null
+          },
+          {
+            "account": "account-a",
+            "id": "NONE",
+            "date": "2026-08-01",
+            "amount": -8,
+            "existingCanonicalId": "occurrence:scope:old-row",
+            "count": null
+          }
+        ],
+        "expandedCount": 2,
+        "expandedRowsWithoutCount": 2,
+        "signals": []
+      }
+    },
+    {
+      "id": "pathological-multiplicity-is-capped-loudly",
+      "steps": [
+        [
+          {
+            "providerAccountId": "account-a",
+            "providerTransactionId": "NONE",
+            "bookingDate": "2026-08-02",
+            "amount": -1,
+            "currency": "GBP",
+            "description": "Repeated row",
+            "isPending": false,
+            "count": 999
+          }
+        ]
+      ],
+      "expected": {
+        "stored": [
+          {
+            "account": "account-a",
+            "id": "NONE",
+            "date": "2026-08-02",
+            "amount": -1,
+            "existingCanonicalId": null,
+            "count": 999
+          }
+        ],
+        "expandedCount": 10,
+        "expandedRowsWithoutCount": 10,
+        "signals": ["multiplicity-cap"]
+      }
+    }
+  ]
+}

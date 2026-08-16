@@ -1,0 +1,1270 @@
+{
+  "web.title": {
+    "text": "Companion",
+    "sha256": "1dadb3284b8b358259ac6c0d3fb12e6884aa8d566282a1277d2a06a026d12c4f",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.subtitle": {
+    "text": "View accounts, balances, and transactions on Android, relay bank SMS codes, and route selected crawls through the phone’s network.",
+    "sha256": "8710069af0ba4b52b731aba6d84e5f3363c02fa188831862e10333195871846e",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.installHeading": {
+    "text": "Install Accrawl Companion",
+    "sha256": "c3ecddf23272027de9c03d6067f1e733942e7b7798d545066ac6392f849b4bfc",
+    "review": {
+      "runId": "content-review-20260731-companion-download-final",
+      "transcript": "reviews/content/content-review-20260731-companion-download.md"
+    }
+  },
+  "web.installDescription": {
+    "text": "The Accrawl Companion installs on Android. Download the APK on your Android phone, then open the downloaded file to install it. Android may ask you to allow installs from this source.",
+    "sha256": "4997886edbbb7836d6531acb0e0a54e367acb7557c3f27d02f8e815f124d9125",
+    "review": {
+      "runId": "content-review-20260731-companion-download-final",
+      "transcript": "reviews/content/content-review-20260731-companion-download.md"
+    }
+  },
+  "web.downloadForAndroid": {
+    "text": "Download for Android",
+    "sha256": "08f13c0eaa454ceb978d4b220709b900507e41ece55ff38a2f265df9b77514c5",
+    "review": {
+      "runId": "content-review-20260731-companion-download-final",
+      "transcript": "reviews/content/content-review-20260731-companion-download.md"
+    }
+  },
+  "web.downloadQrHelper": {
+    "text": "Not on your Android phone? Scan this code with your phone to open the same download.",
+    "sha256": "11c336b53e048661d2eb0707262d8832435ef5b436e9c067cf409a76f3910138",
+    "review": {
+      "runId": "content-review-20260731-companion-download-final",
+      "transcript": "reviews/content/content-review-20260731-companion-download.md"
+    }
+  },
+  "web.downloadQrAlt": {
+    "text": "QR code linking to the official Accrawl Companion APK download",
+    "sha256": "71c0a8478841f549fc24ed88fb91749de9cf862c15c425dc6d04b6ad38f10e88",
+    "review": {
+      "runId": "content-review-20260731-companion-download-final",
+      "transcript": "reviews/content/content-review-20260731-companion-download.md"
+    }
+  },
+  "web.howPairingWorks": {
+    "text": "How pairing works",
+    "sha256": "d246579362a067bfd141daa29ad508fb808b71edd68d344c240286a05140e535",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.install": {
+    "text": "Open Accrawl Companion on the Android phone you want to pair.",
+    "sha256": "05d26b7853d3493217354ab7eefce9c3596b7f076d4373e85290f7ae46ea5dd3",
+    "review": {
+      "runId": "content-review-20260731-companion-download-final",
+      "transcript": "reviews/content/content-review-20260731-companion-download.md"
+    }
+  },
+  "web.selectConnections": {
+    "text": "Choose the exact connections this phone may access. For those connections only, the phone can access financial data, relay bank SMS codes, and optionally route crawls through its network.",
+    "sha256": "fcf427d88c7ccbc186f4ac0828aeb093b6d1bd4e7d98473a45670a816082b2aa",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.createRequest": {
+    "text": "Create a five-minute pairing request. Scan its QR code or enter its details on the phone, then compare the separate six-digit code before approving the phone here.",
+    "sha256": "7d798c1310f31c6e36a1e79b70441885dae5adfb2a98ce9c0c514175e6bfbc18",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.deviceName": {
+    "text": "Phone name",
+    "sha256": "5fa5ab986813d3094f3749f1796552c9c83862f329066793de13056dd518c20a",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.deviceNamePlaceholder": {
+    "text": "For example, Pixel 8",
+    "sha256": "aa830b0224b28b755afe67c38953d927ee0534d456defea64c90dfd7a49e53bf",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.connections": {
+    "text": "Connections",
+    "sha256": "dc273117482b4429ada500ecd2e0c75532454194892cb901ca64cc7df369fdf6",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.noConnections": {
+    "text": "Add a connection before pairing a phone.",
+    "sha256": "20a535a28c6daf3c8e2a52625c4e0a75bf64554de4e72c2aae59acc17e6c5f95",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.selectAtLeastOne": {
+    "text": "Select at least one connection for this phone.",
+    "sha256": "e8af6a9b0455b70747465749b79d860aa328ecd58321ea148ee98127db5dba13",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.createPairingRequest": {
+    "text": "Create pairing request",
+    "sha256": "de360d0be5c48eedb3b7c428898b68a56a763090d211b69cfe73e393c59c6f45",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.pairingRequest": {
+    "text": "Pairing request",
+    "sha256": "8f84c013b599c2f4bde86b471328d3f4c568b4800ccdee07dc1094c9104b4416",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.qrExplanation": {
+    "text": "In Accrawl Companion, scan this QR code. It contains only this console’s address and the short-lived pairing code.",
+    "sha256": "73bf3a6548e2f89563262dfeb98ae91b6e5cf0a349cd7ee54f8b54a6315e7d2d",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.manualAddress": {
+    "text": "Console address",
+    "sha256": "5cbe8e164f16bf313356f275da39d0f4da831dfa5e2fe185e4f84f5605066b81",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.manualCode": {
+    "text": "Pairing code",
+    "sha256": "1c5ea2f7ed52a91c82993d40cf16581ac6ccff5283e1840cad1a1857311d1121",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.waitingForPhone": {
+    "text": "Waiting for this pairing request to be opened on the phone…",
+    "sha256": "ade6916b3038d9a5b9882bbab7e7fd91a994a9cf11319881250e74107e1e6694",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.compareCode": {
+    "text": "Compare this code with the code shown on the phone. Approve only if every digit matches.",
+    "sha256": "29d3f64ff24e7008f40d0caf37e0edff994f4b160e85a1820eeaeaba4e80e2aa",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.approvePhone": {
+    "text": "Approve phone",
+    "sha256": "397b18a36f4d0d91589b11d0b264f6b85eb0f3a854283a47fbc041deaab126ca",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.cancelPairing": {
+    "text": "Cancel pairing",
+    "sha256": "b0fcb1c2269d39b157f4338a43ea4ef8f31bc3404faeaf540e989287b21bf0dc",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.pairingApproved": {
+    "text": "Approved. Keep Accrawl Companion open while it finishes pairing.",
+    "sha256": "33b02c5797de9153ae90a19995f67024509df74b34f393865232eb46d566f029",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.pairingExpired": {
+    "text": "This pairing request expired. Create a new request.",
+    "sha256": "8ca8dee555b665038acba230103ee44fcc72eb47f44b6951a1043e71b8671f66",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.pairingUsed": {
+    "text": "Pairing complete.",
+    "sha256": "6692c1ededf436c5d324579929e5fca5568e0493de1cbd7ee27dd29fe55d95fe",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.pairingCancelled": {
+    "text": "This pairing request was cancelled.",
+    "sha256": "aadbcf1b8703bc4373203774450c49def8a530f3f77f9a1c65fc42ae6ca61ed2",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.createAnotherRequest": {
+    "text": "Create another pairing request",
+    "sha256": "26648c01ce552f979a475d1c409ccb604bc941a9b579d5ef6059479a0ef30ed7",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.pairedPhones": {
+    "text": "Paired phones",
+    "sha256": "969733dbc303e4c25f842b13d934f4e2fd424bd2e09d976a48b14f98d04288ad",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.device": {
+    "text": "Phone",
+    "sha256": "63dceb8800b2dd4af9567a1f54f03b7c3dbdc27fac4799091ebfcc4928899ee5",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.access": {
+    "text": "Access",
+    "sha256": "ec5ba0abb717da87aab2655bd4b4a40f93f2a591a0ade63611c42925c49c17e9",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.status": {
+    "text": "Status",
+    "sha256": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.lastSeen": {
+    "text": "Last seen",
+    "sha256": "21fd79c7de52e1cf63f8cf11f8a0eac6965506e09ba6e406e1f6bf40a3b5ed52",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.never": {
+    "text": "Never",
+    "sha256": "6300ef800bb884295b0b4b35682b75cecd7cc550d202db56d04a0643b8fb873f",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.noDevices": {
+    "text": "No phones paired",
+    "sha256": "17e9387f38e71e05f86c4d49da4588f512f0ab89761dee686551d8394efe53a4",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.noDevicesHelp": {
+    "text": "Pair a phone to view financial data and relay bank SMS codes for selected connections, and optionally route crawls for those connections through the phone’s network.",
+    "sha256": "d073c4d7a6f57beca7cb5cdb302a5c335927cc0d0336e9509448deba5879372e",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.revokeAction": {
+    "text": "Revoke",
+    "sha256": "87e6d00bbf53ec5ae251de23ace84d5cf01c69deae04cfff08a5fe353a9853bb",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.revokeDeviceTemplate": {
+    "text": "Revoke {name}?",
+    "sha256": "ac32fedf0c9842972f734ba05f7ea4edd6627d33c60e7fb1db673f2ba54b7848",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.revokeConsequence": {
+    "text": "Revoking immediately ends this phone’s financial access, SMS relay, and device-proxy access for the selected connections. Any crawl using its network route will stop. This does not affect separate sharing with recipient organisations or erase financial data they have already copied.",
+    "sha256": "e1e40fd48d5e6223cca6335b5e6e2a4afed199f46f04e37e597f2382a593cede",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.revokePhone": {
+    "text": "Revoke phone",
+    "sha256": "7571baea57e1a024df53ed31ed5cc485d8b06c67d8b01621f94abf4af2690d92",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.selectedConnectionSingular": {
+    "text": "1 connection",
+    "sha256": "b4f39dd8729bfe68580614f1e826495ac7db075f3715d895b17dacd914ffdff8",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.selectedConnectionPluralTemplate": {
+    "text": "{count} connections",
+    "sha256": "2b8420c780e6569465aa182f7222e823638ad8616bf2209da973e78a17e4416c",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.expiresInTemplate": {
+    "text": "Expires in {duration}",
+    "sha256": "f353f9a73569b49dad435640c69205c48a8cd89b53d957c61d3ce36fd1ddf533",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.pairedAtTemplate": {
+    "text": "Paired {when}",
+    "sha256": "ca07bdd64e9c48311a88e044625ba807ec26179eee03592eedc69ea6c38743ec",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "web.lastSeenAtTemplate": {
+    "text": "{relative} ({absolute})",
+    "sha256": "e9fcbaf4937387179d99aaa814a2a5425b853a70bca4ce63bbe821342bf81f0c",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.appName": {
+    "text": "Accrawl Companion",
+    "sha256": "cdf9f498ee6c6d7b3a5fd708ba763816fa36c6b7b2d4ce3f23ef20bc6900b86d",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.pairPhone": {
+    "text": "Pair this phone",
+    "sha256": "8f85ec9dced65a7cd15d6b409e26e896e270dc4cccf73b19e982dbbfdb59ba37",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.pairingExplanation": {
+    "text": "Scan the pairing QR code in your Accrawl console, or enter the console address and pairing code by hand. Check that the address is your own console before continuing. Pairing gives this phone access only to connections you select in the console. For those connections, it can access financial data, relay bank SMS codes, and optionally route crawls through its network.",
+    "sha256": "789a68e28cf5e41d417d8b7a28c30d4df7a271a99bf9a60f655582519c7907a4",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.scanPairingQr": {
+    "text": "Scan pairing QR code",
+    "sha256": "f43066a86f4440ddc292163441b5d1ffd5b188a53726307fec2d1e87640709cc",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.enterByHand": {
+    "text": "Or enter the details by hand",
+    "sha256": "cdf9e8c3ee8395df9b3b85c229ca4a57693d55752e972b1543320d1b818dfe4c",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.consoleAddress": {
+    "text": "Console address (starts with https://)",
+    "sha256": "61d08bf20a16126d2ae621d51c132d07a911eb884fac2af55f23f0f97e7213d0",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.pairingCode": {
+    "text": "Pairing code (starts with acpair_)",
+    "sha256": "adb46455473f6553b09f5f63719749716cec1f171a117df34523a3435d350417",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.continueAction": {
+    "text": "Continue",
+    "sha256": "31fbef162594de01bab0cd525c51f74de7bcb15063029fa1a54b2cf5944c80d8",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.confirmVerification": {
+    "text": "Compare this verification code with the code shown in the Accrawl console. Approve this phone there only if every digit matches.",
+    "sha256": "e1e1f7cb8f49daf72fbd48620795c68a92ac5a76e6baa6c370002070ad8fbb8f",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.waitingForApproval": {
+    "text": "Waiting for approval in the Accrawl console. Approve this phone only if every digit matches.",
+    "sha256": "71075ceaaa24831d50be0e69ceb0784fd5abd9372454e084efb9327cd7d21f23",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.cancelPairing": {
+    "text": "Cancel pairing",
+    "sha256": "b0fcb1c2269d39b157f4338a43ea4ef8f31bc3404faeaf540e989287b21bf0dc",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.pairingExpired": {
+    "text": "That pairing request expired. Create a new one in the Accrawl console.",
+    "sha256": "62bb830a7334d9c9a275ec2fd60c72cbfd7ecdab2a99ce79984b3c912f4c7f8d",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.pairingUsed": {
+    "text": "That pairing request has already been used. Create a new one in the Accrawl console.",
+    "sha256": "4a413cecc6a5682477b97b99ba48d00576d2c27024ffc6e67177abbbd3b17512",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.unexpectedConsole": {
+    "text": "That address didn't respond like an Accrawl console. Check the address and try again.",
+    "sha256": "f33b8615dbb2c0fb1bc4d7bde9cb6f854b99bd4f1501543e3f2ff7564912a53e",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.consoleUnreachable": {
+    "text": "Couldn't connect to your Accrawl console. Check the address and your network, then try again.",
+    "sha256": "c33d2b5701c2aa52a2a6155b310d370e2ffba1436a527e8ed0bcd45ca26bf0f2",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.screenLockRequired": {
+    "text": "Set a screen lock on this phone, then try again. Accrawl Companion uses it to protect this phone's financial access.",
+    "sha256": "c2878c9289dddf17228db82b31d65da8a46328fa73d3b78cc13b396bed708ac8",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.cameraRequired": {
+    "text": "Camera access is needed to scan the pairing QR code. Allow it in Settings, or go back and enter the details by hand.",
+    "sha256": "33b182cdc0640ba6ad9281096d31ed88c7411b2abc9b975259b9ee2fc1ad6a4f",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.qrNotFound": {
+    "text": "No QR code found. Hold the camera steady and keep the whole code inside the frame.",
+    "sha256": "4f40bad8c8b40c2cd2a4ab806c1434282019317ee3a95e734f7f10aa88bf6184",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.invalidQr": {
+    "text": "This QR code is not an Accrawl pairing request.",
+    "sha256": "1ad50666ddd41b8a93f4b12fe8a05e17b63dc2413c58c898d375177adbb5dd15",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.cancel": {
+    "text": "Cancel",
+    "sha256": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.unlockFinancialData": {
+    "text": "Unlock financial data",
+    "sha256": "2b37b3e631d805f07dccb7c82ceb548e52217c14b03fdcfe448200d87ee895e4",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.unlockExplanation": {
+    "text": "Use this phone's screen lock to view accounts, balances, and transactions.",
+    "sha256": "7050a878e5a88fd407bd1776d133fb9ee8669573d0831a13cd2522e0958a950b",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.unlock": {
+    "text": "Unlock",
+    "sha256": "4ac709aa58bcfe5dca223072cd22986a2ad4e15f577c344466851b65322e416c",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.memoryProtection": {
+    "text": "Financial data stays available while you’re using the app and is cleared after five minutes of inactivity. It is never saved on this phone.",
+    "sha256": "27aca7013706512b4f61c0a749ae1177fe99b742f518bb6c5502b4c0cd30255a",
+    "review": {
+      "runId": "content-review-20260803-financial-inactivity",
+      "transcript": "reviews/content/content-review-20260803-financial-inactivity.md"
+    }
+  },
+  "android.unlockFailed": {
+    "text": "Couldn't unlock financial data. Try again.",
+    "sha256": "ef3821bece20e3b08aad613851bac2da5b9b4b74c77c9b2dabee7cfe1e958656",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.financialDataLocked": {
+    "text": "Financial access unavailable",
+    "sha256": "b5e2e4dd7fc1684b8aa83feac2f22dc91b00ac3b2408e65807d5da22944b4221",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.invalidFinancialAccess": {
+    "text": "This phone's financial access is no longer valid. If this phone is still listed in the Accrawl console, revoke it there. Then pair this phone again.",
+    "sha256": "57164ccbc5189581ff9e6e181712a19136cf0ce54576af4006c8c75a19a4d2dd",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.httpsRequired": {
+    "text": "Accrawl Companion requires HTTPS for financial data. Use an https:// console address, or fix the console's TLS configuration.",
+    "sha256": "633903a4fd337fac7fb1828df944ea21b5695ddb79f7e29266f7988f2dbf8ee5",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.loadFailed": {
+    "text": "Couldn't load financial data. Refresh to try again.",
+    "sha256": "999be05097aadba9f07c3237c79e4c22297b984f4c5b9f694e3942298aaf970a",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.accounts": {
+    "text": "Accounts",
+    "sha256": "8a7c8b67fe8bde8bb31f62db5896a1cd8c7bfa29ff7b86554a1ad2958c166e92",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.transactions": {
+    "text": "Transactions",
+    "sha256": "3e5136fd4b11c0dd3c1443977567433fb03e46134450d9a368d80c7ebf207a5f",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.relay": {
+    "text": "Relay",
+    "sha256": "c226b0485361a7d12f677de5fd6d094fce775723bed9f5cb44000056b45636fc",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.hideAmounts": {
+    "text": "Hide amounts",
+    "sha256": "2ae92318e0d70a21fb6c06e157f967f7d39ed79f94c896bb3b25e96eba94eacd",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.showAmounts": {
+    "text": "Show amounts",
+    "sha256": "f9a4240e14d21678fe627a952cda6cdaf3daf48498a541a92d63f621ed991e88",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.amountHidden": {
+    "text": "Amount hidden",
+    "sha256": "12ee939ff775c9367d0dc77899a2c46321a9ff18a10ebe5dedeaded49e897035",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.noAccounts": {
+    "text": "No accounts yet",
+    "sha256": "84a7e27178d91639297e90d08717aba6357c61500f684aa774aec0253cf6b4e8",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.noAccountsHelp": {
+    "text": "In the Accrawl console, run a crawl for a connection selected for this phone, then refresh. Any accounts found will appear here.",
+    "sha256": "62dc5014f7cc16b80a482c32ad6d27ffa24dde4c5edd939675a5c50f0df31bc3",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.noTransactions": {
+    "text": "No transactions yet",
+    "sha256": "f75dda0d2e0613e9307087a767a4910f53ee758655476be23b322f6fe0c15848",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.noTransactionsHelp": {
+    "text": "In the Accrawl console, run a crawl for a connection selected for this phone, then refresh. Any transactions found will appear here.",
+    "sha256": "b157a2eee8319cc0be79ae6c2a5f23cd3c298c9068cb3ab4227412183c69cbe9",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.noAccountTransactions": {
+    "text": "No transactions for this account yet",
+    "sha256": "5683f39f4d82694c64a5c6a29c80cea03a1dbe9f7ce928aa600e93c0058a5d6e",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.refresh": {
+    "text": "Refresh",
+    "sha256": "0e91610117029a62a478b7fa7df0b8598bebe3ab1e192d4b1882e310719c9671",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.inactive": {
+    "text": "Not found in at least two consecutive complete crawls",
+    "sha256": "15e7ce14fe86100fc78406f617b48ae12a5d85d9d834a24ed091da1b49ba80e9",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.currentBalance": {
+    "text": "Current balance",
+    "sha256": "988a691f049e0bc6ef118fecc5d4e5595447ea1014b38dd7f47541a9aabcd365",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.amountOwed": {
+    "text": "Amount owed",
+    "sha256": "c5a41a4800482d4b718d8dbab09d9021ab67808277487982d46c0c01306e7b3e",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.availableBalance": {
+    "text": "Available balance",
+    "sha256": "3ab7dd8428d13314106a5cbf2824a5ac52770f3f41f8c6af2751897493c32ae7",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.availableCredit": {
+    "text": "Available credit",
+    "sha256": "c9ad30e6629102081fa19e04d6c873d6fa5a5fa396362bb17bd115d8d8e8e903",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.creditLimit": {
+    "text": "Credit limit",
+    "sha256": "914a45ea8b00ae9a97fd377095e0b9156c28a8859167b718637c823a9ce05d8e",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.unknownAccount": {
+    "text": "Unknown account",
+    "sha256": "0ac22ebf2e4c548e6b1f01b79672929184e0626822b651ceba6766f880cc2d27",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.unassignedTransaction": {
+    "text": "Unassigned transaction",
+    "sha256": "b2de81e76316fcbb1acabb0d64affc5258fa40afe64289daa53408da869b8574",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.pending": {
+    "text": "Pending",
+    "sha256": "331551b0de4157c9abc7b72b61b96a2a928fd6db3cdf029c1fc44b08ad633aa6",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.posted": {
+    "text": "Posted",
+    "sha256": "afd80c5a1b84c378544290379f7195d17d994e3a6e30675372c6dc58446e0614",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.loadMore": {
+    "text": "Load more",
+    "sha256": "ac8991ef01019cf55a2426194a05959e0cb886333f1a332ff4f442320d165400",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.completed": {
+    "text": "Completed",
+    "sha256": "22a970d2e5b1cc233e462be7c7b64e135a275bb09d83d87683bf4236c43113a1",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.failed": {
+    "text": "Failed",
+    "sha256": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.cancelled": {
+    "text": "Cancelled",
+    "sha256": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.waitingForTwoFactorCode": {
+    "text": "Waiting for an SMS code",
+    "sha256": "ed22d80f7f6f3e882c163f0c8a5f3ba45b5942b9b0a3bac1c876bfcf26214f79",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.crawling": {
+    "text": "Crawling",
+    "sha256": "8083325af81e54d94c259c6c61bcb709859593e47be51568b988fd601f12134f",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.justNow": {
+    "text": "just now",
+    "sha256": "7ddb44d8a533a7535d85cedddf35d7f3414632ad4e10a0d7ca697723e1d97993",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.recentCrawls": {
+    "text": "Recent crawls",
+    "sha256": "9bdadfb24337c065e1427b2852a88c39485f95e5df4a4c55effcff714ab98e24",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.noRecentCrawls": {
+    "text": "Run a crawl in the Accrawl console for a selected connection to see its status here.",
+    "sha256": "3addb4c95e2f27ce5f77756179d53f6177f0678ab85601641869d90bb51cbdd3",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.phoneAccess": {
+    "text": "Phone access",
+    "sha256": "c0c60da7a877390404039e5579a2ee95e9c7d1a9321f8c4f008548b4e76041ae",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.revokePhone": {
+    "text": "Revoke this phone's access",
+    "sha256": "b02072902fef43a4846fa51077eb790a8b2bc82bd08f188f0fb56417cbc15a42",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.revokeConsequence": {
+    "text": "Revoking immediately ends this phone’s financial access, SMS relay, and device-proxy access for the selected connections. Any crawl using its network route will stop. This does not affect separate sharing with recipient organisations or erase financial data they have already copied.",
+    "sha256": "e1e40fd48d5e6223cca6335b5e6e2a4afed199f46f04e37e597f2382a593cede",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.revokeAccess": {
+    "text": "Revoke access",
+    "sha256": "ab292ddb87d6ffacdf9d9de6f78f8e24993a7836f4705d021278af71d27a444a",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.revokeFailed": {
+    "text": "Couldn't revoke this phone. Try again, or revoke it in the Accrawl console before you uninstall the app.",
+    "sha256": "3431ad574ab15a65a137032c9b493c146ff9fa31515845c250bc65b9af1fa62e",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.smsGranted": {
+    "text": "SMS access allowed. Accrawl Companion can identify and relay bank SMS codes when a crawl for a selected connection needs one.",
+    "sha256": "0c5f6b95367f12d200d1dafa4a9a323d172529113c512813c87805f5aba24260",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.smsNeeded": {
+    "text": "Allow SMS access so Accrawl Companion can identify and relay your bank's SMS codes when a crawl for a selected connection needs one.",
+    "sha256": "6e44a39f225f5606d7e31d6b777fc0fb5438aff0945c1f03b75ee0793f865ffb",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.allow": {
+    "text": "Allow",
+    "sha256": "e213c161d5cefa520c8dd4155c9569076d9a40406111465136a6f1b207045761",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.smsRequests": {
+    "text": "SMS code requests",
+    "sha256": "758d8a75304f04e2e80b371252042da2d747aed25efb9b2b4512215167521e8d",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.waitingForSms": {
+    "text": "Waiting for an SMS code",
+    "sha256": "ed22d80f7f6f3e882c163f0c8a5f3ba45b5942b9b0a3bac1c876bfcf26214f79",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.noSmsRequests": {
+    "text": "No SMS code requests right now.",
+    "sha256": "2afd65c1b60dd1b82f21c68a609426104d793b6326a2cd8a4ac1308709d23d10",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.deviceProxy": {
+    "text": "Device proxy",
+    "sha256": "800e48db2b68363b271227cebe84fc7c0769c9327745a5f9c1921a30cb8409a4",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.noProxy": {
+    "text": "No crawls are using this phone's network right now.",
+    "sha256": "0b430545018f66006828dfec6bb2196903561c3928869c676981d530951d17cf",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.activity": {
+    "text": "Activity",
+    "sha256": "38da1505ca8373288489495101b14f24ac95078f520ad64df18272aa6054f750",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.noActivity": {
+    "text": "Relayed SMS codes and device-proxy activity will appear here.",
+    "sha256": "29a84636884815e0b722f95bf0c5e7bcfff265532c2a24e356ac1d3c1e751b8c",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.updatedTemplate": {
+    "text": "Updated {relative} ({absolute})",
+    "sha256": "d963a68e0d02f6caf80e9013b8082682192e49dee265017a627213de67e93e5f",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.asOfTemplate": {
+    "text": "As of {absolute}",
+    "sha256": "75e050274de1ef3f6464a587b772b0cf97753c66dbc2bcef7cb19c1ccf857643",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.connectionCrawlTemplate": {
+    "text": "Connection {connectionId} · Crawl {sessionId}",
+    "sha256": "08b6c1eb7c01f37484062f6de3875086331984ec1984068bdefe165f511ea952",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.crawlTemplate": {
+    "text": "Crawl {sessionId}",
+    "sha256": "2423087eb060345e5539b028b65f8cebe8899f5b809af88edcd3efeca3773045",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.proxyUsageTemplate": {
+    "text": "Requests: {requestCount}. Data transferred: {bytesTransferred}.",
+    "sha256": "738294dc1f117c5d22f3c7c781b010a5da87c2334713cf4eacd79df8bf6324db",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.minutesAgoTemplate": {
+    "text": "{minutes}m ago",
+    "sha256": "0e9182800a2fb75534ea6b80d40e48cbbcfbdb05ad7cea2b34c4674033127f4c",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.hoursAgoTemplate": {
+    "text": "{hours}h ago",
+    "sha256": "bbfb1e51992cd8aab70406e6d9a09cb649a99de11de0405792828c35b0ac76bc",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.daysAgoTemplate": {
+    "text": "{days}d ago",
+    "sha256": "c2c3d1fae7cea2426beec4155248a0da7ac6e72dfa5c2b580b61d708978c2da6",
+    "review": {
+      "runId": "019f9dfe-f64e-7542-b5f5-41d479ab6950",
+      "transcript": "reviews/content/019f9dfe-f64e-7542-b5f5-41d479ab6950.md"
+    }
+  },
+  "android.crawlSteps": {
+    "text": "Steps",
+    "sha256": "1de3df70ddf4faab9d799e3c45ea53c465aae9fccacd7ac77d8e85435828e6dc",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.crawlScreenshots": {
+    "text": "Screenshots",
+    "sha256": "067348ce68943b630359fea7b8b9aa2f7e00bda7532fa406f0286c943261f823",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.crawlResults": {
+    "text": "Results",
+    "sha256": "219c4a6c86a716e99d5dc9611b61e584deb11b57e972d87d4b773387ebc3cadd",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.started": {
+    "text": "Started",
+    "sha256": "ecbc89cd37a037342e740f9e0e0633a70180a2279b0157c9a823fce729f4bd77",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.duration": {
+    "text": "Duration",
+    "sha256": "4fc52a3c4c558b517c463b22d86d0e3b9cfd4255c98fe3510f9075b37ab419c9",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.status": {
+    "text": "Status",
+    "sha256": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.noCrawlSteps": {
+    "text": "No steps were recorded for this crawl.",
+    "sha256": "e996b09e71890197971dc24c937f5e5f03c6cea871be47136e4e546fa782fc0b",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.noCrawlScreenshots": {
+    "text": "No screenshots were captured for this crawl.",
+    "sha256": "7613a405957bca9c675fa2de3a850968b8c4821ced1684108916b395a14d6321",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.noCrawlResults": {
+    "text": "This crawl did not return any accounts, transactions, or positions.",
+    "sha256": "25a0d276bed3e1d2b18680b9d230ab4e080e16540909ac22d74a47d00344e66a",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.crawlDetailsFailed": {
+    "text": "Couldn’t load crawl details",
+    "sha256": "504b19095e44aaf08383270f1954c6dd9171b74e3a3c0010a84aca6e29093318",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.crawlDetailsFailedHelp": {
+    "text": "Check your internet connection and try again.",
+    "sha256": "176afd02072f8b0fe647ff9931fd76bae960430fe6aca8c64f7e7effda579c35",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.tryAgain": {
+    "text": "Try again",
+    "sha256": "d8b8392e2c542950ca64867168e4ef87d4ad606882d5898f826b51c6d553988f",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.loadingScreenshot": {
+    "text": "Loading screenshot…",
+    "sha256": "e0fd7b60d990de305b5ad2f90a044a8f92d9b74e9d821774dc63bb15a3228cb8",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.screenshotFailed": {
+    "text": "Couldn’t load this screenshot.",
+    "sha256": "8f090f1bd64dad7340306c756ec00e5dbff2c848a94a89372e3fb3c6c72dacd0",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.positions": {
+    "text": "Positions",
+    "sha256": "fa18433b80e023b99bab6ee06b78483764ba94e3c6d8a225b7f421742c982957",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.crawlDetailsHint": {
+    "text": "Opens steps, screenshots, and results for this crawl",
+    "sha256": "8c9eaf2013d1e99231acb9eba89d4048b85c84ed92a5aa6de3b730035da90e78",
+    "review": {
+      "runId": "019fbc15-d1ae-78b3-b81b-a086a965103e",
+      "transcript": "reviews/content/content-review-20260801-companion-crawl-details.md"
+    }
+  },
+  "android.systemStatus": {
+    "text": "System status",
+    "sha256": "25b128ae659827f86d0dfebecb59f5d4207bd90a6c2a322ba66692c7c134a06e",
+    "review": { "runId": "content-review-20260803-otp-companion", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.setupNeeded": {
+    "text": "Setup needed",
+    "sha256": "3b19dc573d484352d9ef9d2c23da980bf67e4b70d4ba34b510a44172515f89bf",
+    "review": { "runId": "content-review-20260803-otp-companion-delta", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.statusOn": {
+    "text": "Ready",
+    "sha256": "5fa7aac5375c5815787fba3f49559f9b45b14023147ce0652803387974144e5f",
+    "review": { "runId": "content-review-20260803-otp-companion-delta", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.smsAccess": {
+    "text": "SMS access",
+    "sha256": "56351681aadfeaf092c9c7e4751c5f66618ae5847b667d0d9a08e2864b3641e4",
+    "review": { "runId": "content-review-20260803-otp-companion", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.smsAccessOn": {
+    "text": "Accrawl Companion can detect and relay bank SMS codes.",
+    "sha256": "cc478eb497dd2eef9a08e81bfa66f37c30d738832bbb331bc2ea02a88b763a70",
+    "review": { "runId": "content-review-20260803-otp-companion-delta", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.smsAccessOff": {
+    "text": "Allow SMS access to detect and relay bank SMS codes.",
+    "sha256": "89803a5d45929154da5e1dd5d07a6bd910be5c3691af716b9b996131517e9f4d",
+    "review": { "runId": "content-review-20260803-otp-companion-delta", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.notifications": {
+    "text": "Notifications",
+    "sha256": "788011833a5a0f22db90c91e8eb7bd8e9f5cd423354ff5ef8c338e7895f44ba9",
+    "review": { "runId": "content-review-20260803-otp-companion", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.notificationsOn": {
+    "text": "Crawl and code notifications are allowed on this phone.",
+    "sha256": "cd963efc00edcd8f34ddcea1a88287562a12037daffb93c47ced2d29d5e91a81",
+    "review": { "runId": "content-review-20260803-otp-companion-delta", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.notificationsOff": {
+    "text": "Allow notifications for crawl and code updates.",
+    "sha256": "60ec1a3a0f8f45319908472b32ea565afb67d4bc45a7195e57bff9027aeb6d3a",
+    "review": { "runId": "content-review-20260803-otp-companion", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.batteryUse": {
+    "text": "Battery optimization",
+    "sha256": "e2c2b8efa9f25025dd12a329574dce5a0cc28cd886d841099d804b9d3c244c2b",
+    "review": { "runId": "content-review-20260803-otp-companion-delta", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.batteryUseOn": {
+    "text": "Battery optimization is off for Accrawl Companion.",
+    "sha256": "7b59cf7f4054a64d9c85c57aeefacd7075f49574d28ef3aa3cc26fda43c09ebc",
+    "review": { "runId": "content-review-20260803-otp-companion-delta", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.batteryUseOff": {
+    "text": "Turn off battery optimization so SMS relay can keep working in the background.",
+    "sha256": "2595bd5a0314166b60831462e91b8042b9b28fd3cbff0392dedf27fbdb016f31",
+    "review": { "runId": "content-review-20260803-otp-companion-delta", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.consoleConnection": {
+    "text": "Console connection",
+    "sha256": "5855bc5554a38de78a95406a4a2a3f30d29f07198a22fc92f021c1cc597542c0",
+    "review": { "runId": "content-review-20260803-otp-companion", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.consoleConnectionOn": {
+    "text": "This phone is paired with your Accrawl console.",
+    "sha256": "edb4429de1c3e7ff208c61fc358491c03a7c42a77121f55c6ce5f8dfc02b86bc",
+    "review": { "runId": "content-review-20260803-otp-companion", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.permissionSetupHint": {
+    "text": "Tap to set up",
+    "sha256": "95cb8478210467a22473f62ecfc35481efe39535eb992d2819d91cfc6ed2af57",
+    "review": { "runId": "content-review-20260803-otp-companion", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.watchingForSms": {
+    "text": "Watching for an SMS code",
+    "sha256": "88e64dbaef6c7fae6610090bb4cb49b45dab40cbd9093ec9b9cebe44e35e0f93",
+    "review": { "runId": "content-review-20260803-otp-companion", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.watchingForSmsHelp": {
+    "text": "The crawl is signing in. Accrawl Companion is watching for the bank’s code.",
+    "sha256": "725f110a4949c3d84c2bc06ef053bb3bc391ea6c660eb7ce819a257874c826b1",
+    "review": { "runId": "content-review-20260803-otp-companion-delta", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.waitingForSmsHelp": {
+    "text": "The bank has requested a code. Accrawl Companion is waiting for the bank’s SMS.",
+    "sha256": "a454ba52963d5b6ea33973f7ca73007b1da160851dab8d11120c6b2b046430f7",
+    "review": { "runId": "content-review-20260803-otp-companion-delta", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "android.smsRequestDetailsTemplate": {
+    "text": "{phase}\n{crawl}",
+    "sha256": "2034aaa68037d81eeeb413ca6b762b62ec1e6305a58ba43ee87b71fbee26ae3c",
+    "review": { "runId": "content-review-20260803-otp-companion", "transcript": "reviews/content/content-review-20260803-otp-companion.md" }
+  },
+  "androidNative.__catalogueDigest": {
+    "text": "13a6a6366647d5e12a6409f2c3557aacd1c43056bf4b7c945f5ed067a8a6ba7f",
+    "sha256": "af1593d1b8dcf64857db617872f31ce6bab7ab67e2cad233c741261d138f4160",
+    "review": { "runId": "content-review-20260803-companion-session-lifecycle", "transcript": "reviews/content/content-review-20260803-companion-session-lifecycle.md" }
+  }
+}

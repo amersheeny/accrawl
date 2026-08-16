@@ -1,0 +1,76 @@
+# One front door: serves the React SPA and proxies the API + SSE to the control-plane.
+#
+# The site address is env-driven ({$ACCRAWL_SITE_ADDRESS}, default :8088 — the FIXED internal container
+# port). Local/plain mode leaves it at :8088 (the HOST publish port is mapped in docker-compose.yml). Domain
+# mode sets it to the public hostname via docker-compose.tls.yml, so Caddy serves that host with automatic
+# HTTPS on :80/:443. Never expose credential/API traffic over plain HTTP across a network.
+{
+	admin off
+	# Optional ACME account email for automatic HTTPS in domain mode. Injected as a whole directive
+	# ("email you@example.com") or empty by the launcher, because Caddy rejects a bare `email` line. Empty in
+	# local mode, and in domain mode when no email was configured (certs still issue, just no notice emails).
+	{$ACCRAWL_ACME_GLOBAL:}
+}
+
+{$ACCRAWL_SITE_ADDRESS::8088} {
+	encode gzip
+
+	# API + health → control-plane. flush_interval -1 disables response buffering so SSE streams live.
+	# header_up X-Forwarded-For {remote_host} REPLACES any client-supplied X-Forwarded-For with the real
+	# TCP peer, so a client cannot spoof its source IP to win a fresh rate-limit bucket per forged value.
+	# Defense-in-depth alongside the control-plane's trustProxy:1 (which already trusts only this one hop).
+	handle /api/* {
+		reverse_proxy control-plane:3000 {
+			flush_interval -1
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+	handle /health {
+		reverse_proxy control-plane:3000
+	}
+	# Deployed build stamp (git short SHA) → control-plane GET /version. Unauthenticated (reveals only the
+	# SHA); `./accrawl status` queries it to detect a stale deployment. Routed like /health (not under /api).
+	handle /version {
+		reverse_proxy control-plane:3000
+	}
+
+	# Keep the Companion download on the deployment's own origin, wherever that deployment publishes the
+	# built app. reverse_proxy streams the object and preserves Range requests so Android browsers can
+	# resume an interrupted download without buffering the binary in Accrawl. Set COMPANION_APK_UPSTREAM
+	# to the origin holding it and COMPANION_APK_PATH to the object; leave them unset and the route is
+	# simply not served, rather than pointing everyone at somebody else's copy.
+	handle /downloads/companion.apk {
+		rewrite * {$COMPANION_APK_PATH:/accrawl-companion.apk}
+		reverse_proxy {$COMPANION_APK_UPSTREAM:http://control-plane:3000}
+	}
+
+	# "Connect with Accrawl" OAuth endpoints → control-plane. These are browser- and third-party-server-facing
+	# (the consent page, the decision POST, and the token/revoke/introspect calls) and live at /oauth/* — NOT
+	# under /api/* — so without this route they would fall through to the SPA handler below and a third party
+	# would get index.html instead of the consent page or a token, silently breaking the whole flow. Forward
+	# the real client IP for the same anti-spoofing reason as /api: /oauth/authorize/decision is rate-limited
+	# against operator-password brute force, so its per-IP bucket must key on the true peer, not a spoofed XFF.
+	handle /oauth/* {
+		reverse_proxy control-plane:3000 {
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	# Device-proxy tunnel WebSocket → engine. This is the ONE engine endpoint reachable from outside the
+	# Docker network, because the companion phone (which is NOT on the internal network) must connect to it
+	# to relay the browser's egress. It is safe to expose: the engine authenticates every /tunnel upgrade
+	# with the control-plane-issued HMAC tunnel token (session-bound, short TTL) and a single-use DB claim,
+	# and only bridges an already-parked, control-plane-authorized crawl. The engine's /crawl and /cancel are
+	# NOT routed here — they stay internal, reachable only by the control-plane over ENGINE_URL. Caddy's
+	# reverse_proxy upgrades the WebSocket automatically. Only used when an institution sets useDeviceProxy.
+	handle /tunnel {
+		reverse_proxy engine:8080
+	}
+
+	# Everything else → the SPA (client-side routing falls back to index.html).
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

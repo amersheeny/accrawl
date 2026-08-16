@@ -1,0 +1,32 @@
+title = "Accrawl secret scanning"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Fixed cryptographic test key and RFC 6455 sample nonce"
+targetRules = ["generic-api-key"]
+regexTarget = "line"
+regexes = [
+  '''(?:CREDENTIAL_ENC_KEY|ENC_KEY|KEY(?:_A)?)\s*[:=]\s*['"]00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff['"]''',
+  '''Sec-WebSocket-Key:\s*dGhlIHNhbXBsZSBub25jZQ==''',
+]
+
+[[allowlists]]
+description = "Public constants from the vendored flutter_secure_storage implementation"
+targetRules = ["generic-api-key"]
+regexTarget = "line"
+regexes = [
+  '''KEYSTORE_IV_NAME\s*=\s*"BVGhpcyBpcyB0aGUga2V5IGZvciBhIHNlY3VyZSBzdG9yYWdlIEFFUyBLZXkK"''',
+  '''SHARED_PREFERENCES_KEY\s*=\s*"(?:AES)?VGhpcyBpcyB0aGUga2V5IGZvciBhIHNlY3VyZSBzdG9yYWdlIEFFUyBLZXkK"''',
+  '''DEFAULT_KEY_PREFIX\s*=\s*"VGhpcyBpcyB0aGUgcHJlZml4IGZvciBhIHNlY3VyZSBzdG9yYWdlCg"''',
+  '''DEFAULT_KEY_CIPHER_ALGORITHM\s*=\s*"RSA_ECB_OAEPwithSHA_256andMGF1Padding"''',
+]
+
+[[allowlists]]
+description = "Content-review baseline stores hashes, not credentials"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^reviews/content/user-visible-baseline[.]json$''']
+regexTarget = "line"
+regexes = ['''^\s*"[^"]+[.]ts":\s*"[A-Za-z0-9+/]{40,}={0,2}",?\s*$''']

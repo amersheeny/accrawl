@@ -1,0 +1,49 @@
+# The gate nobody can skip.
+#
+# The two git hooks are the fast ones, and they are the right place to catch a mistake: at the moment
+# it is made, before it is a commit. But hooks live in a working copy — `--no-verify` turns them off, a
+# fresh clone has none until someone installs them, and a machine that never runs `pnpm install` never
+# gets them at all. So they cannot be the last word on whether this repository is safe to publish.
+#
+# This runs on the remote, on every push and every proposed change, and it is the one a person cannot
+# turn off for themselves.
+name: repository is publishable
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  names-no-provider:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # The history checks read every commit, so a shallow clone would pass by seeing almost none.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # What is in the tree right now.
+      - name: the working tree names no provider
+        run: node --test scripts/provider-neutral-policy.test.mjs
+
+      # What someone who clones this would get. Expected to fail until the history rewrite lands; it is
+      # here from the start so that the day it passes is recorded, rather than the day someone remembers
+      # to add it.
+      - name: history carries no provider or deployment identity
+        run: node --test scripts/provider-neutral-history.test.mjs
+
+      # The same question the commit hook asks, against this push's own changes — so a commit made with
+      # --no-verify, or on a machine with no hooks installed, is still answered for.
+      - name: this push introduces nothing that must not be here
+        run: |
+          git reset --soft "$(git rev-list --max-parents=0 HEAD | tail -1)"
+          node scripts/check-staged-provider-neutral.mjs

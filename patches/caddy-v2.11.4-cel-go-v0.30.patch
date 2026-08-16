@@ -1,0 +1,20 @@
+diff --git a/modules/caddyhttp/celmatcher.go b/modules/caddyhttp/celmatcher.go
+index 95b3f85d..34329963 100644
+--- a/modules/caddyhttp/celmatcher.go
++++ b/modules/caddyhttp/celmatcher.go
+@@ -503,6 +503,6 @@ func CELMatcherDecorator(funcName string, fac any) interpreter.InterpretableDeco
+ 			return interpreter.NewCall(
+ 				i.ID(), funcName, funcName+"_opt",
+-				[]interpreter.Interpretable{reqAttr},
++				[]interpreter.InterpretableV2{reqAttr},
+ 				func(args ...ref.Val) ref.Val {
+ 					// The request value, guaranteed to be of type celHTTPRequest
+ 					celReq := args[0]
+@@ -526,6 +526,6 @@ func CELMatcherDecorator(funcName string, fac any) interpreter.InterpretableDeco
+ 			return interpreter.NewCall(
+ 				i.ID(), funcName, funcName+"_opt",
+-				[]interpreter.Interpretable{reqAttr},
++				[]interpreter.InterpretableV2{reqAttr},
+ 				func(args ...ref.Val) ref.Val {
+ 					// The request value, guaranteed to be of type celHTTPRequest
+ 					celReq := args[0]

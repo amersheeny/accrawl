@@ -1,0 +1,537 @@
+#!/usr/bin/env bash
+#
+# accrawl — lifecycle CLI for the self-host stack (start / stop / status / port + bind + domain config /
+# reset / boot-service). Reads .env so every URL and message reflects your actual port/bind/domain, and
+# auto-selects the right compose files (plain vs. domain/TLS). Shares all helpers with setup.sh via
+# infra/lib.sh so the two never drift.
+#
+# Usage: ./accrawl <command> [args].  Run ./accrawl help for the full surface.
+#
+# NOTE: intentionally NOT `set -e` — this orchestrates docker/curl calls whose non-zero exits are expected
+# (a poll that isn't ready yet, `ps` with nothing up). Errors are handled explicitly. `set -u` + pipefail
+# stay on. Runs under macOS bash 3.2 and modern bash.
+set -uo pipefail
+
+ACCRAWL_ROOT="$(cd "$(dirname "$0")" && pwd -P)"
+# shellcheck source=infra/lib.sh
+. "${ACCRAWL_ROOT}/infra/lib.sh"
+
+mode_label() {
+  if tls_mode; then printf 'domain mode — %s' "$ACCRAWL_DOMAIN"
+  else printf 'local mode — port %s, bind %s' "${ACCRAWL_PORT}" "${ACCRAWL_BIND}"; fi
+}
+
+# Bring the stack up (always rebuilding, so nothing goes stale), wait for health, print the URL.
+# $1 = "" or "--force-recreate" (restart/update).
+do_up() {
+  local extra="${1:-}"
+  require_env  || return 1
+  require_docker_up || return 1
+  load_config
+  export ACCRAWL_VERSION; ACCRAWL_VERSION="$(head_version)"
+  say "Building and starting Accrawl ($(mode_label))…"
+  say "The first build can take a few minutes."
+  if ! dc up -d --build $extra; then
+    err "Accrawl didn't start cleanly. Recent control-plane logs:"
+    dc logs --tail=40 --no-color control-plane 2>&1 | sed 's/^/    /' >&2 || true
+    return 1
+  fi
+  say "Waiting for Accrawl to be ready…"
+  if ! wait_cp_healthy; then
+    err "The control-plane didn't become healthy in time. Recent logs:"
+    dc logs --tail=40 --no-color control-plane 2>&1 | sed 's/^/    /' >&2 || true
+    return 1
+  fi
+  if ! tls_mode; then
+    if ! wait_reachable "$(probe_url)" 30; then
+      note "Control-plane is healthy but the front door on port ${ACCRAWL_PORT} isn't answering yet — give it a moment."
+    fi
+  fi
+  say ""
+  ok "✓ Accrawl is running (build $(head_version))."
+  say "   Open: $(accrawl_url)"
+  if tls_mode; then
+    note "   Domain mode: reachable once ${ACCRAWL_DOMAIN}'s DNS points at this host and ports 80+443 are open."
+  fi
+}
+
+cmd_start()   { do_up ""; }
+cmd_restart() { do_up "--force-recreate"; }
+cmd_update()  { do_up "--force-recreate"; }
+
+cmd_stop() {
+  require_env || return 1; require_docker || return 1; load_config
+  if ! docker_daemon_up; then ok "✓ Nothing to stop — the Docker runtime isn't running (the stack is already down)."; return 0; fi
+  say "Stopping Accrawl (the data volume is kept)…"
+  if ! dc down; then err "Stop failed."; return 1; fi
+  ok "✓ Stopped. Your data is preserved. Start again with:  ./accrawl start"
+}
+
+cmd_status() {
+  require_env || return 1; require_docker || return 1; load_config
+  say "Accrawl — $(mode_label)"
+  say ""
+  if ! docker_daemon_up; then
+    note "The Docker runtime isn't running — the stack is stopped. Start it with:  ./accrawl start"
+    return 0
+  fi
+  say "Containers:"
+  dc ps 2>&1 | sed 's/^/  /'
+  say ""
+  if tls_mode; then
+    if curl -fsS -k -o /dev/null "$(probe_url)/api/setup/status" 2>/dev/null; then
+      ok "Reachable: $(accrawl_url)"
+    else
+      note "Reachable: $(accrawl_url) — couldn't verify from this host (DNS / cert / firewall). This is expected if you're not on the public network."
+    fi
+  else
+    if curl -fsS -o /dev/null "$(probe_url)/api/setup/status" 2>/dev/null; then
+      ok "Reachable: $(accrawl_url)"
+    else
+      note "Reachable: $(accrawl_url) — NOT answering. Is it started? (./accrawl start)"
+    fi
+  fi
+  say ""
+  local head dep
+  head="$(head_version)"
+  if dep="$(deployed_version)"; then
+    if [ "$dep" = "$head" ]; then
+      ok "Version: ${dep} — matches your working tree."
+    else
+      warn "Version: deployed ${dep}, working tree ${head} — STALE."
+      warn "Run  ./accrawl update  to rebuild and deploy the current code."
+    fi
+  else
+    note "Version: couldn't read the deployed build (is the stack running?)."
+  fi
+}
+
+cmd_logs() {
+  require_env || return 1; require_docker || return 1; load_config
+  if ! docker_daemon_up; then note "The Docker runtime isn't running — no containers, so no logs. Start with:  ./accrawl start"; return 0; fi
+  # Passthrough to `docker compose logs`; default to --tail=100 unless the caller set their own --tail.
+  local has_tail=0 a
+  for a in "$@"; do case "$a" in --tail=*|--tail|-n) has_tail=1 ;; esac; done
+  if [ "$has_tail" = 0 ]; then dc logs --tail=100 "$@"; else dc logs "$@"; fi
+}
+
+cmd_open() {
+  require_env || return 1; load_config
+  local url; url="$(accrawl_url)"
+  if command -v open >/dev/null 2>&1; then open "$url"
+  elif command -v xdg-open >/dev/null 2>&1; then xdg-open "$url" >/dev/null 2>&1 &
+  else say "Open this in your browser: ${url}"; fi
+}
+
+# If ENGINE_WS_URL embeds the OLD port, offer to rewrite it to the new one (else the device-proxy tunnel URL
+# goes stale). $1 = old port, $2 = new port.
+maybe_rewrite_ws_port() {
+  local old="$1" new="$2" ws newws
+  ws="$(env_get ENGINE_WS_URL)"
+  [ -n "$ws" ] || return 0
+  # Does it embed the OLD port at a real authority boundary — ":<old>" followed by a path (/), query (?),
+  # fragment (#), or end-of-string? The delimiter check avoids substring bleed (old=8088 must not match
+  # :80880). grep -E, so ? and # are literal inside the bracket class and $ anchors end.
+  if ! printf '%s' "$ws" | grep -qE ":${old}([/?#]|\$)"; then return 0; fi
+  note "ENGINE_WS_URL still points at the old port ${old}:"
+  say  "  ${ws}"
+  # Rewrite the FIRST such occurrence, preserving whatever delimiter followed the port (\1). @-delimited so
+  # the /?# in the pattern don't clash; no ${//} expansion.
+  newws="$(printf '%s' "$ws" | sed -E "s@:${old}([/?#]|\$)@:${new}\1@")"
+  case "$(ask "Rewrite it to use port ${new}? (Y/n)" "Y")" in
+    [nN]*) note "Left ENGINE_WS_URL unchanged — update it yourself if you use the device proxy." ;;
+    *) if env_set ENGINE_WS_URL "$newws"; then ok "✓ ENGINE_WS_URL updated to: ${newws}"; fi ;;
+  esac
+}
+
+cmd_set_port() {
+  require_env || return 1; require_docker_up || return 1; load_config
+  local new="${1:-}"
+  if [ -z "$new" ]; then err "usage: ./accrawl set-port <1-65535>"; return 2; fi
+  if ! valid_port "$new"; then err "invalid port '${new}' — must be an integer 1–65535."; return 2; fi
+  local old="${ACCRAWL_PORT}"
+  if [ "$new" = "$old" ]; then say "Already on port ${new}. Nothing to change."; return 0; fi
+  if [ "$new" -lt 1024 ]; then
+    note "Port ${new} is privileged (<1024); publishing it may require elevated privileges on some hosts."
+  fi
+  if ! port_free "$new"; then err "Port ${new} is already in use by something else. Pick a free port."; return 1; fi
+  if ! env_set ACCRAWL_PORT "$new"; then return 1; fi
+  ok "✓ Port set to ${new}."
+  maybe_rewrite_ws_port "$old" "$new"
+  load_config
+  say "Recreating the stack on port ${new}…"
+  export ACCRAWL_VERSION; ACCRAWL_VERSION="$(head_version)"
+  if ! dc up -d --build; then err "Recreate failed."; return 1; fi
+  wait_cp_healthy >/dev/null 2>&1 || true
+  wait_reachable "$(probe_url)" 20 >/dev/null 2>&1 || true
+  ok "✓ Now serving on $(accrawl_url)"
+}
+
+cmd_set_bind() {
+  require_env || return 1; require_docker_up || return 1; load_config
+  local addr="${1:-}"
+  case "$addr" in
+    127.0.0.1|0.0.0.0) ;;
+    '') err "usage: ./accrawl set-bind <127.0.0.1|0.0.0.0>"; return 2 ;;
+    *) err "Only 127.0.0.1 (localhost only) or 0.0.0.0 (all interfaces / LAN) are supported — got '${addr}'."; return 2 ;;
+  esac
+  if [ "$addr" = "0.0.0.0" ]; then
+    note "0.0.0.0 exposes Accrawl to your whole network over plain HTTP. Put it behind a domain + HTTPS"
+    note "(set ACCRAWL_DOMAIN — see ./setup.sh / DEPLOY.md) before exposing it beyond a trusted LAN."
+  fi
+  if ! env_set ACCRAWL_BIND "$addr"; then return 1; fi
+  ok "✓ Bind set to ${addr}."
+  load_config
+  say "Recreating the stack…"
+  export ACCRAWL_VERSION; ACCRAWL_VERSION="$(head_version)"
+  if ! dc up -d --build; then err "Recreate failed."; return 1; fi
+  wait_cp_healthy >/dev/null 2>&1 || true
+  ok "✓ Now serving on $(accrawl_url) (bind ${addr})"
+}
+
+cmd_reset() {
+  require_env || return 1; require_docker_up || return 1; load_config
+  local assume=0
+  case "${1:-}" in --yes|-y) assume=1 ;; esac
+  if [ "$assume" = 0 ]; then
+    warn "⚠  WARNING: this PERMANENTLY DELETES every account, transaction, credential, and everything else"
+    warn "   Accrawl has stored — it removes the database volume. This cannot be undone."
+    case "$(ask "${C_RED}Delete ALL data and reset? (y/N)${C_OFF}" "N")" in
+      [yY]*) ;;
+      *) say "Aborted — nothing was deleted."; return 0 ;;
+    esac
+  fi
+  say "Removing the stack and its data volume…"
+  if ! dc down -v; then err "Reset failed."; return 1; fi
+  ok "✓ Reset complete. Run ./setup.sh (or ./accrawl start) to begin again."
+}
+
+# ── Boot service (install/uninstall) ───────────────────────────────────────────────────────────────────
+install_service_systemd() {
+  local do_enable="$1" unit="${ACCRAWL_ROOT}/infra/accrawl.service" dest=/etc/systemd/system/accrawl.service
+  cat > "$unit" <<EOF
+[Unit]
+Description=Accrawl self-host stack (docker compose)
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=${ACCRAWL_ROOT}
+# Program path double-quoted so a repo path containing spaces stays a single argument (systemd splits the
+# ExecStart line on unquoted whitespace). WorkingDirectory takes the whole value literally, so it needs none.
+ExecStart="${ACCRAWL_ROOT}/accrawl" start
+ExecStop="${ACCRAWL_ROOT}/accrawl" stop
+# 'accrawl start' rebuilds images and can take minutes; don't let the default oneshot timeout kill it.
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  ok "✓ Wrote systemd unit: ${unit}"
+  if command -v systemd-analyze >/dev/null 2>&1; then
+    if systemd-analyze verify "$unit" >/dev/null 2>&1; then ok "  systemd-analyze verify: OK"
+    else note "  systemd-analyze verify reported warnings (commonly just the out-of-tree path — review above)."; fi
+  fi
+  say ""
+  say "Enable it at boot (needs root — writes to /etc/systemd/system):"
+  say "  sudo cp ${unit} ${dest}"
+  say "  sudo systemctl daemon-reload"
+  say "  sudo systemctl enable --now accrawl"
+  if [ "$do_enable" = 1 ]; then
+    say ""
+    note "Running the above via sudo now…"
+    if sudo cp "$unit" "$dest" && sudo systemctl daemon-reload && sudo systemctl enable --now accrawl; then
+      ok "✓ accrawl.service enabled — Accrawl now starts at boot."
+    else
+      err "Enabling the service failed. Run the printed commands manually."; return 1
+    fi
+  else
+    say ""
+    say "Re-run with --enable to have this script run those via sudo for you."
+  fi
+}
+
+# XML-escape stdin for safe inclusion in a plist <string>. `&` MUST be first so the others aren't double-
+# escaped. Handles a repo path with XML metacharacters (&, <, >, ", ') — otherwise plutil rejects the plist.
+xml_escape() {
+  printf '%s' "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g' -e "s/'/\&apos;/g"
+}
+
+install_service_launchd() {
+  local do_enable="$1" plist="${HOME}/Library/LaunchAgents/app.accrawl.plist" root_esc
+  root_esc="$(xml_escape "$ACCRAWL_ROOT")"
+  mkdir -p "${HOME}/Library/LaunchAgents"
+  cat > "$plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>app.accrawl</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>${root_esc}/accrawl</string>
+		<string>start</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>${root_esc}</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardOutPath</key>
+	<string>${root_esc}/accrawl-service.log</string>
+	<key>StandardErrorPath</key>
+	<string>${root_esc}/accrawl-service.log</string>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+	</dict>
+</dict>
+</plist>
+EOF
+  ok "✓ Wrote launchd agent: ${plist}"
+  if command -v plutil >/dev/null 2>&1; then
+    if plutil -lint "$plist" >/dev/null 2>&1; then ok "  plutil -lint: OK"
+    else err "  plutil -lint failed — the plist is malformed."; return 1; fi
+  fi
+  say ""
+  say "Load it so Accrawl starts at login (and now):"
+  say "  launchctl load -w ${plist}"
+  if [ "$do_enable" = 1 ]; then
+    if launchctl load -w "$plist" 2>/dev/null; then
+      ok "✓ Loaded — Accrawl will start at login."
+    else
+      note "launchctl load returned non-zero (already loaded?). Check with:  launchctl list | grep accrawl"
+    fi
+  else
+    say ""
+    say "Re-run with --enable to load it now."
+  fi
+}
+
+cmd_install_service() {
+  local do_enable=0
+  case "${1:-}" in --enable) do_enable=1 ;; esac
+  case "$(uname -s)" in
+    Linux)  install_service_systemd "$do_enable" ;;
+    Darwin) install_service_launchd "$do_enable" ;;
+    *) err "install-service isn't supported on $(uname -s). Start Accrawl at boot yourself via ./accrawl start."; return 1 ;;
+  esac
+}
+
+cmd_uninstall_service() {
+  local do_enable=0
+  case "${1:-}" in --enable) do_enable=1 ;; esac
+  case "$(uname -s)" in
+    Linux)
+      local dest=/etc/systemd/system/accrawl.service
+      say "Remove the systemd service:"
+      say "  sudo systemctl disable --now accrawl"
+      say "  sudo rm -f ${dest}"
+      say "  sudo systemctl daemon-reload"
+      if [ "$do_enable" = 1 ]; then
+        note "Running the above via sudo now…"
+        sudo systemctl disable --now accrawl 2>/dev/null || true
+        sudo rm -f "$dest"
+        if sudo systemctl daemon-reload; then ok "✓ Service removed."; else err "daemon-reload failed."; return 1; fi
+      else
+        say ""; say "Re-run with --enable to run those via sudo for you."
+      fi
+      ;;
+    Darwin)
+      local plist="${HOME}/Library/LaunchAgents/app.accrawl.plist"
+      say "Remove the launchd agent:"
+      say "  launchctl unload -w ${plist}"
+      say "  rm -f ${plist}"
+      if [ "$do_enable" = 1 ]; then
+        launchctl unload -w "$plist" 2>/dev/null || true
+        if rm -f "$plist"; then ok "✓ Agent unloaded and removed."; else err "Couldn't remove ${plist}."; return 1; fi
+      else
+        say ""; say "Re-run with --enable to run those for you."
+      fi
+      ;;
+    *) err "Unsupported OS ($(uname -s))."; return 1 ;;
+  esac
+}
+
+# ── Companion OTP-relay app (Android) — build + install ────────────────────────────────────────────────
+COMPANION_DIR="${ACCRAWL_ROOT}/companion"
+COMPANION_APP_ID="app.accrawl.accrawl_companion"
+
+require_flutter() {
+  if ! command -v flutter >/dev/null 2>&1; then
+    err "Flutter isn't installed — it builds the companion app. Install it: https://docs.flutter.dev/get-started/install"
+    return 1
+  fi
+}
+require_adb() {
+  if ! command -v adb >/dev/null 2>&1; then
+    err "adb (Android platform-tools) isn't on your PATH — it installs the app on your phone."
+    return 1
+  fi
+}
+
+# Absolute path of the built APK for a variant. $1 = debug|release.
+companion_apk() { printf '%s/build/app/outputs/flutter-apk/app-secure-%s.apk' "$COMPANION_DIR" "$1"; }
+
+# Build the companion APK. $1 = debug|release. Output streams to the terminal.
+companion_build() {
+  local variant="$1"
+  require_flutter || return 1
+  [ -d "$COMPANION_DIR" ] || { err "companion/ is missing from this checkout."; return 1; }
+  say "Building the companion app (${variant}) — the first build can take a few minutes…"
+  ( cd "$COMPANION_DIR" && flutter pub get && flutter build apk --flavor secure "--${variant}" ) \
+    || { err "The companion build failed (see the Flutter output above)."; return 1; }
+  ok "✓ Built $(companion_apk "$variant")"
+}
+
+# Resolve the target device serial. Prints ONLY the serial to stdout; all diagnostics go to stderr so the
+# caller can capture it via $(...). $1 = requested serial (or ""). Refuses to guess when >1 is connected.
+companion_pick_device() {
+  local want="$1" devs d n=0 chosen=""
+  devs="$(adb devices 2>/dev/null | tail -n +2 | awk '$2=="device"{print $1}')"
+  if [ -n "$want" ]; then
+    # -- so a serial beginning with '-' is never taken as a grep option; -F/-x = literal, whole-line.
+    if printf '%s\n' "$devs" | grep -qxF -- "$want"; then printf '%s' "$want"; return 0; fi
+    err "No connected device with serial '${want}'. Connected: $(printf '%s' "$devs" | tr '\n' ' ')"; return 1
+  fi
+  # read line-by-line (NOT `for d in $devs`, which would pathname-expand a serial containing a glob char).
+  while IFS= read -r d; do
+    [ -n "$d" ] || continue
+    n=$((n + 1)); chosen="$d"
+  done <<EOF
+$devs
+EOF
+  if [ "$n" -eq 0 ]; then
+    err "No Android device is connected. Enable USB debugging and plug in the phone (check: adb devices)."; return 1
+  fi
+  if [ "$n" -gt 1 ]; then
+    err "Multiple devices connected — pick one with --device <serial>:"
+    printf '%s\n' "$devs" | sed 's/^/    /' >&2
+    return 1
+  fi
+  printf '%s' "$chosen"
+}
+
+cmd_companion() {
+  local sub="${1:-help}"; shift 2>/dev/null || true
+  local variant="debug" device=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --release)  variant="release"; shift ;;
+      --debug)    variant="debug"; shift ;;
+      --device)
+        # $2 must exist AND not be another flag — otherwise `--device --release` would swallow the flag as
+        # the serial, and a bare trailing `--device` would `shift 2` past the end and loop forever (no set -e).
+        case "${2:-}" in
+          ''|-*) err "--device needs a serial value (e.g. --device emulator-5554). List them: ./accrawl companion devices"; return 2 ;;
+        esac
+        device="$2"; shift 2 ;;
+      --device=*)
+        device="${1#--device=}"
+        [ -n "$device" ] || { err "--device= needs a serial value (e.g. --device=emulator-5554)."; return 2; }
+        shift ;;
+      *) err "unknown companion option: $1"; return 2 ;;
+    esac
+  done
+  case "$sub" in
+    devices)
+      require_adb || return 1
+      say "Connected Android devices:"
+      adb devices | tail -n +2 | awk 'NF' | sed 's/^/  /'
+      ;;
+    build)
+      companion_build "$variant"
+      ;;
+    install)
+      require_flutter || return 1; require_adb || return 1
+      local serial; serial="$(companion_pick_device "$device")" || return 1   # fail fast BEFORE a long build
+      companion_build "$variant" || return 1
+      local apk; apk="$(companion_apk "$variant")"
+      say "Installing on ${serial}…"
+      if ! adb -s "$serial" install -r "$apk"; then
+        err "adb install failed. If it reported a signature/UPDATE_INCOMPATIBLE mismatch, an older build with a"
+        err "different signer is installed — remove it first:  adb -s ${serial} uninstall ${COMPANION_APP_ID}"
+        return 1
+      fi
+      ok "✓ Installed the OTP-relay app on ${serial}."
+      say "   Next: in the console (Devices → Pair) create a pairing token, then enter it in the app."
+      ;;
+    help|-h|--help|'')
+      cat <<EOF
+Companion OTP-relay app (Android) — build + install from this repo.
+
+  ./accrawl companion build   [--release]                 Build the APK (debug default).
+  ./accrawl companion install [--release] [--device <s>]  Build + install on a connected phone.
+  ./accrawl companion devices                             List connected Android devices.
+
+The phone needs USB debugging on and to be connected (check: adb devices). With more than one device,
+pass --device <serial>. After installing, pair it in the web console (Devices → Pair) and enter the token.
+EOF
+      ;;
+    *) err "unknown companion action: '${sub}' (try: build | install | devices)"; return 2 ;;
+  esac
+}
+
+usage() {
+  cat <<EOF
+accrawl — manage your self-host stack.
+
+Usage: ./accrawl <command> [args]
+
+Lifecycle
+  start                 Build (always) + start the stack, then print the URL.
+  stop                  Stop the stack (keeps your data volume).
+  restart               Rebuild + recreate all services.
+  update                Alias for restart — rebuild + recreate to pick up new code.
+  status                Show containers, reachability, and deployed-vs-working-tree version (STALE check).
+  logs [service] [-f]   Tail logs (default --tail=100). e.g. ./accrawl logs control-plane -f
+  open                  Open the console in your browser.
+
+Configuration       (atomically rewrites .env, then recreates)
+  set-port <n>          Change the host port (1–65535). Offers to fix ENGINE_WS_URL if it embeds the old port.
+  set-bind <addr>       127.0.0.1 (localhost only, default) or 0.0.0.0 (LAN).
+  reset [--yes]         DESTRUCTIVE: delete ALL data (removes the DB volume). Prompts unless --yes.
+
+Companion OTP-relay app (Android)
+  companion install [--release] [--device <s>]   Build + install the Android companion app on a phone.
+  companion build   [--release]                  Build the APK only (prints its path).
+  companion devices                              List connected Android devices.
+
+Boot service
+  install-service [--enable]     Generate a systemd unit (Linux) or launchd agent (macOS) to start at boot.
+                                 Prints the exact enable commands; --enable runs them (sudo on Linux).
+  uninstall-service [--enable]   Reverse install-service.
+
+  help                  This message.
+
+Domain/TLS mode is selected automatically when ACCRAWL_DOMAIN is set in .env (run ./setup.sh to configure).
+EOF
+}
+
+main() {
+  local cmd="${1:-help}"
+  shift 2>/dev/null || true
+  case "$cmd" in
+    start)             cmd_start "$@" ;;
+    stop)              cmd_stop "$@" ;;
+    restart)           cmd_restart "$@" ;;
+    update)            cmd_update "$@" ;;
+    status)            cmd_status "$@" ;;
+    logs)              cmd_logs "$@" ;;
+    open)              cmd_open "$@" ;;
+    set-port)          cmd_set_port "$@" ;;
+    set-bind)          cmd_set_bind "$@" ;;
+    reset)             cmd_reset "$@" ;;
+    install-service)   cmd_install_service "$@" ;;
+    uninstall-service) cmd_uninstall_service "$@" ;;
+    companion|relay)   cmd_companion "$@" ;;
+    help|-h|--help|'') usage ;;
+    *) err "unknown command: ${cmd}"; say ""; usage >&2; exit 2 ;;
+  esac
+}
+
+main "$@"

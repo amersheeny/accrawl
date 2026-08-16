@@ -1,0 +1,1 @@
+ALTER TABLE "sessions" ADD COLUMN "otp_request_epoch" integer DEFAULT 0 NOT NULL;

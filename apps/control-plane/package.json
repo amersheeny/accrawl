@@ -1,0 +1,64 @@
+{
+  "name": "@accrawl/control-plane",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Accrawl control-plane API \u2014 institutions/connections/credentials/sessions, crawl orchestration, scheduler, and the data API. Drives the engine; serves the web UI + external consumers.",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run --passWithNoTests && vitest run --config vitest.greenmail.config.mts",
+    "typecheck": "tsc --noEmit",
+    "e2e:oauth": "tsx scripts/oauth-e2e.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:grant-engine": "tsx src/db/apply-engine-grants.ts"
+  },
+  "engines": {
+    "node": ">=26.7.0"
+  },
+  "dependencies": {
+    "@accrawl/contracts": "workspace:*",
+    "@fastify/rate-limit": "^11.2.0",
+    "@google/genai": "^2.17.1",
+    "@node-rs/argon2": "^2.1.0",
+    "cron-parser": "^5.10.0",
+    "drizzle-orm": "^0.45.2",
+    "fastify": "^5.12.0",
+    "imapflow": "^1.7.1",
+    "mailparser": "^3.9.15",
+    "pg-boss": "^12.27.0",
+    "postgres": "^3.4.9",
+    "tldts": "^7.4.10",
+    "ws": "^8.21.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@accrawl/sdk": "workspace:*",
+    "@electric-sql/pglite": "^0.5.5",
+    "@electric-sql/pglite-socket": "^0.2.8",
+    "@types/mailparser": "^3.4.6",
+    "@types/node": "^26.2.0",
+    "@types/ws": "^8.18.1",
+    "drizzle-kit": "^0.31.10",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./storage": {
+      "types": "./dist/storage/index.d.ts",
+      "default": "./dist/storage/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  }
+}

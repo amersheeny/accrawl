@@ -1,0 +1,1 @@
+ALTER TABLE "sessions" ADD COLUMN "otp_idempotency_key" text;

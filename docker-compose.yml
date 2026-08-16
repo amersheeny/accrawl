@@ -1,0 +1,225 @@
+# Accrawl — self-host stack. `cp .env.example .env`, fill the secrets, then `docker compose up -d`.
+# Open the operator console at http://localhost:8088.
+name: accrawl
+
+services:
+  postgres:
+    image: postgres:18.6-alpine@sha256:432b3b824c0769275ec9b0947736ef8b376d6997bcaa9de29818f613819c2feb
+    environment:
+      POSTGRES_USER: accrawl
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: accrawl
+    volumes:
+      # PostgreSQL 18 keeps its cluster in a version-named SUBDIRECTORY of /var/lib/postgresql, which is why
+      # the image documents a single mount at that parent rather than at .../data. Mounting the old path
+      # made the image find a legacy data directory, warn, and serve a DIFFERENT, empty cluster from the
+      # container filesystem — so writes looked fine and vanished on the next recreate. Mount the parent.
+      - pgdata18:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U accrawl -d accrawl"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  control-plane:
+    build:
+      context: .
+      dockerfile: apps/control-plane/Dockerfile
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: postgres://accrawl:${POSTGRES_PASSWORD}@postgres:5432/accrawl
+      ENGINE_URL: http://engine:8080
+      # The control plane reads the model too, and not only the engine: it is what turns a relayed SMS
+      # into the code a bank is waiting for, drafts a configuration, and scans an imported one. Without
+      # it the extraction returns "no code found" rather than failing, so a phone relays the message,
+      # the crawl asks again, and nothing anywhere says the key never arrived.
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?set GEMINI_API_KEY in .env}
+      # Proves whoever sets the first password is the person who installed this. setup.sh generates it.
+      # Refusing to start without one is deliberate: a deployment nobody can claim is recoverable, and
+      # one a stranger has claimed is not. Supports SETUP_CLAIM_TOKEN_FILE for a mounted secret.
+      SETUP_CLAIM_TOKEN: ${SETUP_CLAIM_TOKEN:?run ./setup.sh, or set SETUP_CLAIM_TOKEN in .env}
+      # Public WebSocket URL the companion phone connects to for the device-proxy tunnel (the Caddy /tunnel
+      # route → engine). OPTIONAL — only needed if an institution sets useDeviceProxy. Set it to this
+      # deployment's externally-reachable address, e.g. wss://your-host:8088/tunnel (ws:// for plain local
+      # HTTP). Left empty, /api/sessions/awaiting-tunnel returns no URL, so the device proxy stays off.
+      ENGINE_WS_URL: ${ENGINE_WS_URL:-}
+      # Sensitive secrets — provide each EITHER inline (from .env) OR out-of-tree via the `_FILE`
+      # convention: set <NAME>_FILE to a path mounted as a Docker secret (see the commented `secrets:`
+      # example at the bottom of this file). readSecret() prefers <NAME>_FILE and the app validates at
+      # startup that one source is present. There is NO admin password here — it is set on first launch
+      # in the web console (first-run setup) and stored only as an argon2id hash.
+      ENGINE_SHARED_SECRET: ${ENGINE_SHARED_SECRET:-}
+      ENGINE_SHARED_SECRET_FILE: ${ENGINE_SHARED_SECRET_FILE:-}
+      ENGINE_DB_PASSWORD: ${ENGINE_DB_PASSWORD:?set ENGINE_DB_PASSWORD in .env}
+      CREDENTIAL_ENC_KEY: ${CREDENTIAL_ENC_KEY:-}
+      CREDENTIAL_ENC_KEY_FILE: ${CREDENTIAL_ENC_KEY_FILE:-}
+      # Companion wake-up credentials. The sender-credentials path is inside this container and must be
+      # mounted read-only (see DEPLOY.md). Empty values keep Companion push disabled for core-only installs.
+      COMPANION_PUSH_PROJECT_ID: ${COMPANION_PUSH_PROJECT_ID:-}
+      COMPANION_PUSH_CREDENTIALS_FILE: ${COMPANION_PUSH_CREDENTIALS_FILE:-}
+      # Handed to a paired Companion so it registers with this deployment's project rather than one
+      # built into the app. All four or none; see .env.example.
+      COMPANION_PUSH_CLIENT_APP_ID: ${COMPANION_PUSH_CLIENT_APP_ID:-}
+      COMPANION_PUSH_CLIENT_API_KEY: ${COMPANION_PUSH_CLIENT_API_KEY:-}
+      COMPANION_PUSH_CLIENT_SENDER_ID: ${COMPANION_PUSH_CLIENT_SENDER_ID:-}
+      SCHEDULER_ENABLED: "true"
+      # Deployed build stamp — the git short SHA `./accrawl start` bakes in at launch. Surfaced by the
+      # control-plane's GET /version so `./accrawl status` can detect a stale (un-rebuilt) deployment.
+      # Defaults to "unknown" for a bare `docker compose up` outside the lifecycle script / a git checkout.
+      ACCRAWL_VERSION: ${ACCRAWL_VERSION:-unknown}
+      # Read side of the shared screenshots volume (the engine writes it) — serves the console's live
+      # step screenshots via GET /api/sessions/:id/steps/:n/screenshot.
+      SCREENSHOT_DIR: /data/screenshots
+    volumes:
+      - screenshots:/data/screenshots:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # The entrypoint runs migrate + grant-engine before listening, so a healthy control-plane means
+      # the schema and the least-privilege engine role are both in place.
+      test: ["CMD", "/usr/bin/node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 90s
+    restart: unless-stopped
+    # The control-plane drains HTTP + stops pg-boss + closes the pool on SIGTERM (force-exit watchdog at
+    # 25s). Give it more than Docker's 10s default so the graceful drain isn't SIGKILLed mid-flight.
+    stop_grace_period: 30s
+
+  # One-shot ownership convergence for both fresh and upgraded named volumes.
+  # The long-running engine remains UID 1000 with no capabilities; this helper
+  # receives only CAP_CHOWN and exits before the engine can start.
+  screenshots-init:
+    image: postgres:18.6-alpine@sha256:432b3b824c0769275ec9b0947736ef8b376d6997bcaa9de29818f613819c2feb
+    user: "0:0"
+    entrypoint: ["/bin/sh", "-c"]
+    # A LIST, so `sh -c` receives the whole script as its single argument. Written as a bare string, compose
+    # splits it into words and `sh -c chown -R …` runs chown with no arguments at all — it prints its usage
+    # and exits non-zero, taking the engine and the whole stack down with it.
+    command: ["chown -R 1000:1000 /data/screenshots"]
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+    volumes:
+      - screenshots:/data/screenshots
+    restart: "no"
+
+  engine:
+    build:
+      context: .
+      dockerfile: apps/engine/Dockerfile
+    platform: linux/amd64 # real google-chrome-stable is amd64-only; runs under emulation on arm64
+    shm_size: 1gb # Chrome needs a large /dev/shm
+    # Container isolation for the renderer (it loads attacker-influenceable bank pages, as a non-root
+    # user per the Dockerfile): no privilege escalation, and drop every Linux capability.
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      NODE_ENV: production
+      PORT: "8080"
+      PLATFORM: postgres
+      # Self-host crawl engine. With PLATFORM=postgres this mode serves /crawl + /cancel AND the companion's
+      # /tunnel WebSocket from ONE container (modeEnablesTunnel). The /tunnel WS is self-host token-authed
+      # (control-plane-issued HMAC tunnel token + single-use DB claim, not an identity service), reached only by a
+      # paired phone via the Caddy /tunnel route; /crawl + /cancel stay internal. NOT the unset/'development'
+      # default (everything on, for local dev).
+      SERVICE_MODE: crawl
+      # Chromium's own sandbox is ON by default in the engine. It cannot start under this container's
+      # syscall filter: the container runtime's default seccomp profile refuses clone(CLONE_NEWUSER),
+      # which is the first thing Chromium's namespace sandbox does. Measured here — the call fails with
+      # EPERM under the default profile even with no other hardening, and succeeds with the filter
+      # removed even alongside cap_drop ALL, no-new-privileges and a non-root user. So a container that
+      # left this unset would not run Chromium at all.
+      #
+      # This is a downgrade, and it is written down rather than hidden in a flag: what remains is
+      # container isolation (non-root, no capabilities, no privilege escalation), which bounds what a
+      # renderer escape reaches on the HOST but not what it reaches inside this container. Removing the
+      # syscall filter to regain the sandbox would trade one boundary for another and is not done here.
+      CHROMIUM_DISABLE_SANDBOX: "1"
+      # Least-privilege role (created + granted by the control-plane entrypoint) — NOT the admin URL.
+      ENGINE_DATABASE_URL: postgres://accrawl_engine:${ENGINE_DB_PASSWORD}@postgres:5432/accrawl
+      ENGINE_SHARED_SECRET: ${ENGINE_SHARED_SECRET}
+      # Internal, authenticated callback used only when a new OTP-request episode is armed. The control
+      # plane re-reads the durable session before selecting a companion; no user/device metadata crosses it.
+      CONTROL_PLANE_INTERNAL_ORIGIN: http://control-plane:3000
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?set GEMINI_API_KEY in .env}
+      SCREENSHOT_DIR: /data/screenshots
+    volumes:
+      - screenshots:/data/screenshots
+    depends_on:
+      postgres:
+        condition: service_healthy
+      control-plane:
+        condition: service_healthy # ensures the accrawl_engine role + grants exist first
+      screenshots-init:
+        condition: service_completed_successfully
+    expose:
+      - "8080" # internal only — never host-published
+    restart: unless-stopped
+
+  caddy:
+    build:
+      context: .
+      dockerfile: infra/Caddy.Dockerfile
+      args:
+        # Baked into the SPA so the console footer shows the running build; the source of truth for staleness
+        # is still the control-plane's GET /version. Defaults to "unknown" outside the lifecycle script.
+        ACCRAWL_VERSION: ${ACCRAWL_VERSION:-unknown}
+    environment:
+      # Caddy site address. Local/plain mode: ":8088" — the FIXED internal container port. The HOST publish
+      # port varies via the `ports` mapping below; the internal port never changes. Domain/TLS mode: the
+      # docker-compose.tls.yml override sets this to ${ACCRAWL_DOMAIN} so Caddy serves that host with
+      # automatic HTTPS on 80/443.
+      ACCRAWL_SITE_ADDRESS: ${ACCRAWL_SITE_ADDRESS:-:8088}
+      # Optional ACME account-email directive for domain/TLS mode (`email you@example.com`, or empty). The
+      # launcher derives it from ACCRAWL_TLS_EMAIL because Caddy rejects a bare `email` line — so we inject
+      # the whole directive or nothing. Empty in local mode.
+      ACCRAWL_ACME_GLOBAL: ${ACCRAWL_ACME_GLOBAL:-}
+    ports:
+      # HOST publish side only — internal container port stays 8088. ACCRAWL_BIND defaults to 127.0.0.1
+      # (localhost-only, secure by default); set ACCRAWL_BIND=0.0.0.0 in .env to allow LAN access. Existing
+      # LAN deployments MUST set ACCRAWL_BIND=0.0.0.0 to keep network reachability. ACCRAWL_PORT defaults to
+      # 8088. (Domain/TLS mode REPLACES this mapping with 80/443 via docker-compose.tls.yml.)
+      - "${ACCRAWL_BIND:-127.0.0.1}:${ACCRAWL_PORT:-8088}:8088"
+    depends_on:
+      control-plane:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  # `pgdata` (PostgreSQL 16 layout) is deliberately retained, not deleted: it is the pre-18 cluster this
+  # deployment's data was migrated out of. Remove it once you are satisfied the migration landed.
+  pgdata:
+  pgdata18:
+  screenshots:
+
+# ── Out-of-tree secrets (opt-in; recommended for the sensitive keys) ───────────────────────────────────
+# Keep each secret in a file OUTSIDE the repo (e.g. ~/.accrawl/secrets/) so it can never be committed,
+# mount it as a Docker secret, and point the matching *_FILE env above at /run/secrets/<name>. The app
+# (readSecret) prefers the *_FILE source. To enable, create the files and uncomment:
+#
+# secrets:
+#   credential_enc_key:
+#     file: ${ACCRAWL_SECRETS_DIR:-./secrets}/credential_enc_key
+#   engine_shared_secret:
+#     file: ${ACCRAWL_SECRETS_DIR:-./secrets}/engine_shared_secret
+#
+# services:
+#   control-plane:
+#     secrets: [credential_enc_key, engine_shared_secret]
+#     environment:
+#       CREDENTIAL_ENC_KEY_FILE: /run/secrets/credential_enc_key
+#       ENGINE_SHARED_SECRET_FILE: /run/secrets/engine_shared_secret

@@ -1,0 +1,47 @@
+// The Android Gradle Plugin builds the native code with the Android NDK.
+
+group 'com.github.dart_lang.jni_flutter'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// Flutter 3.44.8's detectApplyingKotlinGradlePlugin() injects legacy KGP into
+// Groovy subprojects that visibly declare this plugin. Apply the same Android
+// library plugin through Gradle's API so AGP 9 built-in Kotlin remains active.
+pluginManager.apply('com.android.library')
+
+android {
+    if (project.android.hasProperty("namespace")) {
+        namespace 'com.github.dart_lang.jni_flutter'
+    }
+
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 21
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}

@@ -1,0 +1,20 @@
+gradle-wrapper.jar
+/.gradle
+/captures/
+/gradlew
+/gradlew.bat
+/local.properties
+GeneratedPluginRegistrant.java
+.cxx/
+
+
+# Remember to never publicly share your keystore.
+# See https://flutter.dev/to/reference-keystore
+key.properties
+**/*.keystore
+**/*.jks
+
+# A deployment's push client configuration. The build no longer reads one — the app is told which
+# project to use when it pairs — but these files still exist on machines that built the app before
+# that, and they carry a real project's identifiers. Ignored so they cannot be committed by accident.
+app/src/*/google-services.json
