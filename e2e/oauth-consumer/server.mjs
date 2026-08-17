@@ -114,8 +114,14 @@ const server = http.createServer(async (req, res) => {
       }
 
       const masked = String(token.access_token).slice(0, 10) + '…';
+      // The access token is short-lived by design, so say so in units a reader can act on. Dividing by a
+      // day printed "expires in 0 days" the moment it stopped being the grant's ~90-day clock.
+      const lifetime = (seconds) => (seconds >= 3600
+        ? `${Math.round(seconds / 3600)}h`
+        : `${Math.max(1, Math.round(seconds / 60))}m`);
       return send(res, 200, page('Connected', `<h1 class="ok">Connected to Accrawl ✓</h1>
-        <p>Access token (${token.scope}, expires in ${Math.round(token.expires_in / 86400)} days): <code>${masked}</code></p>
+        <p>Access token (${token.scope}, expires in ${lifetime(token.expires_in)} — refresh with the
+        refresh_token before then): <code>${masked}</code></p>
         <p>Connections shared with this app, via <code>GET /api/v1/connections</code> (HTTP ${dirRes.status}):</p>
         <pre>${shared}</pre>
         <p>Accounts read via <code>GET /api/v1/connections/${CONNECTION_ID}/accounts</code> (HTTP ${dataRes.status}):</p>

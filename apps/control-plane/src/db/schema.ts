@@ -567,7 +567,8 @@ export const authorizationCodes = pgTable('authorization_codes', {
 /**
  * The operator's standing consent for a client — the "connected app": which scopes over which connections,
  * with an expiry (the ~90-day / 3-month clock) and first-party operator revocation. Access tokens (api_keys
- * rows, via api_keys.grant_id) and refresh tokens reference the grant; revoking it invalidates them.
+ * rows, via api_keys.grant_id) and refresh tokens reference the grant; revoking it invalidates them. An
+ * access token carries its own much shorter expiry as well, so a leaked one dies long before the consent.
  */
 export const oauthGrants = pgTable('oauth_grants', {
   id: uuid('id').primaryKey().defaultRandom(),

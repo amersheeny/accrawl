@@ -65,7 +65,7 @@ Operator ─► Web console ──REST + SSE──► Control-plane API ──HT
   financial requests require HTTPS.
 - **Third-party apps can read your data with your consent** via the **"Connect with Accrawl"** OAuth flow
   (Authorization-Code + PKCE): the app sends you to Accrawl's consent screen, you sign in and pick exactly
-  which connections to share, and it receives a scoped, ~90-day, revocable token for the normalized data API
+  which connections to share, and it receives a scoped, revocable token for the normalized data API
   — never your Accrawl password or bank credentials. You register apps and revoke their access over the
   operator API (`/api/oauth-clients`, `/api/grants`); a dedicated console screen for it is not built yet.
   See [docs/spec-oauth.md](./docs/spec-oauth.md).

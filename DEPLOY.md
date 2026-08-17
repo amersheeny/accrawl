@@ -161,7 +161,7 @@ you register each app and approve access at a consent screen. Full spec + SDK us
    its requested scopes; you sign in with your Accrawl password, then choose which connections to share—or
    select **All current connections**—and approve. **All current connections** includes only connections
    available at the time of authorisation. To share a connection added later, you must authorise again. The
-   app then exchanges the code for a scoped, revocable access token that lasts about 90 days and reads only
+   app then exchanges the code for a scoped, revocable access token that reads only
    the `/api/v1` data you consented to.
 3. **Manage connected apps** — `GET /api/grants` lists every app that holds access (scopes, connections,
    expiry, status); `DELETE /api/grants/:id` revokes one immediately (its access + refresh tokens die at

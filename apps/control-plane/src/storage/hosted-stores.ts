@@ -137,6 +137,19 @@ export interface OauthTokenMaterial {
   accessKeyId: string;
   accessKeyHash: string;
   refreshTokenHash: string;
+  /**
+   * When the ACCESS token stops working — deliberately much sooner than the grant.
+   *
+   * The access token is a bearer credential for somebody's financial data: whoever holds the string can
+   * read it. It used to expire with the grant, so a copy taken from a log, a proxy, or a client's storage
+   * stayed live for the whole ~90-day consent window, and the refresh machinery bought nothing because
+   * there was never a moment the access token needed replacing. Bounding it is what makes rotation mean
+   * something. The refresh token — held server-side as a hash, single-use, and rotated on every exchange —
+   * remains the long-lived half.
+   *
+   * Never later than the grant: a token cannot outlive the consent it was issued under.
+   */
+  accessExpiresAt: Date;
 }
 
 export interface OauthIssuedGrant {

@@ -141,7 +141,7 @@ body params (`client_secret_post`); a public client presents only its `client_id
 {
   "access_token": "acck_…",   // an Accrawl API key, usable directly on /api/v1
   "token_type": "Bearer",
-  "expires_in": 7776000,       // seconds remaining on the grant's ~90-day window
+  "expires_in": 3600,          // the ACCESS token's own clock — refresh before it runs out
   "refresh_token": "acrt_…",
   "scope": "read:data"         // space-delimited granted scopes
 }
@@ -181,12 +181,18 @@ one-time-passcode relay). Acting on an institution is the account owner's, in th
 ## 6. Grants & token lifetime
 
 A **grant** is the standing consent for one client — its scopes, its connections, and a **~90-day expiry**
-(the operator's "3-month" clock). Both the access token and the refresh token are bounded by the grant's
-expiry: **a refresh rotates the pair within that window, it never extends it.** When the grant expires (or is
-revoked), every token under it stops working.
+(the operator's "3-month" clock). Every token is bounded by it: **a refresh rotates the pair within that
+window, it never extends it.** When the grant expires (or is revoked), every token under it stops working.
 
-- **Access token** — an `api_keys` row (`acck_…`) with a `grant_id`; deleting/revoking the grant cascades to
-  it, so revocation is immediate rather than waiting for token expiry.
+The access token expires **far sooner than the grant — one hour**. It is a bearer credential for somebody's
+financial data, so a copy lifted from a log, a proxy or a client's storage must go stale quickly; giving it
+the grant's clock meant a leaked token read that data for a quarter of a year, and left the rotation below
+with nothing to do. Refreshing is therefore a normal part of using this API, not an edge case, and both
+first-party SDKs implement it.
+
+- **Access token** — an `api_keys` row (`acck_…`) with a `grant_id`, valid for one hour and never past the
+  grant. Deleting/revoking the grant also cascades to it, so revocation is immediate rather than waiting
+  even for that hour.
 - **Refresh token** — `acrt_…`, single-use with **rotation + reuse detection**: each refresh consumes the
   presented token and issues a new one. Replaying an already-consumed refresh token is treated as theft and
   **revokes the entire grant** (both tokens), per OAuth 2.1 / RFC 9700.

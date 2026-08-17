@@ -16,8 +16,10 @@
  *                                     the ticket, mint a single-use authorization_code, and 302 back to
  *                                     redirect_uri?code&state. (Deny at either step → error=access_denied.)
  *   3. POST /oauth/token              the 3rd-party SERVER exchanges the code (+ PKCE verifier / client
- *                                     secret) for a scoped, ~90-day access token — an api_keys row that flows
- *                                     through the SAME requireOperatorOrApiKey + keyGrantsConnection guards.
+ *                                     secret) for a scoped access token — an api_keys row that flows through
+ *                                     the SAME requireOperatorOrApiKey + keyGrantsConnection guards. The
+ *                                     token lasts an hour; the ~90-day GRANT is the consent window, and the
+ *                                     client refreshes within it.
  *
  * Security invariants: the connection inventory is never rendered before the operator authenticates;
  * redirect_uri is exact-match against the client's registered allowlist and never inferred; the code is
@@ -99,8 +101,28 @@ async function labelledConnections(
   }));
 }
 
-/** The 3rd-party grant / access token lifetime — the operator's "~3-month" clock. */
+/** The 3rd-party GRANT lifetime — the operator's "~3-month" clock, and what the consent screen promises. */
 const OAUTH_GRANT_TTL_MS = 90 * 24 * 60 * 60 * 1000;
+
+/**
+ * How long an ACCESS token works. Deliberately not the grant's lifetime.
+ *
+ * It used to be: `createApiKey(… expiresAt: grant.expiresAt …)` handed out a bearer credential for
+ * somebody's financial data that stayed valid for ninety days. Anyone who obtained the string — from a
+ * log, a proxy, a crash report, a client's storage — could read that data until the consent window ran
+ * out, and the refresh-rotation machinery below protected nothing, because a client never had a reason
+ * to rotate. An hour makes the rotation load-bearing and shrinks a leaked token from a quarter of a year
+ * to one hour.
+ *
+ * The consent screen's promise is unchanged: the GRANT still lasts ~90 days, and a client refreshes
+ * within it. Both first-party SDKs already implement that exchange.
+ */
+const OAUTH_ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
+
+/** An access token never outlives the consent it was issued under, however long its own clock is. */
+function accessTokenExpiry(grantExpiresAt: Date, now: Date = new Date()): Date {
+  return new Date(Math.min(now.getTime() + OAUTH_ACCESS_TOKEN_TTL_MS, grantExpiresAt.getTime()));
+}
 
 /** How long the operator has to pick connections + approve after signing in on the consent screen. Short so a
  *  leaked consent ticket has a tiny replay window; long enough to read the connection list unhurried. */
@@ -322,7 +344,8 @@ async function authenticateOauthClient(req: FastifyRequest): Promise<ClientAuthR
 }
 
 /** Mint a fresh access token (an api_keys row) + a rotating refresh token for a grant. Both are bounded by
- *  the grant's expiry (the ~90-day consent window) — refresh rotates within that window, it never extends it. */
+ *  bounded by the grant's expiry (the ~90-day consent window) — refresh rotates within that window, it never
+ *  extends it. The access token itself expires far sooner; see OAUTH_ACCESS_TOKEN_TTL_MS. */
 async function issueTokensForGrant(
   database: Pick<Db, 'insert'>,
   client: OauthClientRecord,
@@ -334,13 +357,16 @@ async function issueTokensForGrant(
     expiresAt: Date;
   },
 ): Promise<Record<string, unknown>> {
+  const accessExpiresAt = accessTokenExpiry(grant.expiresAt);
   const { plaintext: accessToken } = await createApiKey(database, {
     name: `oauth:${client.name}`, scopes: grant.scopes, connectionGrants: grant.connectionGrants,
-    ownerSubject: grant.ownerSubject, expiresAt: grant.expiresAt, grantId: grant.id,
+    ownerSubject: grant.ownerSubject, expiresAt: accessExpiresAt, grantId: grant.id,
   });
+  // The refresh token keeps the grant's clock: it is the long-lived half, held here only as a hash,
+  // single-use, and rotated on every exchange.
   const { plaintext: refreshToken, tokenHash } = generateRefreshToken();
   await database.insert(oauthRefreshTokens).values({ tokenHash, grantId: grant.id, expiresAt: grant.expiresAt });
-  return oauthTokenResponse(accessToken, refreshToken, grant);
+  return oauthTokenResponse(accessToken, refreshToken, grant, accessExpiresAt);
 }
 
 function oauthTokenResponse(
@@ -350,11 +376,17 @@ function oauthTokenResponse(
     scopes: string[];
     expiresAt: Date;
   },
+  accessExpiresAt: Date,
 ): Record<string, unknown> {
   return {
     access_token: accessToken,
     token_type: 'Bearer',
-    expires_in: Math.max(0, Math.floor((grant.expiresAt.getTime() - Date.now()) / 1000)),
+    // The ACCESS token's own clock, per RFC 6749 §5.1 — what the client must honour to know when to
+    // refresh. Reporting the grant's clock here told every client it had ninety days and never needed to.
+    // Clamped to the grant on every path, so a token is never advertised past the consent that issued it.
+    expires_in: Math.max(0, Math.floor(
+      (Math.min(accessExpiresAt.getTime(), grant.expiresAt.getTime()) - Date.now()) / 1000,
+    )),
     refresh_token: refreshToken,
     scope: grant.scopes.join(' '),
   };
@@ -619,6 +651,7 @@ export async function oauthRoutes(app: FastifyInstance): Promise<void> {
         const now = new Date();
         const grantExpiresAt =
           new Date(now.getTime() + OAUTH_GRANT_TTL_MS);
+        const accessExpiresAt = accessTokenExpiry(grantExpiresAt, now);
         const access = generateApiKey();
         const refresh = generateRefreshToken();
         const result = await (
@@ -632,6 +665,7 @@ export async function oauthRoutes(app: FastifyInstance): Promise<void> {
             accessKeyId: randomUUID(),
             accessKeyHash: access.hashedKey,
             refreshTokenHash: refresh.tokenHash,
+            accessExpiresAt,
           },
           grantExpiresAt,
           now,
@@ -650,6 +684,7 @@ export async function oauthRoutes(app: FastifyInstance): Promise<void> {
             access.plaintext,
             refresh.plaintext,
             result.grant,
+            accessExpiresAt,
           ),
         );
       }
@@ -709,6 +744,7 @@ export async function oauthRoutes(app: FastifyInstance): Promise<void> {
       const presented = one(b.refresh_token);
       if (!presented) return tokenError(reply, 400, 'invalid_request', 'refresh_token is required');
       if (usesHostedOauthStore()) {
+        const rotateNow = new Date();
         const access = generateApiKey();
         const replacement = generateRefreshToken();
         const result = await (
@@ -720,6 +756,10 @@ export async function oauthRoutes(app: FastifyInstance): Promise<void> {
             accessKeyId: randomUUID(),
             accessKeyHash: access.hashedKey,
             refreshTokenHash: replacement.tokenHash,
+            // The grant's own clock is only known once the store answers, so this is the access clock and
+            // the response below clamps what the client is told. A store must not let a key outlive its
+            // grant either — revocation already cascades; expiry is the case that needs saying.
+            accessExpiresAt: new Date(rotateNow.getTime() + OAUTH_ACCESS_TOKEN_TTL_MS),
           },
           sourceIp: req.ip,
         });
@@ -736,6 +776,7 @@ export async function oauthRoutes(app: FastifyInstance): Promise<void> {
             access.plaintext,
             replacement.plaintext,
             result.grant,
+            new Date(rotateNow.getTime() + OAUTH_ACCESS_TOKEN_TTL_MS),
           ),
         );
       }

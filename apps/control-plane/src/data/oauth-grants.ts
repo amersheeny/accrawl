@@ -1,7 +1,8 @@
 /**
  * OAuth grant lifecycle helpers — the operator's "connected apps".
  *
- * A grant is the standing consent for one client (scopes over connections) with a ~90-day expiry. Access
+ * A grant is the standing consent for one client (scopes over connections) with a ~90-day expiry. An access
+ * token issued under it expires in an hour, so the consent outlives any single bearer credential. Access
  * tokens (api_keys.grant_id) and refresh tokens reference it. Revoking a grant cascades to BOTH so the app
  * loses access immediately, without waiting for token expiry.
  */

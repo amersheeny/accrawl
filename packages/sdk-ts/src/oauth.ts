@@ -19,7 +19,8 @@ import { createHash, randomBytes } from 'node:crypto';
 import { AccrawlApiError } from './errors';
 
 /** The token endpoint's success body (RFC 6749 §5.1). `expires_in` counts down to the access token's expiry,
- *  which is the grant's ~90-day consent window; a refresh rotates within that window, it never extends it. */
+ *  the access token's own hour-long clock, NOT the grant's ~90-day consent window — refresh before it runs
+ *  out, and rotation stays inside the window rather than extending it. */
 export interface OAuthTokenResponse {
   access_token: string;
   token_type: string; // 'Bearer'

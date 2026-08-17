@@ -298,8 +298,11 @@ describe('OAuth authorization-code + PKCE flow (real server + pglite)', () => {
     const body = tok.json();
     expect(body.token_type).toBe('Bearer');
     expect(body.scope).toBe('read:data');
-    expect(body.expires_in).toBeGreaterThan(90 * 24 * 60 * 60 - 60); // ~3-month clock (seconds remaining)
-    expect(body.expires_in).toBeLessThanOrEqual(90 * 24 * 60 * 60);
+    // The ACCESS token's clock, not the grant's. It used to report the grant's ~90 days, which told every
+    // client its bearer credential never needed replacing — so a copy taken from a log or a proxy read
+    // somebody's financial data for a quarter of a year. An hour is what makes the refresh below matter.
+    expect(body.expires_in).toBeGreaterThan(60 * 60 - 60);
+    expect(body.expires_in).toBeLessThanOrEqual(60 * 60);
     expect(body.refresh_token).toMatch(/^acrt_/); // a rotating refresh token is issued alongside
     const accessToken = body.access_token as string;
     expect(accessToken).toMatch(/^acck_/); // it's a scoped API key under the hood
@@ -334,6 +337,43 @@ describe('OAuth authorization-code + PKCE flow (real server + pglite)', () => {
     const bad = await exchange({ code, client_secret: 'acls_wrong' });
     expect(bad.statusCode).toBe(401);
     expect(bad.json().error).toBe('invalid_client');
+  });
+
+  it('an access token dies on its own clock while the grant lives on, and refresh mints a working one', async () => {
+    // The property, not the advertised number: the access token is a bearer credential for somebody's
+    // financial data, so a copy of it must stop working long before the ~90-day consent does. Proved by
+    // ageing the key the way an hour of wall-clock would, leaving the grant untouched throughout.
+    const body = (await exchange({ code: await getCode([connId]) })).json();
+    const accessToken = body.access_token as string;
+    const refreshToken = body.refresh_token as string;
+
+    const reads = (token: string) => app.inject({
+      method: 'GET', url: `/api/v1/connections/${connId}/accounts`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect((await reads(accessToken)).statusCode).toBe(200);
+
+    // Age ONLY the access key. The grant keeps its ~90-day clock and is not revoked.
+    const accessHash = createHash('sha256').update(accessToken, 'utf8').digest('hex');
+    await client.exec(
+      `update api_keys set expires_at = now() - interval '1 minute' where hashed_key = '${accessHash}'`,
+    );
+    expect((await reads(accessToken)).statusCode).toBe(401);
+
+    // The consent is still live, so refreshing returns a fresh, working token — which is the whole point
+    // of bounding the access token rather than the grant.
+    const rotated = await app.inject({
+      method: 'POST', url: '/oauth/token', headers: FORM,
+      payload: form({
+        grant_type: 'refresh_token', refresh_token: refreshToken,
+        client_id: clientId, client_secret: clientSecret,
+      }),
+    });
+    expect(rotated.statusCode).toBe(200);
+    const next = rotated.json();
+    expect(next.access_token).not.toBe(accessToken);
+    expect(next.expires_in).toBeLessThanOrEqual(60 * 60);
+    expect((await reads(next.access_token as string)).statusCode).toBe(200);
   });
 
   it('rejects malformed or ambiguous OAuth client authentication', async () => {
