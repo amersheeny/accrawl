@@ -32,6 +32,10 @@ overrides:
   "@drizzle-team/brocli": ^0.12.0
   "@grpc/grpc-js": ^1.14.4
   brace-expansion: ^5.0.9
+  # html-to-text still declares ^7.1.5, which GHSA-ggr8-5vv4-36mx crashes with a recursive object
+  # graph. mailparser and html-to-text are both already at their current release, so there is no
+  # upgrade to take: the fixed major has to be forced here.
+  deepmerge-ts: ^8.0.1
   esbuild: ^0.28.2
   fast-uri: ^4.1.2
   fast-xml-parser: ^5.11.0

@@ -9,6 +9,7 @@ overrides:
   '@drizzle-team/brocli': ^0.12.0
   '@grpc/grpc-js': ^1.14.4
   brace-expansion: ^5.0.9
+  deepmerge-ts: ^8.0.1
   esbuild: ^0.28.2
   fast-uri: ^4.1.2
   fast-xml-parser: ^5.11.0
@@ -1456,8 +1457,8 @@ packages:
   decimal.js@10.6.0:
     resolution: {integrity: sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==}
 
-  deepmerge-ts@7.1.5:
-    resolution: {integrity: sha512-HOJkrhaYsweh+W+e74Yn7YStZOilkoPb6fycpwNLKzSPtruFs48nYis0zy5yJz1+ktUhHxoRDJ27RQAWLIJVJw==}
+  deepmerge-ts@8.0.1:
+    resolution: {integrity: sha512-szCXE7YLCvLKR9bFPJcvsezOShdalctSvrgN/LM/QGUEPZQajwjmsMObZ6/DuANT5lxzM/wtO8Feubwdkz8myA==}
     engines: {node: '>=16.0.0'}
 
   depd@2.0.0:
@@ -3572,7 +3573,7 @@ snapshots:
 
   decimal.js@10.6.0: {}
 
-  deepmerge-ts@7.1.5: {}
+  deepmerge-ts@8.0.1: {}
 
   depd@2.0.0: {}
 
@@ -3899,7 +3900,7 @@ snapshots:
   html-to-text@10.0.0:
     dependencies:
       '@selderee/plugin-htmlparser2': 0.12.0(selderee@0.12.0)
-      deepmerge-ts: 7.1.5
+      deepmerge-ts: 8.0.1
       dom-serializer: 2.0.0
       htmlparser2: 10.1.0
       selderee: 0.12.0
