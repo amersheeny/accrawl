@@ -1,8 +1,13 @@
 # Accrawl operator console
 
 The React (Vite) console an operator actually uses: add an institution, connect an account, watch a crawl
-run live, and read the data that came back. It is a static bundle talking to the control plane's API —
-it holds no credentials of its own and makes no decisions the server does not also enforce.
+run live, and read the data that came back. It is a static bundle talking to the control plane's API, and
+it makes no decision the server does not also enforce.
+
+It is not credential-free. A self-hosted deployment keeps the operator's bearer token in `localStorage`;
+a hosted one uses the edge's HttpOnly cookie instead and the bundle never sees the token. Bank
+credentials pass through the connection form on their way to the server, which is what encrypts and
+stores them — the browser keeps no durable copy.
 
 ## Running it
 
@@ -40,20 +45,22 @@ not against these tests.
 
 ## The copy gate
 
-User-visible strings do not ship unreviewed. `pnpm --filter @accrawl/web copy:check` — which `test` runs
-first — verifies every user-visible string in this app against the manifests in
+A *new* user-visible string does not ship unreviewed. `pnpm --filter @accrawl/web copy:check` — which
+`test` runs first — checks this app's user-visible strings against the manifests in
 [`reviews/content/`](../../reviews/content): `reviewed-copy.json` records each string's review status,
-`reviewed-source-copy.json` grants specific occurrences in source, and `user-visible-baseline.json`
-anchors what the gate considered user-visible when the baseline was taken.
+`reviewed-source-copy.json` grants specific occurrences in source, and `user-visible-baseline.json` is a
+frozen artifact recording what was already present when the baseline was taken.
 
-A new or edited string fails the gate until it has been through a content review and the manifest records
-which review produced the verdict. That last part is the point: an approval that cannot name the review
-behind it is exactly what the gate exists to catch.
+That baseline is grandfathered — the gate does not claim every historical string was reviewed. What it
+enforces is that a new or edited string, and a new occurrence of an existing one, fails until a content
+review has passed and the manifest records which review produced the verdict. That last part is the
+point: an approval that cannot name the review behind it is exactly what the gate exists to catch.
 
-The `*-copy.ts` modules hold those strings in one place per feature — institutions, connections, crawls,
-schedules, sharing, status and the Companion — so the words can be reviewed as words rather than hunted
-through JSX.
+The `*-copy.ts` modules hold strings in one place per feature — institutions, crawls, schedules, sharing,
+status and the Companion — so those words can be reviewed as words rather than hunted through JSX. Copy
+that has not been centralised yet still lives in the components, where the baseline and source-occurrence
+manifests govern it.
 
 ## License
 
-AGPL-3.0-or-later, as with the rest of the repository.
+AGPL-3.0-only, as with the rest of the repository.

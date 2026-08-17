@@ -16,14 +16,15 @@ pnpm --filter @accrawl/control-plane build   # tsc -> dist/
 pnpm --filter @accrawl/control-plane start   # node dist/index.js
 ```
 
-`PORT` overrides the default 3000. The process itself reads `DATABASE_URL` (a PostgreSQL connection
-string, which carries the password; `DATABASE_URL_FILE` reads it from a file instead), plus
-`CREDENTIAL_ENC_KEY`, `ENGINE_SHARED_SECRET` and `ENGINE_DB_PASSWORD`.
+`PORT` overrides the default 3000. The server process reads `DATABASE_URL` (a PostgreSQL connection
+string, which carries the password), plus `CREDENTIAL_ENC_KEY` and `ENGINE_SHARED_SECRET`. Those three
+take the `<NAME>_FILE` convention, so each can be read from a mounted file instead of the environment.
+`config.ts` holds the rest, most of which have working defaults.
 
 `POSTGRES_PASSWORD` in [`.env.example`](../../.env.example) is a Compose-level input, not something this
 process reads — `docker-compose.yml` uses it to build `DATABASE_URL`. Running the service directly means
-supplying `DATABASE_URL` yourself. The root [`README.md`](../../README.md) documents every setting and how
-to generate each secret; [`DEPLOY.md`](../../DEPLOY.md) covers the full self-host path.
+supplying `DATABASE_URL` yourself. The root [`README.md`](../../README.md) has the self-host configuration
+table and how to generate each secret; [`DEPLOY.md`](../../DEPLOY.md) covers the full self-host path.
 
 Most people should not run this directly — `./setup.sh` then `./accrawl start` at the repository root
 brings up Postgres, the control plane, the engine and the console together.
@@ -36,8 +37,11 @@ pnpm --filter @accrawl/control-plane db:migrate       # apply pending migrations
 pnpm --filter @accrawl/control-plane db:grant-engine  # grant the engine role its narrow privileges
 ```
 
-`db:grant-engine` is not optional in a deployment where the engine reaches the database directly. The
-engine gets its own role with only the privileges a crawl needs; it is never the owner.
+`db:grant-engine` reads `ENGINE_DB_PASSWORD` — the only command that does — and creates the engine's own
+role with just the privileges a crawl needs; the engine is never the database owner. With the variable
+unset it logs that it is skipping, and the engine shares `DATABASE_URL` instead. In a deployment where
+the engine reaches the database directly, running it is not optional. The container entrypoint chains
+`db:migrate && db:grant-engine && start`.
 
 ## What the routes cover
 
@@ -60,9 +64,10 @@ second is a single Docker-backed test that proves the email-OTP watcher's real I
 live greenmail server; it runs after the parallel suite so the JVM does not contend with the test
 workers.
 
-**Without a container runtime the greenmail test reports as skipped and the suite still passes.** It is
-reported as skipped, never as a pass — if you need it to run, start Docker, or set `DOCKER_BIN` when your
-runtime is not on `PATH`.
+**With no container runtime installed, the greenmail test reports as skipped and the suite still
+passes** — skipped, never a pass. A runtime that is installed but unusable, such as a stopped daemon,
+fails instead of skipping, so a machine that was supposed to run the test cannot quietly stop running
+it. Set `DOCKER_BIN` when your runtime is not on `PATH`.
 
 ```bash
 pnpm --filter @accrawl/control-plane typecheck
@@ -77,4 +82,4 @@ installed on an emulator or phone, which is the path a real deployment uses.
 
 ## License
 
-AGPL-3.0-or-later, as with the rest of the repository.
+AGPL-3.0-only, as with the rest of the repository.

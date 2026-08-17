@@ -53,14 +53,22 @@ let greenmailReady = false;
 
 describe('email-OTP watcher — real IMAP via greenmail', () => {
   beforeAll(async () => {
-    // A contributor without Docker still gets the rest of the suite. Report that this
-    // integration test did not run — never let an unrun test read as a pass.
+    // A contributor with no container runtime still gets the rest of the suite, and this test
+    // reports as skipped rather than passing. A runtime that EXISTS but refuses is a different
+    // thing — a broken or stopped daemon — and is surfaced as a failure, because silently
+    // dropping the integration test is how a release loses coverage without anyone noticing.
     try {
       execFileSync(DOCKER, ['info'], { stdio: 'ignore' });
-    } catch {
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw new Error(
+          `"${DOCKER} info" failed, so the real-IMAP integration test cannot run. The runtime is ` +
+            `installed but not usable — start it, or fix its permissions. (${(e as Error).message})`,
+        );
+      }
       console.warn(
-        `[watcher.greenmail.test] SKIPPING the real-IMAP integration test: "${DOCKER} info" failed, ` +
-          'so no container runtime is available. Set DOCKER_BIN if yours is not on PATH.',
+        `[watcher.greenmail.test] SKIPPING the real-IMAP integration test: no "${DOCKER}" ` +
+          'executable found, so there is no container runtime. Set DOCKER_BIN if yours is not on PATH.',
       );
       return;
     }

@@ -1,21 +1,26 @@
 # `@accrawl/contracts`
 
-The shared vocabulary between the three processes that make up Accrawl. The engine, the control plane
-and the operator console each hold their own copy of the same idea — an account, a transaction, a crawl
-session — and this package is the single definition all three compile against, so a change to the shape
-of the data breaks the build rather than surfacing later as a silently dropped field.
+The shared vocabulary for what crosses a process boundary in Accrawl. A crawl request travels from the
+control plane to an engine, a result travels back, a worker claims a job, a device opens a tunnel — each
+of those is defined once here, so both ends compile against the same shape instead of two hand-written
+copies that drift.
 
-Types and their Zod schemas live together here on purpose: the schema is what validates data crossing a
-process boundary, and the type is inferred from it, so the two cannot drift apart.
+Where a boundary needs validation as well as a type, the Zod schema lives beside the type in the same
+module. Not everything here is schema-derived: several types are declared directly and validated at the
+specific edges that need it.
+
+Its main consumers are the engine and the control plane. The console imports only the hosted copy strings
+and the crawl-model constants, and declares its own interfaces for the API responses it renders.
 
 ## What is in it
 
 | Module | Defines |
 | --- | --- |
-| `types`, `models` | The core entities: institutions, connections, accounts, transactions, sessions |
-| `schemas` | Zod schemas for those entities, including the structured output the crawl model must return |
-| `taxonomy` | The account and transaction classification vocabulary |
-| `contract` | The engine ⇄ control-plane request/response envelopes |
+| `types` | The crawl request and response, and the normalized account, transaction and position shapes an engine produces |
+| `schemas` | The Zod schemas that validate a crawl request over the wire, and the transaction-history chunk upload |
+| `contract` | The read-side API shapes (`ContractAccount`, `ContractTransaction`, `SyncView`) and the projections from stored rows to them |
+| `models` | The selectable crawl models and the default |
+| `taxonomy` | The account and security classification vocabulary, and the mappers into it |
 | `job-payload`, `worker-broker` | What a dispatched crawl job carries, and how a worker claims one |
 | `tunnel-token` | The signed capability a Companion device presents to open a device tunnel |
 | `identity-assertion` | The identity claims a deployment's identity service supplies |
@@ -24,8 +29,10 @@ process boundary, and the type is inferred from it, so the two cannot drift apar
 | `oauth-client` | The "Connect with Accrawl" client, grant and consent shapes |
 | `hosted-copy` | Strings a hosted deployment renders, kept out of the apps so they can be reviewed as copy |
 
-Everything is re-exported from the package root; `./models` is additionally exported on its own for
-consumers that want only the entities.
+The structured output the crawl model itself must return is not here — it belongs to the engine, at
+`apps/engine/src/ai/schema.ts`.
+
+Everything is re-exported from the package root; `./models` is additionally exported on its own.
 
 ## Build, test, typecheck
 
@@ -36,7 +43,7 @@ pnpm --filter @accrawl/contracts typecheck  # tsc --noEmit
 ```
 
 The tests here are the contract's own guarantees rather than incidental coverage: that every mapped
-account and transaction classification is a member of the declared taxonomy, and that unknown input
+account and security classification is a member of the declared taxonomy, and that unknown input
 degrades instead of throwing; that a transaction-history upload rejects missing, reordered, duplicated or
 corrupted chunks and any digest or item-count mismatch; that an identity assertion is refused when
 expired, tampered with, or signed under a different secret; and that a routing context sent under any
@@ -47,10 +54,14 @@ filesystem. It builds and tests on its own with no database, no browser and no m
 
 ## Changing a contract
 
-A change here is a change to every consumer at once. Build the dependent packages before assuming a
-change is additive — `pnpm build` at the repository root — because a field the engine now emits is a
-field the control plane must be able to store and the console must be able to render.
+A change here reaches every consumer that imports the module you touched. Build the workspace before
+assuming a change is additive — `pnpm build` at the repository root — because a field the engine now
+emits is a field the control plane must be able to store.
+
+The console is the exception worth knowing about: it declares its own interfaces for the API responses it
+renders rather than importing them, so a change to a read-side shape here will **not** break its build.
+Check `apps/web/src/api.ts` by hand when you change one.
 
 ## License
 
-AGPL-3.0-or-later, as with the rest of the repository.
+AGPL-3.0-only, as with the rest of the repository.

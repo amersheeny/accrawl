@@ -22,12 +22,14 @@ cleanup_companion_workspace() {
     echo "end-to-end run did not reach completion; reporting failure" >&2
     exit_status=1
   fi
+  # `exit`, never `return`: bash keeps the status that ENTERED the EXIT trap, so a handler that
+  # returns a different one is silently ignored. Only an explicit exit here changes what the caller sees.
   if [ -z "$companion_workspace" ] || [ ! -d "$companion_workspace" ]; then
-    return "$exit_status"
+    exit "$exit_status"
   fi
   if [ "${ACCRAWL_E2E_KEEP_APKS:-0}" = "1" ]; then
     echo "Companion APKs retained at $companion_workspace"
-    return "$exit_status"
+    exit "$exit_status"
   fi
   case "$companion_workspace" in
     "$companion_workspace_parent"/accrawl-companion-build.*)
@@ -35,10 +37,10 @@ cleanup_companion_workspace() {
       ;;
     *)
       echo "Refusing to clean unexpected Companion workspace: $companion_workspace" >&2
-      return 1
+      exit 1
       ;;
   esac
-  return "$exit_status"
+  exit "$exit_status"
 }
 
 trap cleanup_companion_workspace EXIT

@@ -18,7 +18,7 @@
     "setup": "bash setup.sh",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
-    "test": "node --test scripts/cloud-sdk-policy.test.mjs scripts/install-current-node.test.mjs scripts/latest-dependency-policy.test.mjs scripts/e2e-storage-policy.test.mjs scripts/companion-release-policy.test.mjs scripts/td-parity-14.test.mjs scripts/provider-neutral-policy.test.mjs && turbo run test --concurrency=1",
+    "test": "node --test scripts/cloud-sdk-policy.test.mjs scripts/install-current-node.test.mjs scripts/latest-dependency-policy.test.mjs scripts/e2e-storage-policy.test.mjs scripts/companion-release-policy.test.mjs scripts/td-parity-14.test.mjs scripts/provider-neutral-policy.test.mjs scripts/validation-fails-closed.test.mjs && turbo run test --concurrency=1",
     "deps:check": "node scripts/check-latest-dependencies.mjs",
     "dev": "turbo run dev"
   },
