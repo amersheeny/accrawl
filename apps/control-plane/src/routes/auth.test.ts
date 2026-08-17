@@ -63,6 +63,53 @@ describe('auth + setup routes (real server + pglite)', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  it('revoking all sessions ends a token that was already issued', async () => {
+    // The whole point: operator tokens are stateless and live seven days, so a token copied out of the
+    // browser cannot be ended by deleting anything. Prove a previously-valid token stops working.
+    const token = (await app.inject({
+      method: 'POST', url: '/api/auth/login', payload: { password: 'hunter2-pw', setupCode: 'test-setup-code' },
+    })).json().token;
+    const authed = { authorization: `Bearer ${token}` };
+    expect((await app.inject({ method: 'GET', url: '/api/keys', headers: authed })).statusCode).toBe(200);
+
+    const revoked = await app.inject({
+      method: 'POST', url: '/api/auth/revoke-all', payload: { password: 'hunter2-pw' },
+    });
+    expect(revoked.statusCode).toBe(204);
+
+    expect((await app.inject({ method: 'GET', url: '/api/keys', headers: authed })).statusCode).toBe(401);
+  });
+
+  it('revoking requires the password, so a stolen token cannot lock the operator out', async () => {
+    const token = (await app.inject({
+      method: 'POST', url: '/api/auth/login', payload: { password: 'hunter2-pw', setupCode: 'test-setup-code' },
+    })).json().token;
+    const res = await app.inject({
+      method: 'POST', url: '/api/auth/revoke-all',
+      headers: { authorization: `Bearer ${token}` },
+      payload: { password: 'wrong-password' },
+    });
+    expect(res.statusCode).toBe(401);
+    // The bearer token alone did not authorise it, so the session it belongs to still works.
+    expect((await app.inject({
+      method: 'GET', url: '/api/keys', headers: { authorization: `Bearer ${token}` },
+    })).statusCode).toBe(200);
+  });
+
+  it('revoking without a password is rejected before any rotation', async () => {
+    expect((await app.inject({ method: 'POST', url: '/api/auth/revoke-all', payload: {} })).statusCode).toBe(400);
+  });
+
+  it('a token minted after revocation works', async () => {
+    await app.inject({ method: 'POST', url: '/api/auth/revoke-all', payload: { password: 'hunter2-pw' } });
+    const fresh = (await app.inject({
+      method: 'POST', url: '/api/auth/login', payload: { password: 'hunter2-pw', setupCode: 'test-setup-code' },
+    })).json().token;
+    expect((await app.inject({
+      method: 'GET', url: '/api/keys', headers: { authorization: `Bearer ${fresh}` },
+    })).statusCode).toBe(200);
+  });
+
   it('logs in with the correct password and returns a token', async () => {
     const res = await app.inject({ method: 'POST', url: '/api/auth/login', payload: { password: 'hunter2-pw', setupCode: 'test-setup-code' } });
     expect(res.statusCode).toBe(200);

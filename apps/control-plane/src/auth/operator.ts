@@ -9,7 +9,7 @@
  */
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { db } from '../db/client';
-import { getOperatorCredential } from '../data/operator-credential';
+import { getOperatorCredential, rotateOperatorTokenSigningSecret } from '../data/operator-credential';
 import { verifyPassword } from './password';
 import { currentTenant } from '../tenancy/context';
 
@@ -88,6 +88,22 @@ export async function mintOperatorToken(ttlMs: number = DEFAULT_TTL_MS): Promise
   const secret = await signingSecret();
   if (!secret) throw new Error('Operator auth unavailable: first-run setup has not completed.');
   return signToken(secret, ttlMs, currentTenant().id);
+}
+
+/**
+ * End every operator session by rotating the secret their tokens are signed with.
+ *
+ * Tokens are stateless — nothing is stored to delete — so this is what "sign out everywhere" means
+ * here, and it is the only answer to a token that has left the operator's own browser. The cache is
+ * dropped in the same breath, so the very next request verifies against the new secret rather than a
+ * stale in-process copy.
+ *
+ * Returns false when setup has not run, so a caller can tell "nothing to revoke" from "revoked".
+ */
+export async function revokeAllOperatorTokens(): Promise<boolean> {
+  const rotated = await rotateOperatorTokenSigningSecret(db);
+  clearOperatorAuthCache();
+  return rotated !== null;
 }
 
 /** Verify an operator token's signature + expiry. False if setup hasn't run or the token is invalid/expired. */

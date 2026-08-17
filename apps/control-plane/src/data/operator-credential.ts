@@ -70,3 +70,26 @@ export async function initializeOperator(db: Db, password: string): Promise<Oper
   }
   return inserted[0];
 }
+
+/**
+ * Mint a new token-signing secret, invalidating every operator session token at once.
+ *
+ * Operator tokens are stateless: they carry their own expiry and are verified by signature alone, so
+ * there is nothing to delete to end a session. Rotating the secret they are signed with is what ends
+ * them — all of them, including one already copied out of a browser's local storage.
+ *
+ * That was previously reachable only as a side effect of re-running first-run setup, which is not
+ * something an operator who suspects a stolen token should have to attempt. It is now its own action.
+ */
+export async function rotateOperatorTokenSigningSecret(db: Db): Promise<OperatorCredential | null> {
+  const tokenSigningSecret = randomBytes(32).toString('hex');
+  const updated = await db
+    .update(operatorCredential)
+    .set({ tokenSigningSecret })
+    .where(eq(operatorCredential.id, SINGLETON_ID))
+    .returning({
+      passwordHash: operatorCredential.passwordHash,
+      tokenSigningSecret: operatorCredential.tokenSigningSecret,
+    });
+  return updated[0] ?? null;
+}

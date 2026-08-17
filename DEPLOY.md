@@ -222,6 +222,18 @@ flow end-to-end.
   reaches inside the container. Regaining the sandbox means removing the syscall filter, which trades
   one boundary for another, so it is not done for you. Running the engine outside a container (as the
   test suite does) keeps the sandbox on.
+- **Ending every session.** The console stores a signed login token in the browser's local storage. It
+  expires after seven days, and the server keeps no session record for it, so an individual token
+  cannot be revoked if it is copied. To invalidate every current console token, send
+  `POST /api/auth/revoke-all` with your operator password. This rotates the token-signing secret,
+  invalidating all existing tokens—including the one used for the request. Every console session must
+  then sign in again. Requiring the operator password prevents someone with only a stolen token from
+  signing everyone out.
+
+  ```bash
+  curl -sS -X POST http://localhost:8088/api/auth/revoke-all \
+    -H 'content-type: application/json' -d '{"password":"<your operator password>"}'
+  ```
 - **The LLM is inside the trust boundary by design** — page content + extracted data go to Google (Gemini)
   to function. That is the one place financial data leaves your host; there is no third-party exfil beyond it.
 
