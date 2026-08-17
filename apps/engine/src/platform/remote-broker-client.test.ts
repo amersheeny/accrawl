@@ -17,7 +17,7 @@ const attemptId = '00000000-0000-4000-8000-000000000002';
 const execution = 'accrawl-crawl-worker-abcde';
 const environment: NodeJS.ProcessEnv = {
   CORE_ORIGIN: 'https://core.example',
-  CORE_AUDIENCE: 'https://accrawl-core.internal',
+  CORE_AUDIENCE: 'https://core-audience.example',
   ACCRAWL_TENANT_ID: 'accrawl',
   ACCRAWL_TENANT_HOST: 'accrawl.example',
   ENGINE_JOB_ID: sessionId,
@@ -59,7 +59,7 @@ describe('remote broker client', () => {
   it('takes which execution it is from the deployment, and checks the rest of its environment', () => {
     expect(readRemoteBrokerEnvironment(environment, execution)).toEqual({
       coreOrigin: 'https://core.example',
-      coreAudience: 'https://accrawl-core.internal',
+      coreAudience: 'https://core-audience.example',
       tenantId: 'accrawl',
       tenantHost: 'accrawl.example',
       sessionId,
