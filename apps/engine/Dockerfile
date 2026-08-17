@@ -82,10 +82,13 @@ ENV ZERO_AR_DATE=1
 FROM rav1e-toolchain AS rav1e-source
 # Current Rust makes two previously implicit output lifetimes warn. Apply the same annotations as
 # upstream commit b7bf39066ec4f004c9b9cdb81c91734ec2edfac7, without importing that commit's other changes.
+# The patch is vendored rather than fetched. GitHub's `commit/<sha>.patch` route now returns 404 for
+# this commit even though the commit itself is still there, which broke every engine image build. A
+# build step that depends on one upstream URL staying renderable is a build that stops working without
+# anything here changing. `RAV1E_PASTEY_PATCH_COMMIT` stays as the record of where it came from.
+COPY patches/rav1e-v0.8.1-pastey.patch /tmp/rav1e-pastey.patch
 RUN git clone --branch "v${RAV1E_VERSION}" --depth 1 https://github.com/xiph/rav1e.git /src/rav1e \
  && test "$(git -C /src/rav1e rev-parse HEAD)" = "${RAV1E_COMMIT}" \
- && wget --quiet --https-only --output-document=/tmp/rav1e-pastey.patch \
-    "https://github.com/xiph/rav1e/commit/${RAV1E_PASTEY_PATCH_COMMIT}.patch" \
  && echo "${RAV1E_PASTEY_PATCH_SHA256}  /tmp/rav1e-pastey.patch" | sha256sum -c - \
  && git -C /src/rav1e apply --check /tmp/rav1e-pastey.patch \
  && git -C /src/rav1e apply /tmp/rav1e-pastey.patch \

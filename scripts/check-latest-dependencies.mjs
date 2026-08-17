@@ -53,6 +53,7 @@ await runLatestDependencyPolicy(root, {
     files: ['apps/engine/Dockerfile'],
     lockFile: 'apps/engine/rav1e/Cargo.lock',
     pasteyPatchCommit: 'c247d53ae43dd1312dbd90117c45e4c0ee6b06ce',
+    pasteyPatchFile: 'patches/rav1e-v0.8.1-pastey.patch',
   },
   wolfi: {
     architecture: 'x86_64',

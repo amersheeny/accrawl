@@ -1,0 +1,388 @@
+From c247d53ae43dd1312dbd90117c45e4c0ee6b06ce Mon Sep 17 00:00:00 2001
+From: Josh Holmer <shssoichiro@gmail.com>
+Date: Sun, 22 Jun 2025 01:00:05 -0400
+Subject: [PATCH] Migrate to pastey
+
+There has been a security warning that the paste crate is officially marked as unmaintained, and users should migrate away from it. pastey is a fork of the paste crate with an identical interface, so it is the easiest migration path.
+---
+ Cargo.lock                           |  8 +-------
+ Cargo.toml                           |  2 +-
+ src/asm/aarch64/dist/mod.rs          |  2 +-
+ src/asm/aarch64/transform/inverse.rs |  8 ++++----
+ src/asm/shared/transform/inverse.rs  |  2 +-
+ src/asm/x86/cdef.rs                  |  8 ++++----
+ src/asm/x86/dist/mod.rs              |  6 +++---
+ src/asm/x86/mc.rs                    | 12 ++++++------
+ src/asm/x86/transform/inverse.rs     |  8 ++++----
+ src/cpu_features/aarch64.rs          |  4 ++--
+ src/cpu_features/x86.rs              |  4 ++--
+ src/test_encode_decode/mod.rs        | 10 +++++-----
+ 12 files changed, 34 insertions(+), 40 deletions(-)
+
+diff --git a/Cargo.lock b/Cargo.lock
+index 09d9e82898..3fd2df14fc 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1272,12 +1272,6 @@ version = "0.1.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
+ 
+-[[package]]
+-name = "paste"
+-version = "1.0.15"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
+-
+ [[package]]
+ name = "pastey"
+ version = "0.1.0"
+@@ -1550,7 +1544,7 @@ dependencies = [
+  "noop_proc_macro",
+  "num-derive",
+  "num-traits",
+- "paste",
++ "pastey",
+  "pretty_assertions",
+  "profiling",
+  "quickcheck",
+diff --git a/Cargo.toml b/Cargo.toml
+index b6d33cc77d..64fc677f0f 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -92,7 +92,7 @@ y4m = { version = "0.8", optional = true }
+ backtrace = { version = "0.3", optional = true }
+ num-traits = "0.2"
+ num-derive = "0.4"
+-paste = "1.0"
++pastey = "0.1.0"
+ noop_proc_macro = "0.3.0"
+ serde = { version = "1.0", features = ["derive"], optional = true }
+ dav1d-sys = { version = "0.7.0", package = "libdav1d-sys", optional = true }
+diff --git a/src/asm/aarch64/dist/mod.rs b/src/asm/aarch64/dist/mod.rs
+index 2d14ce8a8e..4fa94c1a06 100644
+--- a/src/asm/aarch64/dist/mod.rs
++++ b/src/asm/aarch64/dist/mod.rs
+@@ -417,7 +417,7 @@ mod test {
+   macro_rules! test_dist_fns {
+     ($(($W:expr, $H:expr)),*, $DIST_TY:ident, $BD:expr, $OPT:ident, $OPTLIT:tt) => {
+       $(
+-        paste::item! {
++        pastey::item! {
+           #[test]
+           fn [<get_ $DIST_TY _ $W x $H _bd_ $BD _ $OPT>]() {
+             if $BD > 8 {
+diff --git a/src/asm/aarch64/transform/inverse.rs b/src/asm/aarch64/transform/inverse.rs
+index f23f9bc7b5..e2fbddde4d 100644
+--- a/src/asm/aarch64/transform/inverse.rs
++++ b/src/asm/aarch64/transform/inverse.rs
+@@ -56,7 +56,7 @@ macro_rules! decl_itx_fns {
+   // Takes a 2d list of tx types for W and H
+   ([$([$(($ENUM:expr, $TYPE1:ident, $TYPE2:ident)),*]),*], $W:expr, $H:expr,
+    $OPT_LOWER:ident, $OPT_UPPER:ident) => {
+-    paste::item! {
++    pastey::item! {
+       // For each tx type, declare an function for the current WxH
+       $(
+         $(
+@@ -87,7 +87,7 @@ macro_rules! decl_itx_hbd_fns {
+   // Takes a 2d list of tx types for W and H
+   ([$([$(($ENUM:expr, $TYPE1:ident, $TYPE2:ident)),*]),*], $W:expr, $H:expr,
+    $OPT_LOWER:ident, $OPT_UPPER:ident) => {
+-    paste::item! {
++    pastey::item! {
+       // For each tx type, declare an function for the current WxH
+       $(
+         $(
+@@ -117,7 +117,7 @@ macro_rules! decl_itx_hbd_fns {
+ macro_rules! create_wxh_tables {
+   // Create a lookup table for each cpu feature
+   ([$([$(($W:expr, $H:expr)),*]),*], $OPT_LOWER:ident, $OPT_UPPER:ident) => {
+-    paste::item! {
++    pastey::item! {
+       const [<INV_TXFM_FNS_$OPT_UPPER>]: [[Option<InvTxfmFunc>; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL] = {
+         let mut out: [[Option<InvTxfmFunc>; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL] =
+           [[None; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL];
+@@ -143,7 +143,7 @@ macro_rules! create_wxh_tables {
+ macro_rules! create_wxh_hbd_tables {
+   // Create a lookup table for each cpu feature
+   ([$([$(($W:expr, $H:expr)),*]),*], $OPT_LOWER:ident, $OPT_UPPER:ident) => {
+-    paste::item! {
++    pastey::item! {
+       const [<INV_TXFM_HBD_FNS_$OPT_UPPER>]: [[Option<InvTxfmHBDFunc>; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL] = {
+         let mut out: [[Option<InvTxfmHBDFunc>; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL] =
+           [[None; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL];
+diff --git a/src/asm/shared/transform/inverse.rs b/src/asm/shared/transform/inverse.rs
+index e4cbc4a57a..e874754bfc 100644
+--- a/src/asm/shared/transform/inverse.rs
++++ b/src/asm/shared/transform/inverse.rs
+@@ -200,7 +200,7 @@ pub mod test {
+ 
+   macro_rules! test_itx_fns {
+     ([$([$(($ENUM:expr, $TYPE1:ident, $TYPE2:ident)),*]),*], $W:expr, $H:expr) => {
+-      paste::item! {
++      pastey::item! {
+         $(
+           $(
+             #[test]
+diff --git a/src/asm/x86/cdef.rs b/src/asm/x86/cdef.rs
+index d88b6c7d64..3e98050910 100644
+--- a/src/asm/x86/cdef.rs
++++ b/src/asm/x86/cdef.rs
+@@ -300,7 +300,7 @@ mod test {
+   macro_rules! test_cdef_filter_block {
+     ($(($XDEC:expr, $YDEC:expr)),*, $OPT:ident, $OPTLIT:literal) => {
+       $(
+-        paste::item! {
++        pastey::item! {
+           #[interpolate_test(dir_0, 0)]
+           #[interpolate_test(dir_1, 1)]
+           #[interpolate_test(dir_2, 2)]
+@@ -350,7 +350,7 @@ mod test {
+   macro_rules! test_cdef_filter_block_hbd {
+     ($(($XDEC:expr, $YDEC:expr)),*, $OPT:ident, $OPTLIT:literal) => {
+       $(
+-        paste::item! {
++        pastey::item! {
+           #[interpolate_test(dir_0, 0)]
+           #[interpolate_test(dir_1, 1)]
+           #[interpolate_test(dir_2, 2)]
+@@ -399,7 +399,7 @@ mod test {
+ 
+   macro_rules! test_cdef_dir {
+     ($OPT:ident, $OPTLIT:literal) => {
+-      paste::item! {
++      pastey::item! {
+         #[test]
+         fn [<cdef_dir_ $OPT>]() {
+           use crate::context::{TileSuperBlockOffset, SuperBlockOffset};
+@@ -446,7 +446,7 @@ mod test {
+ 
+   macro_rules! test_cdef_dir_hbd {
+     ($OPT:ident, $OPTLIT:literal) => {
+-      paste::item! {
++      pastey::item! {
+         #[test]
+         fn [<cdef_dir_ $OPT _hbd>]() {
+           use crate::context::{TileSuperBlockOffset, SuperBlockOffset};
+diff --git a/src/asm/x86/dist/mod.rs b/src/asm/x86/dist/mod.rs
+index 9f90ea9815..29afb4fbcd 100644
+--- a/src/asm/x86/dist/mod.rs
++++ b/src/asm/x86/dist/mod.rs
+@@ -393,7 +393,7 @@ pub fn get_satd<T: Pixel>(
+ macro_rules! get_sad_hbd_ssse3 {
+   ($(($W:expr, $H:expr, $BS:expr)),*) => {
+     $(
+-      paste::item! {
++      pastey::item! {
+         #[target_feature(enable = "ssse3")]
+         unsafe extern fn [<rav1e_sad_ $W x $H _hbd_ssse3>](
+           src: *const u16, src_stride: isize, dst: *const u16, dst_stride: isize,
+@@ -443,7 +443,7 @@ get_sad_hbd_ssse3!(
+ macro_rules! get_sad_hbd_avx2_WxH {
+   ($(($W:expr, $H:expr)),*) => {
+     $(
+-      paste::item! {
++      pastey::item! {
+         #[target_feature(enable = "avx2")]
+         unsafe extern fn [<rav1e_sad_ $W x $H _hbd_avx2>](
+           src: *const u16, src_stride: isize, dst: *const u16, dst_stride: isize,
+@@ -738,7 +738,7 @@ mod test {
+   macro_rules! test_dist_fns {
+     ($(($W:expr, $H:expr)),*, $DIST_TY:ident, $BD:expr, $OPT:ident, $OPTLIT:tt) => {
+       $(
+-        paste::item! {
++        pastey::item! {
+           #[test]
+           fn [<get_ $DIST_TY _ $W x $H _bd_ $BD _ $OPT>]() {
+             if CpuFeatureLevel::default() < CpuFeatureLevel::from_str($OPTLIT).unwrap() {
+diff --git a/src/asm/x86/mc.rs b/src/asm/x86/mc.rs
+index 91a9c9d935..ac32b93204 100644
+--- a/src/asm/x86/mc.rs
++++ b/src/asm/x86/mc.rs
+@@ -321,7 +321,7 @@ pub fn mc_avg<T: Pixel>(
+ 
+ macro_rules! decl_mc_fns {
+   ($(($mode_x:expr, $mode_y:expr, $func_name:ident)),+) => {
+-    paste::item! {
++    pastey::item! {
+       extern {
+         $(
+           fn [<$func_name _ssse3>](
+@@ -389,7 +389,7 @@ cpu_function_lookup_table!(
+ 
+ macro_rules! decl_mc_hbd_fns {
+   ($(($mode_x:expr, $mode_y:expr, $func_name:ident)),+) => {
+-    paste::item! {
++    pastey::item! {
+       extern {
+         $(
+           fn [<$func_name _ssse3>](
+@@ -444,7 +444,7 @@ cpu_function_lookup_table!(
+ 
+ macro_rules! decl_mct_fns {
+   ($(($mode_x:expr, $mode_y:expr, $func_name:ident)),+) => {
+-    paste::item! {
++    pastey::item! {
+       extern {
+         $(
+           fn [<$func_name _sse2>](
+@@ -525,7 +525,7 @@ cpu_function_lookup_table!(
+ 
+ macro_rules! decl_mct_hbd_fns {
+   ($(($mode_x:expr, $mode_y:expr, $func_name:ident)),+) => {
+-    paste::item! {
++    pastey::item! {
+       extern {
+         $(
+           fn [<$func_name _ssse3>](
+@@ -630,7 +630,7 @@ mod test {
+   macro_rules! test_put_fns {
+     ($(($mode_x:expr, $mode_y:expr, $func_name:ident)),*, $OPT:ident, $OPTLIT:tt, $BD:expr) => {
+       $(
+-        paste::item! {
++        pastey::item! {
+           #[test]
+           fn [<test_ $func_name _bd_ $BD _ $OPT>]() {
+             if CpuFeatureLevel::default() < CpuFeatureLevel::from_str($OPTLIT).unwrap() {
+@@ -717,7 +717,7 @@ mod test {
+   macro_rules! test_prep_fns {
+     ($(($mode_x:expr, $mode_y:expr, $func_name:ident)),*, $OPT:ident, $OPTLIT:tt, $BD:expr) => {
+       $(
+-        paste::item! {
++        pastey::item! {
+           #[test]
+           fn [<test_ $func_name _bd_ $BD _ $OPT>]() {
+             if CpuFeatureLevel::default() < CpuFeatureLevel::from_str($OPTLIT).unwrap() {
+diff --git a/src/asm/x86/transform/inverse.rs b/src/asm/x86/transform/inverse.rs
+index 53d7693e01..31bcefcc91 100644
+--- a/src/asm/x86/transform/inverse.rs
++++ b/src/asm/x86/transform/inverse.rs
+@@ -70,7 +70,7 @@ macro_rules! decl_itx_fns {
+   // Takes a 2d list of tx types for W and H
+   ([$([$(($ENUM:expr, $TYPE1:ident, $TYPE2:ident)),*]),*], $W:expr, $H:expr,
+    $OPT_LOWER:ident, $OPT_UPPER:ident) => {
+-    paste::item! {
++    pastey::item! {
+       // For each tx type, declare an function for the current WxH
+       $(
+         $(
+@@ -101,7 +101,7 @@ macro_rules! decl_itx_hbd_fns {
+   // Takes a 2d list of tx types for W and H
+   ([$([$(($ENUM:expr, $TYPE1:ident, $TYPE2:ident)),*]),*], $W:expr, $H:expr, $BPC:expr,
+    $OPT_LOWER:ident, $OPT_UPPER:ident) => {
+-    paste::item! {
++    pastey::item! {
+       // For each tx type, declare an function for the current WxH
+       $(
+         $(
+@@ -132,7 +132,7 @@ macro_rules! decl_itx_hbd_fns {
+ macro_rules! create_wxh_tables {
+   // Create a lookup table for each cpu feature
+   ([$([$(($W:expr, $H:expr)),*]),*], $OPT_LOWER:ident, $OPT_UPPER:ident) => {
+-    paste::item! {
++    pastey::item! {
+       const [<INV_TXFM_FNS_$OPT_UPPER>]: [[Option<InvTxfmFunc>; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL] = {
+         let mut out: [[Option<InvTxfmFunc>; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL] =
+           [[None; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL];
+@@ -158,7 +158,7 @@ macro_rules! create_wxh_tables {
+ macro_rules! create_wxh_hbd_tables {
+   // Create a lookup table for each cpu feature
+   ([$([$(($W:expr, $H:expr)),*]),*], $EXT:ident, $BPC:expr, $OPT_LOWER:ident, $OPT_UPPER:ident) => {
+-    paste::item! {
++    pastey::item! {
+       const [<INV_TXFM_HBD_FNS $EXT _$OPT_UPPER>]: [[Option<InvTxfmHBDFunc>; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL] = {
+         let mut out: [[Option<InvTxfmHBDFunc>; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL] =
+           [[None; TX_TYPES_PLUS_LL]; TxSize::TX_SIZES_ALL];
+diff --git a/src/cpu_features/aarch64.rs b/src/cpu_features/aarch64.rs
+index 79e2852f9e..bc8bf04d2b 100644
+--- a/src/cpu_features/aarch64.rs
++++ b/src/cpu_features/aarch64.rs
+@@ -98,7 +98,7 @@ macro_rules! cpu_function_lookup_table {
+ 
+   // use $name_$key as our values
+   ($pub:vis, $name:ident: [$type:ty], default: $empty:expr, [$($key:ident),*]) => {
+-    paste::item!{
++    pastey::item!{
+       cpu_function_lookup_table!(
+         $pub, $name: [$type], default: $empty, [$(($key, [<$name _$key>])),*]
+       );
+@@ -107,7 +107,7 @@ macro_rules! cpu_function_lookup_table {
+ 
+   // version for default visibility
+   ($name:ident: [$type:ty], default: $empty:expr, [$($key:ident),*]) => {
+-    paste::item!{
++    pastey::item!{
+       cpu_function_lookup_table!(
+         $name: [$type], default: $empty, [$(($key, [<$name _$key>])),*]
+       );
+diff --git a/src/cpu_features/x86.rs b/src/cpu_features/x86.rs
+index c428dabc92..f61c5faa96 100644
+--- a/src/cpu_features/x86.rs
++++ b/src/cpu_features/x86.rs
+@@ -140,7 +140,7 @@ macro_rules! cpu_function_lookup_table {
+ 
+   // use $name_$key as our values
+   ($pub:vis, $name:ident: [$type:ty], default: $empty:expr, [$($key:ident),*]) => {
+-    paste::item!{
++    pastey::item!{
+       cpu_function_lookup_table!(
+         $pub, $name: [$type], default: $empty, [$(($key, [<$name _$key>])),*]
+       );
+@@ -149,7 +149,7 @@ macro_rules! cpu_function_lookup_table {
+ 
+   // version for default visibility
+   ($name:ident: [$type:ty], default: $empty:expr, [$($key:ident),*]) => {
+-     paste::item!{
++     pastey::item!{
+       cpu_function_lookup_table!(
+         $name: [$type], default: $empty, [$(($key, [<$name _$key>])),*]
+       );
+diff --git a/src/test_encode_decode/mod.rs b/src/test_encode_decode/mod.rs
+index cc6730d71b..1f9ea1fd64 100644
+--- a/src/test_encode_decode/mod.rs
++++ b/src/test_encode_decode/mod.rs
+@@ -247,7 +247,7 @@ fn speed(s: u8, decoder: &str) {
+ macro_rules! test_speeds {
+   ($($S:expr),+) => {
+     $(
+-        paste::item!{
++        pastey::item!{
+             #[cfg_attr(feature = "decode_test", interpolate_test(aom, "aom"))]
+             #[cfg_attr(feature = "decode_test_dav1d", interpolate_test(dav1d, "dav1d"))]
+             #[ignore]
+@@ -264,7 +264,7 @@ test_speeds! { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }
+ macro_rules! test_dimensions {
+   ($(($W:expr, $H:expr)),+) => {
+     $(
+-        paste::item!{
++        pastey::item!{
+             #[cfg_attr(feature = "decode_test", interpolate_name::interpolate_test(aom, "aom"))]
+             #[cfg_attr(feature = "decode_test_dav1d", interpolate_name::interpolate_test(dav1d, "dav1d"))]
+             fn [<dimension_ $W x $H>](decoder: &str) {
+@@ -371,7 +371,7 @@ fn quantizer(decoder: &str, q: usize) {
+ macro_rules! test_quantizer {
+   ($($Q:expr),+) => {
+     $(
+-      paste::item!{
++      pastey::item!{
+         #[cfg_attr(feature = "decode_test", interpolate_test(aom, "aom"))]
+         #[cfg_attr(feature = "decode_test_dav1d", interpolate_test(dav1d, "dav1d"))]
+         fn [<quantizer_ $Q>](decoder: &str) {
+@@ -720,7 +720,7 @@ fn high_bit_depth(decoder: &str, depth: usize) {
+ macro_rules! test_high_bit_depth {
+   ($($B:expr),+) => {
+     $(
+-      paste::item!{
++      pastey::item!{
+         #[cfg_attr(feature = "decode_test", interpolate_test(aom, "aom"))]
+         #[cfg_attr(feature = "decode_test_dav1d", interpolate_test(dav1d, "dav1d"))]
+         #[ignore]
+@@ -751,7 +751,7 @@ fn chroma_sampling(decoder: &str, cs: ChromaSampling) {
+ macro_rules! test_chroma_sampling {
+   ($(($S:expr, $I:expr)),+) => {
+     $(
+-      paste::item!{
++      pastey::item!{
+         #[cfg_attr(feature = "decode_test", interpolate_test(aom, "aom"))]
+         #[cfg_attr(feature = "decode_test_dav1d", interpolate_test(dav1d, "dav1d"))]
+         #[ignore]

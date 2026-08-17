@@ -172,11 +172,14 @@ async function fetchJson(url) {
   return jsonRequests.get(url);
 }
 
-async function fetchText(url) {
-  if (!textRequests.has(url)) {
-    textRequests.set(url, fetchOk(url).then((response) => response.text()));
+async function fetchText(url, options = {}) {
+  // The Accept header selects the representation, so two requests to one URL can return different
+  // bodies. It belongs in the cache key or the second caller silently gets the first one's response.
+  const key = `${url} ${options.headers?.Accept ?? ''}`;
+  if (!textRequests.has(key)) {
+    textRequests.set(key, fetchOk(url, options).then((response) => response.text()));
   }
-  return textRequests.get(url);
+  return textRequests.get(key);
 }
 
 function numericVersionParts(value) {
@@ -705,9 +708,21 @@ export async function checkRav1e(root, config) {
     fail('crates.io did not identify the current stable pastey release');
   }
 
-  const patchUrl = `https://github.com/xiph/rav1e/commit/${config.pasteyPatchCommit}.patch`;
-  const patch = await fetchText(patchUrl);
-  const patchDigest = sha256(patch);
+  // The patch is vendored at config.pasteyPatchFile so the image build needs no network for it. Still
+  // compare it against upstream, so a vendored copy cannot quietly drift from the commit it claims to
+  // be. Read through the API media type: GitHub's `commit/<sha>.patch` route 404s for this commit
+  // even though the commit resolves, which is what broke the build in the first place.
+  const patchUrl = `https://api.github.com/repos/xiph/rav1e/commits/${config.pasteyPatchCommit}`;
+  const upstreamPatch = await fetchText(patchUrl, {
+    headers: { Accept: 'application/vnd.github.v3.patch' },
+  });
+  const vendoredPatch = read(root, config.pasteyPatchFile);
+  const patchDigest = sha256(vendoredPatch);
+  if (sha256(upstreamPatch) !== patchDigest) {
+    fail(
+      `the vendored ${config.pasteyPatchFile} no longer matches upstream commit ${config.pasteyPatchCommit}`,
+    );
+  }
   const lockSource = read(root, config.lockFile);
   const lockDigest = sha256(lockSource);
   for (const expected of [
@@ -746,6 +761,11 @@ export async function checkRav1e(root, config) {
     '0',
     '--platform',
     'linux/amd64',
+    // Same reason the image build stopped fetching it: the upstream `commit/<sha>.patch` route 404s,
+    // and a check that reaches for a URL which can disappear fails for a reason unrelated to what it
+    // is checking. The digest assertion below still proves the mounted file is the right patch.
+    '--volume',
+    `${resolve(root, config.pasteyPatchFile)}:/tmp/pastey.patch:ro`,
     '--env',
     `RAV1E_TAG=${tag}`,
     '--env',
@@ -764,8 +784,6 @@ export async function checkRav1e(root, config) {
       'git clone --quiet --branch "$RAV1E_TAG" --depth 1 '
         + 'https://github.com/xiph/rav1e.git /tmp/rav1e',
       'test "$(git -C /tmp/rav1e rev-parse HEAD)" = "$RAV1E_COMMIT"',
-      'wget --quiet --https-only --output-document=/tmp/pastey.patch '
-        + '"https://github.com/xiph/rav1e/commit/${PASTEY_PATCH_COMMIT}.patch"',
       'echo "${PASTEY_PATCH_SHA256}  /tmp/pastey.patch" | sha256sum -c -',
       'git -C /tmp/rav1e apply --check /tmp/pastey.patch',
       'git -C /tmp/rav1e apply /tmp/pastey.patch',
