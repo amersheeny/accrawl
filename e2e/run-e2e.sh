@@ -10,9 +10,18 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 companion_workspace=""
 companion_workspace_parent=""
+# Set only after the suite's final command returns. Anything else means the run did not finish.
+run_reached_end=0
 
 cleanup_companion_workspace() {
   exit_status=$?
+  # Fail closed. A failed `${VAR:?...}` expansion aborts the shell BEFORE $? becomes non-zero, so the
+  # trap would otherwise read the previously-completed command's success and report a refusal to start
+  # as a pass. This suite is a release gate: never let it exit 0 without reaching the end.
+  if [ "$run_reached_end" -eq 0 ] && [ "$exit_status" -eq 0 ]; then
+    echo "end-to-end run did not reach completion; reporting failure" >&2
+    exit_status=1
+  fi
   if [ -z "$companion_workspace" ] || [ ! -d "$companion_workspace" ]; then
     return "$exit_status"
   fi
@@ -167,3 +176,4 @@ fi
 
 echo "Running end-to-end…"
 node e2e/run-e2e.mjs
+run_reached_end=1
