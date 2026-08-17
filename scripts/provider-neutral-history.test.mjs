@@ -150,3 +150,40 @@ test('no author or committer identity in commit metadata', () => {
     `${findings.length} commit(s) carry an identity in their metadata:\n${findings.join('\n')}`,
   );
 });
+
+test('no personal mailbox in commit metadata', () => {
+  // The check above scans for DEPLOYMENT identifiers. It does not notice a real personal mailbox,
+  // which is a different leak and the one that actually reaches every clone: publishing this project
+  // scrubbed the author and committer on every existing commit, and nothing then stopped the next
+  // commit from putting a real name and address straight back.
+  //
+  // The rule is a SHAPE, deliberately — writing the scrubbed address into a tracked file to match on
+  // would publish the very thing being scrubbed. GitHub's own privacy addresses end in
+  // `users.noreply.github.com`, so requiring a no-reply mailbox states the property directly: no
+  // commit in this repository publishes a mailbox that reaches a person.
+  //
+  // A contributor who wants their own address in the history is a deliberate decision to take then,
+  // by relaxing this test with the reason written beside it — not something to discover after the
+  // fact from a published clone.
+  const NO_REPLY = /(^|[.@])noreply\.|noreply@|\.noreply\./iu;
+
+  const people = git([
+    'log', '--branches', '--tags', '--format=%ae%x00%ce%x00%H%x00',
+  ]).split('\0');
+
+  const findings = [];
+  for (let index = 0; index + 2 < people.length; index += 3) {
+    const [authorEmail, committerEmail, commit] = people.slice(index, index + 3);
+    for (const [what, email] of [['author', authorEmail], ['committer', committerEmail]]) {
+      if (email && !NO_REPLY.test(email)) {
+        // Report the domain only: naming the mailbox here would put it in the log of a public repo.
+        findings.push(`${commit.trim().slice(0, 12)}: ${what} uses a routable mailbox`);
+      }
+    }
+  }
+  assert.deepEqual(
+    findings,
+    [],
+    `${findings.length} commit(s) publish a mailbox that reaches a person:\n${findings.join('\n')}`,
+  );
+});
