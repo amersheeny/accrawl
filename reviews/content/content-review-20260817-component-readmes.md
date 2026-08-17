@@ -71,3 +71,39 @@ direction for a front door that a stranger reads before deciding to trust the pr
 All ten replacements were applied verbatim.
 
 **VERDICT: APPROVED**
+
+---
+
+# Content review: the licence section's copyright notice
+
+- Run: `content-review-20260817-component-readmes` (second artifact reviewed under this run)
+- Reviewer: an external model, read-only, content-strategist lens only — a separate pass from the one
+  that wrote the wording.
+- Scope: the `## License` section of `README.md`, which previously named no copyright holder at all.
+- Final verdict: **APPROVED** (first pass: REVISE, with two verbatim replacements; both applied)
+
+## Why it changed
+
+Nothing in the repository named a copyright holder, so the AGPL grant had no identified licensor. The
+project's commits are authored as `Accrawl` and the maintainer's personal identity is deliberately
+absent, so the notice had to name a holder without reintroducing that identity.
+
+## What the review returned
+
+**No finding on the holder.** `The Accrawl Authors` was judged a conventional collective attribution
+that fits the identity constraint and is clearer than inventing a person or entity.
+
+Two findings on the explanatory sentence:
+
+1. *"Running Accrawl as a network service obliges you…"* — "obliges you" is admonitory and made the
+   licence section read as a warning, and it risked implying that merely starting a private instance
+   triggers an audience-facing duty. Replaced with a conditional: "If you make Accrawl available to
+   users over a network, those users must also be able to access the source code for the version you
+   run, including any modifications."
+2. *"the console links to it for that reason"* — "it" had an imprecise antecedent, and "the console"
+   is looser than the product's own noun. Replaced with: "The operator console includes a source-code
+   link for this purpose."
+
+Both replacements were applied verbatim.
+
+**VERDICT: APPROVED**

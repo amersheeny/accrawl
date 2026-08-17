@@ -307,4 +307,8 @@ institution-config import + LLM malice-scan gate. Not yet done: a
 
 ## License
 
-[AGPL-3.0-only](./LICENSE).
+Copyright © 2026 The Accrawl Authors.
+
+[AGPL-3.0-only](./LICENSE). If you make Accrawl available to users over a network, those users must
+also be able to access the source code for the version you run, including any modifications. The
+operator console includes a source-code link for this purpose.
