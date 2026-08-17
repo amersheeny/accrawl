@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "contractId": "td-parity-14",
-  "revision": "2026-08-16.4",
-  "changeRecord": "Dependency freshness only. The repository requires every dependency surface to be the latest stable release, and the pre-push audit refused the publication push with eight stale pins: the package manager, the node installer script, the PostgreSQL image, three Chainguard build images and a runtime image, an XML parser override, and the Android HTTP client. The pinned file here is the Android build file, whose HTTP client moves from 5.4.0 to 5.5.0. No product code changes: no prompt, schema, transaction-identity rule, accumulation rule, gate or relay path, and the Companion source that this contract pins is untouched. Verified by the full suites after the bump. Pins moved: companion/android/app/build.gradle.kts. Previous revision: 2026-08-16.3.",
+  "revision": "2026-08-16.5",
+  "changeRecord": "The cached push-token read moves off the platform thread. registerCurrentToken is reached from a MethodChannel handler, which runs on the platform thread, and it read a preferences file before dispatching to its executor — the first read of such a file parses it synchronously on the calling thread, which is disk I/O on the UI thread and what StrictMode disk-read policy exists to catch. The read now happens inside the executor that already ran the rest of the work; nothing needed it earlier. Behaviour is unchanged: a cached token is still registered immediately, a few milliseconds later and off the main thread. Found while investigating an ANR, which the device trace attributes to CPU starvation rather than to this: the main thread was Runnable and idle in Looper.pollOnce, having waited 22.66s on the runqueue against 15.72s of execution, with the app absent from the CPU list. No prompt, schema, identity, accumulation or relay behaviour changes. Pins moved: companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/PushRegistration.kt. Previous revision: 2026-08-16.4.",
   "baselineRevision": "ee1f6bf05dae9c6deb856cd6703fd00f463338b5",
   "baselineSourceDigests": {
     "transactionPrompt": "f3b4a27eb90dfd67b77c651dc81f0d2e56cba223d202bb17b4d67b9f0c969f0c",
@@ -154,7 +154,7 @@
     },
     {
       "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/PushRegistration.kt",
-      "sha256": "a58a47af470382c30e8020b9c5ac0795a7b0a10bcf9e03f4caa9fb3869453860"
+      "sha256": "9e2511c30ac1bf3e6444d0e4757fbf1d957a9b7ac237ba754fe0b1d4bae063e6"
     },
     {
       "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/CompanionWakeMessage.kt",

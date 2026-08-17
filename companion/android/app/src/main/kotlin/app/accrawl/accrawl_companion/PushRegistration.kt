@@ -23,12 +23,17 @@ object PushRegistration {
 
     fun registerCurrentToken(context: Context) {
         val appContext = context.applicationContext
-        val cached = appContext.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
-            .getString(KEY_FCM_TOKEN, null)
-        if (!cached.isNullOrBlank()) registerTokenAsync(appContext, cached)
         // Which project to register with is the paired deployment's answer, not this build's, so the
         // work starts off the main thread: it takes a request before a token can even be asked for.
+        //
+        // The cached-token read moved in here with it. This is reached from a MethodChannel handler,
+        // which runs on the platform thread, and the FIRST read of a preferences file parses the whole
+        // file synchronously on the calling thread — disk I/O on the UI thread, which is what
+        // StrictMode's disk-read policy exists to catch. Nothing needs it before the executor runs.
         executor.execute {
+            val cached = appContext.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+                .getString(KEY_FCM_TOKEN, null)
+            if (!cached.isNullOrBlank()) registerTokenAsync(appContext, cached)
             val ready = try {
                 syncPushClient(appContext)
             } catch (error: Exception) {
