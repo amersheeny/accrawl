@@ -90,6 +90,16 @@ e2e/
   oauth-consumer/ # a runnable, dependency-free demo third-party app for the "Connect with Accrawl" flow
 ```
 
+Each component documents its own build, run and validate steps:
+[`apps/engine`](apps/engine/README.md) ·
+[`apps/control-plane`](apps/control-plane/README.md) ·
+[`apps/web`](apps/web/README.md) ·
+[`packages/contracts`](packages/contracts/README.md) ·
+[`packages/sdk-ts`](packages/sdk-ts/README.md) ·
+[`packages/sdk-py`](packages/sdk-py/README.md) ·
+[`companion`](companion/README.md) ·
+[`e2e`](e2e/README.md)
+
 ## Design & reference docs
 
 - **[Market study — aggregator API contracts](./docs/market-study-aggregator-api-contracts.md)** —
