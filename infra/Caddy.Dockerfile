@@ -21,7 +21,7 @@ RUN pnpm install --frozen-lockfile \
  && pnpm --filter @accrawl/contracts build \
  && pnpm --filter @accrawl/web build
 
-FROM cgr.dev/chainguard/go:latest-dev@sha256:1b4f5070161bab10121583073ff8ee03fdc06af0c0056672e081175d20f4742b AS caddy-build
+FROM cgr.dev/chainguard/go:latest-dev@sha256:5a8216d95409f3f23b360c7508986744fb542eff35bd269ae2759f4d1ca3fbf6 AS caddy-build
 USER 0
 ARG CADDY_VERSION=2.11.4
 ARG CADDY_COMMIT=e2eee6a7fce366321294c9c2a79f3146891dcbdf

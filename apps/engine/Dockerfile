@@ -42,7 +42,7 @@ USER 0
 # current Packages index before extracting only Chrome itself.
 ARG GOOGLE_CHROME_VERSION
 ARG GOOGLE_CHROME_SHA256
-RUN apk add --no-cache xz=5.8.3-r1
+RUN apk add --no-cache xz=5.8.3-r2
 RUN wget --quiet --https-only --output-document=/tmp/google-chrome.deb \
     "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${GOOGLE_CHROME_VERSION}_amd64.deb" \
  && echo "${GOOGLE_CHROME_SHA256}  /tmp/google-chrome.deb" | sha256sum -c -
@@ -202,7 +202,7 @@ COPY --from=chrome-package /usr/lib/libapk.so.* /usr/lib/
 RUN apk add --no-cache \
     font-liberation=2.1.5-r5 \
     font-noto-cjk=0.0_git20220127-r2 \
-    font-noto-emoji=2.051-r1 \
+    font-noto-emoji=2.051-r2 \
     font-opensans=0_git20210927-r2 \
     fontconfig=2.18.3-r0 \
     gtk-3=3.24.52-r2 \

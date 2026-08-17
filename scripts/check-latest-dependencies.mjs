@@ -186,6 +186,6 @@ await runLatestDependencyPolicy(root, {
     versionFile: '.java-version',
   },
   osv: {
-    version: 'v2.5.0',
+    version: 'v2.5.1',
   },
 });
