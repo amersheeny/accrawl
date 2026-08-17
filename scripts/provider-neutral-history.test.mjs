@@ -165,7 +165,12 @@ test('no personal mailbox in commit metadata', () => {
   // A contributor who wants their own address in the history is a deliberate decision to take then,
   // by relaxing this test with the reason written beside it — not something to discover after the
   // fact from a published clone.
-  const NO_REPLY = /(^|[.@])noreply\.|noreply@|\.noreply\./iu;
+  //
+  // Exactly two forms are accepted, and the shape has to be anchored to them. Searching anywhere in
+  // the address for "noreply" accepts a routable mailbox that merely contains it — a personal address
+  // like <name>.noreply.<name>@<provider>, or any domain someone prefixed "noreply." — which is the
+  // leak this exists to stop.
+  const NO_REPLY = /^(?:no-?reply|do-?not-?reply)@|@(?:[^@]*\.)?users\.noreply\.github\.com$/iu;
 
   const people = git([
     'log', '--branches', '--tags', '--format=%ae%x00%ce%x00%H%x00',
@@ -186,4 +191,25 @@ test('no personal mailbox in commit metadata', () => {
     [],
     `${findings.length} commit(s) publish a mailbox that reaches a person:\n${findings.join('\n')}`,
   );
+});
+
+test('the mailbox shape accepts only genuinely unroutable addresses', () => {
+  // The shape above is the whole protection, so it is asserted directly. Every "false" here is an
+  // address a person actually receives mail at; an earlier substring form accepted the last three.
+  const NO_REPLY = /^(?:no-?reply|do-?not-?reply)@|@(?:[^@]*\.)?users\.noreply\.github\.com$/iu;
+  for (const [address, accepted] of [
+    ['accrawl@users.noreply.github.com', true],
+    ['1234+user@users.noreply.github.com', true],
+    ['noreply@example.org', true],
+    ['no-reply@example.org', true],
+    ['donotreply@example.org', true],
+    ['someone@example.com', false],
+    ['a.person@example.org', false],
+    ['a.noreply.person@example.org', false],
+    ['someone@noreply.example.com', false],
+    ['someone@notnoreply.example.com', false],
+    ['someone@users.noreply.github.com.example.com', false],
+  ]) {
+    assert.equal(NO_REPLY.test(address), accepted, `${address} should be ${accepted ? 'accepted' : 'rejected'}`);
+  }
 });
