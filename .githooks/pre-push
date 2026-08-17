@@ -4,5 +4,8 @@
 set -eu
 
 node --test scripts/provider-neutral-policy.test.mjs
+# The history checks belong HERE, not only in CI: once a push lands, every clone has the commits, and
+# a scrubbed identity or identifier cannot be taken back out of someone else's copy.
+node --test scripts/provider-neutral-history.test.mjs
 pnpm deps:check
 pnpm --filter @accrawl/web copy:check
