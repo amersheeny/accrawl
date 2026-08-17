@@ -115,6 +115,12 @@ each one is, and they routinely have not been:
 4. **On-device captures show the device.** `adb exec-out screencap -p` returns the true composited
    framebuffer including the status bar; present it whole, because a cropped app view hides the ANR
    overlay that would invalidate the capture.
+
+   These carry no provenance of their own — a device screenshot cannot say which run produced it, and
+   the device clock is the only timestamp in the pixels. Until a stamping step exists for them, state
+   the run's session id and the harness log line beside each one, and prefer frames that contain
+   self-evidencing app state (a notification reading "Crawls being watched for SMS codes: 1" places
+   itself in the crawl; an accounts list does not).
 5. **Present every image inline, under the claim it supports.** A file path is not a screenshot from
    the reader's side. A claim with no image is an unproven claim; say so rather than describing what
    the image would have shown.
