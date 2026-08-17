@@ -35,10 +35,12 @@ pnpm --filter @accrawl/contracts test       # vitest
 pnpm --filter @accrawl/contracts typecheck  # tsc --noEmit
 ```
 
-The tests here are the contract's own guarantees rather than incidental coverage: that a schema rejects
-the malformed payloads a real crawl produces, that the taxonomy is exhaustive, that a transaction-history
-upload cannot be completed without its exact manifest, and that an identity assertion missing a required
-claim is refused.
+The tests here are the contract's own guarantees rather than incidental coverage: that every mapped
+account and transaction classification is a member of the declared taxonomy, and that unknown input
+degrades instead of throwing; that a transaction-history upload rejects missing, reordered, duplicated or
+corrupted chunks and any digest or item-count mismatch; that an identity assertion is refused when
+expired, tampered with, or signed under a different secret; and that a routing context sent under any
+other field name is rejected rather than quietly ignored.
 
 This package has no runtime dependencies on the apps, and nothing here reaches the network or the
 filesystem. It builds and tests on its own with no database, no browser and no model API key.

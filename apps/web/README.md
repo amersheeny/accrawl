@@ -27,9 +27,12 @@ pnpm --filter @accrawl/web test        # copy review gate, then vitest
 pnpm --filter @accrawl/web typecheck
 ```
 
-`vitest` covers the API client's request and error handling, the crawl-schedule editor's conversion
-between a cron expression and the fields an operator sees, and a stylesheet check that asserts the
-accessibility properties a rendered page depends on.
+`vitest` covers the API client's session handling — sign-out against both a self-hosted token and a
+hosted cookie, restoring a hosted session without mistaking an SPA fallback for one, and preserving a
+server error code so a screen can select the right reviewed copy; the crawl-schedule editor's round-trip
+between a cron expression and the fields an operator sees, including leaving an unsupported existing cron
+alone; and a contrast check over the design tokens, which fails when faint normal-sized text stops being
+readable on the lightest dark surface.
 
 None of these prove what a screen looks like. Layout collapse, overflow, wrapping and contrast appear
 only in rendered pixels, so a visual change is reviewed against real screenshots of the running console,

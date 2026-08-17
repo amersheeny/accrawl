@@ -16,10 +16,14 @@ pnpm --filter @accrawl/control-plane build   # tsc -> dist/
 pnpm --filter @accrawl/control-plane start   # node dist/index.js
 ```
 
-`PORT` overrides the default 3000. The service needs a PostgreSQL database and the secrets listed in the
-repository's [`.env.example`](../../.env.example) — at minimum `POSTGRES_PASSWORD`, `ENGINE_DB_PASSWORD`,
-`ENGINE_SHARED_SECRET` and `CREDENTIAL_ENC_KEY`. The root [`README.md`](../../README.md) documents every
-setting and how to generate each secret; [`DEPLOY.md`](../../DEPLOY.md) covers the full self-host path.
+`PORT` overrides the default 3000. The process itself reads `DATABASE_URL` (a PostgreSQL connection
+string, which carries the password; `DATABASE_URL_FILE` reads it from a file instead), plus
+`CREDENTIAL_ENC_KEY`, `ENGINE_SHARED_SECRET` and `ENGINE_DB_PASSWORD`.
+
+`POSTGRES_PASSWORD` in [`.env.example`](../../.env.example) is a Compose-level input, not something this
+process reads — `docker-compose.yml` uses it to build `DATABASE_URL`. Running the service directly means
+supplying `DATABASE_URL` yourself. The root [`README.md`](../../README.md) documents every setting and how
+to generate each secret; [`DEPLOY.md`](../../DEPLOY.md) covers the full self-host path.
 
 Most people should not run this directly — `./setup.sh` then `./accrawl start` at the repository root
 brings up Postgres, the control plane, the engine and the console together.
@@ -66,8 +70,10 @@ pnpm --filter @accrawl/control-plane e2e:oauth   # drives the OAuth authorizatio
 ```
 
 Layer tests are not outcome validation. The crawl path is proven by the repository's end-to-end suite in
-[`e2e/`](../../e2e/README.md), which drives a real browser against a local fake bank and relays a real
-one-time passcode through a Companion build on a device.
+[`e2e/`](../../e2e/README.md), which drives a real browser against a local fake bank and carries a real
+one-time passcode back through the relay. By default that relay is in-process, which needs nothing beyond
+a model API key. Setting `COMPANION_RELAY=1` instead routes the passcode through a Companion build
+installed on an emulator or phone, which is the path a real deployment uses.
 
 ## License
 
