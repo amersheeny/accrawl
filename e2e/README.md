@@ -97,3 +97,26 @@ truth and OTP-leak protections.
 A run against a **real bank** with your own credentials, through the full `docker compose up` stack, remains
 the final manual gate (this harness runs the services as plain processes against an embedded Postgres). The
 emulator companion mode above covers the SMS-transport path end to end.
+
+
+## Screenshots: how to take them, and how to present them
+
+This suite writes screenshots to `/tmp/accrawl-e2e/`. They are evidence only if a reader can tell what
+each one is, and they routinely have not been:
+
+1. **An image must carry its own provenance** — the URL, the host, whether it is this local stack or
+   something else, and when it was taken, drawn into the image rather than written beside it in a
+   message. A caption is lost the first time the image is moved; pixels are not.
+2. **Never present an image whose origin the reader must infer.** The console exists at more than one
+   origin, and two of them look identical.
+3. **Capture the process, not only the outcome** — the connection before the crawl, the crawl running
+   with its live status, the terminal state, and the resulting accounts and transactions. One
+   end-state image cannot distinguish a real crawl from seeded data.
+4. **On-device captures show the device.** `adb exec-out screencap -p` returns the true composited
+   framebuffer including the status bar; present it whole, because a cropped app view hides the ANR
+   overlay that would invalidate the capture.
+5. **Present every image inline, under the claim it supports.** A file path is not a screenshot from
+   the reader's side. A claim with no image is an unproven claim; say so rather than describing what
+   the image would have shown.
+6. **Name each file for its state and origin**, e.g. `web-accounts-extracted.png`,
+   `companion-otp-active-foreground-notification.png`.
