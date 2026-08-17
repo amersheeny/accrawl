@@ -48,9 +48,22 @@ async function appendToInbox(msg: Buffer): Promise<void> {
   await c.logout();
 }
 
+/** Set once beforeAll has a live container; false means the test reports SKIPPED rather than passing. */
+let greenmailReady = false;
+
 describe('email-OTP watcher — real IMAP via greenmail', () => {
   beforeAll(async () => {
-    execFileSync(DOCKER, ['info'], { stdio: 'ignore' });
+    // A contributor without Docker still gets the rest of the suite. Report that this
+    // integration test did not run — never let an unrun test read as a pass.
+    try {
+      execFileSync(DOCKER, ['info'], { stdio: 'ignore' });
+    } catch {
+      console.warn(
+        `[watcher.greenmail.test] SKIPPING the real-IMAP integration test: "${DOCKER} info" failed, ` +
+          'so no container runtime is available. Set DOCKER_BIN if yours is not on PATH.',
+      );
+      return;
+    }
     const r = spawnSync(DOCKER, [
       'run', '--rm', '-d', '--name', CONTAINER,
       '-p', '127.0.0.1::3143',
@@ -69,11 +82,14 @@ describe('email-OTP watcher — real IMAP via greenmail', () => {
     }
     imapPort = port;
     if (!(await imapReady())) throw new Error('greenmail IMAP never became ready');
+    greenmailReady = true;
   }, 60_000);
 
   afterAll(() => { spawnSync(DOCKER, ['rm', '-f', CONTAINER], { stdio: 'ignore' }); });
 
-  it('fetches an UNSEEN email, MIME-parses from/subject/text, routes it, and marks it \\Seen', async () => {
+  it('fetches an UNSEEN email, MIME-parses from/subject/text, routes it, and marks it \\Seen', async (ctx) => {
+    // Reports as SKIPPED, not passed: this asserts a real IMAP wire path and cannot run without the server.
+    if (!greenmailReady) ctx.skip();
     await appendToInbox(rawEmail('noreply@northwind-bank.com', 'Your verification code', 'Northwind Bank: your verification code is 246810. It expires in 5 minutes.'));
 
     const route = vi.fn(async () => ({ action: 'submitted' as const, sessionId: 's1', result: { status: 'accepted' as const } }));
