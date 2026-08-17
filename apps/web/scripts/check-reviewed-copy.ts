@@ -116,9 +116,12 @@ const errors: string[] = [];
 const REVIEWED_ARTIFACT_FILES = [
   'DEPLOY.md',
   'README.md',
+  'apps/control-plane/README.md',
   'apps/engine/README.md',
+  'apps/web/README.md',
   'companion/README.md',
   'docs/hosted-cell.md',
+  'packages/contracts/README.md',
 ];
 // Provenance only: the revision the frozen baseline was taken and verified from. It is recorded so the
 // artifact can be traced, and is deliberately NOT resolved against the repository — see the baseline

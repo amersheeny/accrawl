@@ -90,7 +90,7 @@ e2e/
   oauth-consumer/ # a runnable, dependency-free demo third-party app for the "Connect with Accrawl" flow
 ```
 
-Each component documents its own build, run and validate steps:
+Build, run and validation guidance by component:
 [`apps/engine`](apps/engine/README.md) ·
 [`apps/control-plane`](apps/control-plane/README.md) ·
 [`apps/web`](apps/web/README.md) ·

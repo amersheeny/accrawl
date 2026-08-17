@@ -1,14 +1,16 @@
 # Accrawl control plane
 
-The stateful half of Accrawl: a Fastify + PostgreSQL service that owns institutions, connections and
-encrypted credentials, decides when a crawl should run, dispatches it to an engine, receives the result,
-promotes it to canonical storage, and serves the normalized data out again over an API, webhooks and the
+The control plane is Accrawl's stateful Fastify + PostgreSQL service. It owns institutions, connections,
+encrypted credentials, scheduling, identity, ownership and normalized financial data. It dispatches
+crawls to an engine, receives their results, and serves stored data through the API, webhooks and the
 "Connect with Accrawl" OAuth authorization server.
 
-The engine does the crawling and holds no long-lived state. Everything that must survive a crawl —
-scheduling, identity, ownership, the data itself — lives here.
+The engine performs crawls and keeps no long-lived state.
 
 ## Running it
+
+To run the full self-hosted stack, use `./setup.sh` and then `./accrawl start` from the repository root.
+Use the commands below when developing or maintaining the control plane on its own.
 
 ```bash
 pnpm --filter @accrawl/control-plane dev     # tsx watch, port 3000
@@ -25,9 +27,6 @@ take the `<NAME>_FILE` convention, so each can be read from a mounted file inste
 process reads — `docker-compose.yml` uses it to build `DATABASE_URL`. Running the service directly means
 supplying `DATABASE_URL` yourself. The root [`README.md`](../../README.md) has the self-host configuration
 table and how to generate each secret; [`DEPLOY.md`](../../DEPLOY.md) covers the full self-host path.
-
-Most people should not run this directly — `./setup.sh` then `./accrawl start` at the repository root
-brings up Postgres, the control plane, the engine and the console together.
 
 ## Database
 
@@ -76,9 +75,9 @@ pnpm --filter @accrawl/control-plane e2e:oauth   # drives the OAuth authorizatio
 
 Layer tests are not outcome validation. The crawl path is proven by the repository's end-to-end suite in
 [`e2e/`](../../e2e/README.md), which drives a real browser against a local fake bank and carries a real
-one-time passcode back through the relay. By default that relay is in-process, which needs nothing beyond
-a model API key. Setting `COMPANION_RELAY=1` instead routes the passcode through a Companion build
-installed on an emulator or phone, which is the path a real deployment uses.
+one-time passcode back through the relay. By default, the relay runs in process and needs only a model
+API key. Set `COMPANION_RELAY=1` to validate the deployed Companion relay path through a Companion build
+installed on an emulator or phone.
 
 ## License
 

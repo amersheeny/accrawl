@@ -7,11 +7,11 @@
     }
   },
   "README.md": {
-    "sha256": "8ade50b27677cf821b05974ea767fc105858004b811d85eda7c7c5f2660039e3",
     "review": {
-      "runId": "14afa917-8b94-46c2-9c49-adf77b843b64",
-      "transcript": "reviews/content/content-review-14afa917-8b94-46c2-9c49-adf77b843b64.md"
-    }
+      "runId": "content-review-20260817-component-readmes",
+      "transcript": "reviews/content/content-review-20260817-component-readmes.md"
+    },
+    "sha256": "1d8538f2f9622aa58d4909b58aaf47c41e003be01899c42d333e0bf0ff8fc357"
   },
   "apps/engine/README.md": {
     "sha256": "1da951619ac662f27bd0d36ba72660742c01ce90592f99b2d43a65d42bb2bbcc",
@@ -33,5 +33,26 @@
       "transcript": "reviews/content/3b27696d-69b6-49ba-92f9-e651e0282a7b.md"
     },
     "sha256": "eda0a3a609098cc9849ffa2b16e7d9f42ce8d118ec110b055959f44c96d6b425"
+  },
+  "apps/control-plane/README.md": {
+    "review": {
+      "runId": "content-review-20260817-component-readmes",
+      "transcript": "reviews/content/content-review-20260817-component-readmes.md"
+    },
+    "sha256": "36fd3d22c89618af7bbd706ef2f1dcceb1b83aeee6dd254df743937df89040a8"
+  },
+  "apps/web/README.md": {
+    "review": {
+      "runId": "content-review-20260817-component-readmes",
+      "transcript": "reviews/content/content-review-20260817-component-readmes.md"
+    },
+    "sha256": "65eff8c8b6fccb073e90e7c3d37554accd1b787330c55c61e2cec11a32edf773"
+  },
+  "packages/contracts/README.md": {
+    "review": {
+      "runId": "content-review-20260817-component-readmes",
+      "transcript": "reviews/content/content-review-20260817-component-readmes.md"
+    },
+    "sha256": "f0bbb2e1dd8e75e18fa696175e3ba7f47bd7c5166bc508c9f359380e63f0d6eb"
   }
 }

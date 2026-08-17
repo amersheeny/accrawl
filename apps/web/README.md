@@ -1,13 +1,15 @@
 # Accrawl operator console
 
-The React (Vite) console an operator actually uses: add an institution, connect an account, watch a crawl
-run live, and read the data that came back. It is a static bundle talking to the control plane's API, and
-it makes no decision the server does not also enforce.
+The React (Vite) operator console lets an operator add an institution, create a connection, watch a crawl
+live, and review the accounts, transactions and positions returned by that crawl. The console is a static
+bundle that calls the control plane API; the control plane independently authorizes and validates its
+requests.
 
-It is not credential-free. A self-hosted deployment keeps the operator's bearer token in `localStorage`;
-a hosted one uses the edge's HttpOnly cookie instead and the bundle never sees the token. Bank
-credentials pass through the connection form on their way to the server, which is what encrypts and
-stores them — the browser keeps no durable copy.
+The console handles operator authentication and submits bank credentials, but it does not retain bank
+credentials. In a self-hosted deployment, it stores the operator's bearer token in `localStorage`; in a
+hosted deployment, the edge stores an HttpOnly cookie and the bundle never sees the token. Bank
+credentials pass through the connection form to the control plane, which encrypts and stores them; the
+browser keeps no durable copy.
 
 ## Running it
 
