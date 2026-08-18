@@ -11,6 +11,10 @@ const PROD = { NODE_ENV: 'production' } as NodeJS.ProcessEnv;
 const DEV = { NODE_ENV: 'development' } as NodeJS.ProcessEnv;
 const DEV_OPTED_IN = { NODE_ENV: 'development', ACCRAWL_ALLOW_INSECURE_LOGIN_URL: '1' } as NodeJS.ProcessEnv;
 const PROD_OPTED_IN = { NODE_ENV: 'production', ACCRAWL_ALLOW_INSECURE_LOGIN_URL: '1' } as NodeJS.ProcessEnv;
+/** The least-configured self-host: someone running the image outside the shipped compose file. */
+const UNSET_OPTED_IN = { ACCRAWL_ALLOW_INSECURE_LOGIN_URL: '1' } as NodeJS.ProcessEnv;
+const EMPTY_OPTED_IN = { NODE_ENV: '', ACCRAWL_ALLOW_INSECURE_LOGIN_URL: '1' } as NodeJS.ProcessEnv;
+const BLANK_OPTED_IN = { NODE_ENV: '   ', ACCRAWL_ALLOW_INSECURE_LOGIN_URL: '1' } as NodeJS.ProcessEnv;
 
 describe('isSecureLoginUrl', () => {
   it('accepts https anywhere, including in production', () => {
@@ -74,5 +78,31 @@ describe('insecureLoginUrlAllowed', () => {
 
   it('is case-insensitive about the host', () => {
     expect(insecureLoginUrlAllowed('LOCALHOST', PROD)).toBe(true);
+  });
+});
+
+describe('an unconfigured environment is not a development environment', () => {
+  // Reading `NODE_ENV !== 'production'` made ABSENT the permissive case, so the deployment least
+  // likely to have been configured deliberately was the only one that would post bank credentials
+  // over plain HTTP. Absent, empty and whitespace all have to fail closed.
+  it('refuses plain HTTP when NODE_ENV is absent, empty or blank, even with the opt-in set', () => {
+    for (const env of [UNSET_OPTED_IN, EMPTY_OPTED_IN, BLANK_OPTED_IN]) {
+      expect(insecureLoginUrlAllowed('bank.example.com', env)).toBe(false);
+      expect(isSecureLoginUrl('http://bank.example.com/login', env)).toBe(false);
+    }
+  });
+
+  it('still allows it only when NODE_ENV is explicitly non-production AND the opt-in is set', () => {
+    expect(insecureLoginUrlAllowed('bank.example.com', DEV_OPTED_IN)).toBe(true);
+    expect(insecureLoginUrlAllowed('bank.example.com', DEV)).toBe(false);
+    expect(insecureLoginUrlAllowed('bank.example.com', PROD_OPTED_IN)).toBe(false);
+  });
+
+  it('leaves the loopback exception alone, which needs no environment at all', () => {
+    for (const host of ['localhost', '127.0.0.1', '::1']) {
+      expect(insecureLoginUrlAllowed(host, {} as NodeJS.ProcessEnv)).toBe(true);
+    }
+    // and the anchoring that keeps 127.0.0.1.evil.com out of it
+    expect(insecureLoginUrlAllowed('127.0.0.1.evil.com', {} as NodeJS.ProcessEnv)).toBe(false);
   });
 });

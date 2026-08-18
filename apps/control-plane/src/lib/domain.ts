@@ -35,7 +35,14 @@ export function insecureLoginUrlAllowed(
     || host === '[::1]'
     || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host);
   if (isLoopback) return true;
-  return env.NODE_ENV !== 'production' && env.ACCRAWL_ALLOW_INSECURE_LOGIN_URL === '1';
+  // An ABSENT NODE_ENV is not a development environment, it is an unconfigured one — and the person
+  // most likely to have it unset is someone running the image outside the compose file this
+  // repository ships, which is exactly the deployment that should be treated as production. Reading
+  // `!== 'production'` here made the empty case the permissive one, so the least-configured
+  // self-host was the only one that would hand bank credentials to a plain-HTTP form.
+  const nodeEnv = env.NODE_ENV?.trim();
+  if (!nodeEnv || nodeEnv === 'production') return false;
+  return env.ACCRAWL_ALLOW_INSECURE_LOGIN_URL === '1';
 }
 
 /** Parse a crawlable web URL and return its lowercased hostname. */
