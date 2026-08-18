@@ -1545,6 +1545,9 @@ async function main() {
     CONTROL_PLANE_INTERNAL_ORIGIN: `http://127.0.0.1:${P.cp}`,
     HEADLESS: process.env.E2E_HEADFUL ? 'false' : 'true',
     EXTRA_CHROMIUM_ARGS: `--host-resolver-rules=MAP ${BANK_HOST} 127.0.0.1`,
+    // The institution is deliberately on loopback here, so say so. The engine verifies the address the
+    // browser actually connected to, and an undeclared private peer is refused as a DNS rebind.
+    ACCRAWL_ALLOW_PRIVATE_CRAWL_TARGETS: BANK_HOST,
   });
   spawnSvc('control-plane', 'node', ['apps/control-plane/dist/server-main.js'], {
     PORT: String(P.cp), DATABASE_URL: DBURL, ENGINE_URL: `http://127.0.0.1:${P.engine}`,

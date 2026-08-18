@@ -45,7 +45,7 @@ import { updateSessionStatus, appendStepLog, flushSessionLogs, CrawlCancelledErr
 import { DownloadTracker, parseXlsxToText, isDecodableExcelWorkbook } from '../browser/download-handler';
 import { uploadScreenshot } from './screenshot-uploader';
 import { calculateCost } from '../ai/pricing';
-import { assertSafeNavigationUrl } from '../utils/url-safety';
+import { assertSafeNavigationUrl, assertConnectedAddressIsPublic } from '../utils/url-safety';
 import type { SessionLogger } from '../utils/logger';
 import { safeBrowserUrl, safeBrowserUrlsInText } from '../utils/safe-browser-url';
 
@@ -292,7 +292,10 @@ export async function runAgentLoop(
     // (institution config), but loginUrlOverride is operator-settable — refuse
     // loopback/private/link-local/metadata targets regardless of source.
     await assertSafeNavigationUrl(loginUrl);
-    await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: INITIAL_NAV_TIMEOUT_MS });
+    const initialNavigation = await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: INITIAL_NAV_TIMEOUT_MS });
+    // The name was checked above; this checks the address the browser actually reached, which is the
+    // only one of the two an attacker cannot change after the fact.
+    await assertConnectedAddressIsPublic(initialNavigation, loginUrl);
     await waitForStability(page);
 
     while (stepCount < maxSteps && Date.now() < deadline) {

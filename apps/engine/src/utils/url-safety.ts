@@ -85,6 +85,66 @@ function assertIpIsPublic(ip: string, host: string): void {
   if (ip.includes(':') && isPrivateIpv6(ip)) throw new Error(`navigate target resolves to a private/internal address (${host} -> ${ip})`);
 }
 
+/**
+ * Hosts a deployment has DECLARED may sit on a private address.
+ *
+ * The end-to-end suites point a public-looking institution at a loopback or container address on
+ * purpose, and until now they worked only because the pre-flight check fails open on a name that does
+ * not resolve. That made "unresolvable" the way in, for everyone, forever. Naming the hosts instead
+ * turns a universal accident into a short list somebody wrote down.
+ *
+ * Deliberately NOT gated on NODE_ENV, unlike the plain-HTTP login rule. A private institution is a
+ * legitimate production case — an on-premises bank reachable only inside the operator's own network
+ * is exactly the thing a self-hoster runs this for — and the packaged end-to-end run has to keep its
+ * worker at NODE_ENV=production, because the control plane refuses to trust a worker whose
+ * environment is not canonical. An allowlist is not a mode: it names hosts, one at a time, and says
+ * nothing about anything it does not name.
+ *
+ * Empty by default, so a deployment that never sets it behaves as though this did not exist.
+ */
+function declaredPrivateTargets(env: NodeJS.ProcessEnv = process.env): Set<string> {
+  const raw = env.ACCRAWL_ALLOW_PRIVATE_CRAWL_TARGETS?.trim();
+  if (!raw) return new Set();
+  return new Set(raw.split(',').map((host) => host.trim().toLowerCase()).filter(Boolean));
+}
+
+/**
+ * Verify the address the browser ACTUALLY connected to.
+ *
+ * Everything before this point inspects a NAME and then hands that name to a different resolver —
+ * Chromium's — which is free to get a different answer. That gap is a DNS rebind, and no amount of
+ * checking the name closes it, because the attacker controls what happens between the two lookups.
+ *
+ * Playwright reports the peer address of the response, so this is the first check in the chain that
+ * examines the thing that actually happened rather than a prediction of it. It runs after the request
+ * but before the page's content reaches the model, which is the disclosure that matters: a crawl that
+ * fetched an internal address and then refused to hand it on has not leaked it.
+ */
+export function assertConnectedAddressIsPublic(
+  response: { serverAddr(): Promise<{ ipAddress: string } | null> } | null,
+  url: string,
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<void> {
+  return (async () => {
+    if (!response) return; // no navigation happened (same-document, or a download)
+    let host: string;
+    try {
+      host = new URL(url).hostname.toLowerCase().replace(/^\[|\]$/gu, '');
+    } catch {
+      return;
+    }
+    if (declaredPrivateTargets(env).has(host)) return;
+    let peer: { ipAddress: string } | null = null;
+    try {
+      peer = await response.serverAddr();
+    } catch {
+      return; // the transport cannot say; the pre-flight check stands alone
+    }
+    if (!peer?.ipAddress) return;
+    assertIpIsPublic(peer.ipAddress, host);
+  })();
+}
+
 /** Resolve a hostname to its A/AAAA addresses. Injectable so tests don't hit real DNS. */
 export type HostResolver = (host: string) => Promise<string[]>;
 const defaultResolver: HostResolver = async (host) => (await dnsLookup(host, { all: true })).map((a) => a.address);

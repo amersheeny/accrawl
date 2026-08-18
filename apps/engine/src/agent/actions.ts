@@ -11,7 +11,7 @@ import type { CrawlRequest } from '../types';
 import type { ExecutableStepResponse } from '../ai/schema';
 import { waitForStability } from '../browser/page-utils';
 import { ActionError } from './errors';
-import { assertSafeNavigationUrl } from '../utils/url-safety';
+import { assertSafeNavigationUrl, assertConnectedAddressIsPublic } from '../utils/url-safety';
 import type { SessionLogger } from '../utils/logger';
 import { safeBrowserUrl } from '../utils/safe-browser-url';
 
@@ -333,7 +333,11 @@ export async function executeAction(
       } catch (e) {
         throw new ActionError('missing_field', e instanceof Error ? e.message : 'unsafe navigate target');
       }
-      await page.goto(action.url, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      const navigated = await page.goto(action.url, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      // The check above inspected a NAME; this one inspects the address the browser reached. Between
+      // the two, DNS can change its mind, which is the whole of a rebind attack. Refusing here still
+      // stops the page's content from reaching the model.
+      await assertConnectedAddressIsPublic(navigated, action.url);
       await waitForStability(page, 10_000);
       return { status: 'success', matchCount: 0 };
     }

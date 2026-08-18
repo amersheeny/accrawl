@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { assertSafeNavigationUrl, type HostResolver } from './url-safety';
+import { assertSafeNavigationUrl, assertConnectedAddressIsPublic, type HostResolver } from './url-safety';
 
 // Deterministic resolvers so tests never hit real DNS. `pub` makes any hostname resolve to a public IP so the
 // pre-resolution (scheme / IP-literal / blocked-hostname) checks are exercised in isolation.
@@ -98,5 +98,62 @@ describe('assertSafeNavigationUrl', () => {
     await expect(assertSafeNavigationUrl('https://realbank.example/', toIp('203.0.113.7'))).resolves.toBeUndefined();
     // A DNS hiccup must not block a legit crawl — the browser will fail to connect to an unresolvable host anyway.
     await expect(assertSafeNavigationUrl('https://transient.example/', dnsFails)).resolves.toBeUndefined();
+  });
+});
+
+describe('assertConnectedAddressIsPublic', () => {
+  const response = (ipAddress: string | null) => ({
+    serverAddr: async () => (ipAddress ? { ipAddress } : null),
+  });
+
+  it('catches the rebind the name check cannot: public at lookup, internal at connect', async () => {
+    // This is the attack. The pre-flight check saw a public A record and allowed the name; by the
+    // time the browser connected, DNS answered with the metadata address instead.
+    await expect(assertConnectedAddressIsPublic(response('169.254.169.254'), 'https://bank.example/x'))
+      .rejects.toThrow(/private\/internal address/);
+  });
+
+  it('refuses every internal range the pre-flight check refuses', async () => {
+    for (const ip of ['127.0.0.1', '10.1.2.3', '172.16.0.1', '192.168.1.1', '::1', 'fd00::1', 'fe80::1']) {
+      await expect(assertConnectedAddressIsPublic(response(ip), 'https://bank.example/x'))
+        .rejects.toThrow(/private\/internal address/);
+    }
+  });
+
+  it('allows a genuinely public peer', async () => {
+    for (const ip of ['93.184.216.34', '2606:2800:220:1:248:1893:25c8:1946']) {
+      await expect(assertConnectedAddressIsPublic(response(ip), 'https://bank.example/x')).resolves.toBeUndefined();
+    }
+  });
+
+  it('allows an internal peer only for a host the deployment declared, and never in production', async () => {
+    const declared = { NODE_ENV: 'test', ACCRAWL_ALLOW_PRIVATE_CRAWL_TARGETS: 'bank.example' } as NodeJS.ProcessEnv;
+    await expect(assertConnectedAddressIsPublic(response('127.0.0.1'), 'https://bank.example/x', declared))
+      .resolves.toBeUndefined();
+    // a different host is not covered by that declaration
+    await expect(assertConnectedAddressIsPublic(response('127.0.0.1'), 'https://other.example/x', declared))
+      .rejects.toThrow(/private\/internal address/);
+    // An undeclared deployment is unaffected: with nothing listed, nothing is allowed.
+    for (const env of [{}, { NODE_ENV: 'production' }] as NodeJS.ProcessEnv[]) {
+      await expect(assertConnectedAddressIsPublic(response('127.0.0.1'), 'https://bank.example/x', env))
+        .rejects.toThrow(/private\/internal address/);
+    }
+  });
+
+  it('honours a declaration in production too, because an on-premises bank is a real deployment', () => {
+    // Gating this on NODE_ENV would have made the packaged end-to-end run impossible — its worker must
+    // stay at NODE_ENV=production or the control plane refuses to trust it — and would have blocked
+    // the self-hoster whose institution is only reachable inside their own network.
+    const prod = {
+      NODE_ENV: 'production',
+      ACCRAWL_ALLOW_PRIVATE_CRAWL_TARGETS: 'bank.internal',
+    } as NodeJS.ProcessEnv;
+    return expect(assertConnectedAddressIsPublic(response('10.0.0.5'), 'https://bank.internal/x', prod))
+      .resolves.toBeUndefined();
+  });
+
+  it('says nothing when there is no navigation or no peer address to inspect', async () => {
+    await expect(assertConnectedAddressIsPublic(null, 'https://bank.example/x')).resolves.toBeUndefined();
+    await expect(assertConnectedAddressIsPublic(response(null), 'https://bank.example/x')).resolves.toBeUndefined();
   });
 });
