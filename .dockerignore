@@ -60,7 +60,7 @@ companion/android/app/build
 # Both Dockerfiles COPY . . — and COPY reads the working tree, so a gitignored credential is still in
 # the build context. Matched by SHAPE rather than by vendor filename: the pattern keeps the file out
 # without this repository having to name whose file it is.
-key.properties
-*-services.json
-service-account.json
-*-service-account*.json
+**/key.properties
+**/*-services.json
+**/service-account.json
+**/*-service-account*.json
