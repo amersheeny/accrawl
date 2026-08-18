@@ -1558,7 +1558,13 @@ async function main() {
     // device now that the engine requires a live readiness handshake, and pairing refuses plain HTTP by
     // default. Scoped to the e2e's own control plane; production keeps the HTTPS requirement.
     ACCRAWL_COMPANION_ALLOW_INSECURE_HTTP: '1',
-    // The fake bank is plain HTTP on this host; a real institution must use https.
+    // The fake bank is plain HTTP on this host; a real institution must use https. Both halves of that
+    // gate have to be stated: an ABSENT NODE_ENV counts as production, precisely so that the
+    // deployment nobody configured is not the one holding the door open. This harness is a test
+    // environment and now says so instead of relying on the variable being unset. 'development', not
+    // 'test': the app already defaults to development, so this changes nothing else, whereas 'test'
+    // drops the database pool to a single connection and unlocks reset helpers this has no use for.
+    NODE_ENV: 'development',
     ACCRAWL_ALLOW_INSECURE_LOGIN_URL: '1',
     SETUP_CLAIM_TOKEN,
     ...(process.env.COMPANION_RELAY ? {
