@@ -66,6 +66,10 @@ function useScreenshots(sessionId: string) {
       if (startedGen !== gen.current) { URL.revokeObjectURL(url); return; }
       cache.current.set(step, url);
       bump((n) => n + 1);
+    } catch (error) {
+      // Nothing is cached, so the tile stays eligible for a later attempt rather than being stuck on a
+      // transient failure — and the reason is said out loud instead of surfacing as an empty rectangle.
+      console.warn(`[screenshots] step ${step} could not be loaded:`, error);
     } finally { pending.current.delete(step); }
   }, [sessionId]);
   useEffect(() => {
@@ -101,6 +105,7 @@ function SessionMonitorView({ id }: { id: string }) {
   const [live, setLive] = useState<'connecting' | 'streaming' | 'reconnecting' | 'closed'>('connecting');
   const now = useNow(1000);
   const { shots, load: loadShot } = useScreenshots(id);
+  const stripRef = useRef<HTMLDivElement>(null);
   const feedRef = useRef<HTMLDivElement>(null);
 
   const active = view ? isActiveStatus(view.status) : false;
@@ -206,8 +211,26 @@ function SessionMonitorView({ id }: { id: string }) {
   const latestShotStep = shotSteps.length ? shotSteps[shotSteps.length - 1].stepNumber : null;
   const shownStep = selectedStep ?? latestShotStep;
   useEffect(() => { if (shownStep != null) void loadShot(shownStep); }, [shownStep, loadShot]);
-  useEffect(() => { // prefetch the last few thumbnails
-    for (const s of shotSteps.slice(-6)) void loadShot(s.stepNumber);
+  // Load a thumbnail when its tile comes into view.
+  //
+  // Prefetching a fixed tail instead left every earlier tile with NO <img> at all — the markup below
+  // renders one only once the blob is cached — so a run with more screenshots than the window showed a
+  // row of featureless dark rectangles that never resolved unless the operator happened to click one.
+  // Watching the strip keeps the fetching bounded to what is actually on screen while making every
+  // tile that a person can see actually arrive.
+  useEffect(() => {
+    const strip = stripRef.current;
+    if (!strip) return undefined;
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const step = Number((entry.target as HTMLElement).dataset.step);
+        if (Number.isFinite(step)) void loadShot(step);
+      }
+      // rootMargin gives the fetch a head start, so scrolling the strip does not chase the tiles.
+    }, { root: strip, rootMargin: '300px' });
+    for (const tile of strip.querySelectorAll('[data-step]')) observer.observe(tile);
+    return () => observer.disconnect();
   }, [shotSteps, loadShot]);
 
   // Auto-scroll the feed (only if the user is already near the bottom).
@@ -336,9 +359,10 @@ function SessionMonitorView({ id }: { id: string }) {
                 : <div className="shot-empty">{active ? 'Waiting for the first screenshot…' : 'No screenshots for this run'}</div>}
             </div>
             {shotSteps.length > 1 && (
-              <div className="shot-strip">
+              <div className="shot-strip" ref={stripRef}>
                 {shotSteps.map((s) => (
-                  <button key={s.stepNumber} className={`shot-thumb${shownStep === s.stepNumber ? ' active' : ''}`}
+                  <button key={s.stepNumber} data-step={s.stepNumber}
+                    className={`shot-thumb${shownStep === s.stepNumber ? ' active' : ''}`}
                     onClick={() => { setSelectedStep(s.stepNumber); void loadShot(s.stepNumber); }}>
                     {shots.get(s.stepNumber) ? <img src={shots.get(s.stepNumber)} alt="" /> : null}
                     <span className="shot-n">{s.stepNumber}</span>

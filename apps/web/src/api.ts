@@ -310,7 +310,10 @@ export async function fetchScreenshot(sessionId: string, stepNumber: number): Pr
   const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/steps/${stepNumber}/screenshot`, {
     headers: token ? { authorization: `Bearer ${token}` } : {},
   });
-  if (!res.ok) return null;
+  // Only a 404 means "there is no screenshot". Reporting an auth failure or a storage error as the
+  // same thing hides a broken deployment behind a tile that merely looks empty.
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`screenshot request failed: HTTP ${res.status}`);
   return URL.createObjectURL(await res.blob());
 }
 
