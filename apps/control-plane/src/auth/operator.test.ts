@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
-  signToken, verifyToken, signConsentTicket, checkConsentTicket, type ConsentTicketBinding,
+  signToken, verifyToken, signConsentTicket, checkConsentTicket, operatorTokenTtlMs,
+  type ConsentTicketBinding,
 } from './operator';
 
 // The DB-backed operations (verifyOperatorPassword / mintOperatorToken / verifyOperatorToken /
@@ -80,5 +81,31 @@ describe('consent ticket (pure HMAC, request-bound)', () => {
     expect(checkConsentTicket(SECRET, 'accsent1.onlytwo', binding)).toBe(false);
     // A well-formed OPERATOR token must not pass as a consent ticket (distinct prefix).
     expect(checkConsentTicket(SECRET, signToken(SECRET), binding)).toBe(false);
+  });
+});
+
+describe('operatorTokenTtlMs', () => {
+  const HOUR = 60 * 60 * 1000;
+
+  it('keeps the seven-day default when nothing is configured', () => {
+    expect(operatorTokenTtlMs({} as NodeJS.ProcessEnv)).toBe(168 * HOUR);
+  });
+
+  it('honours a shorter window, which is the point of making it settable', () => {
+    expect(operatorTokenTtlMs({ OPERATOR_TOKEN_TTL_HOURS: '8' } as NodeJS.ProcessEnv)).toBe(8 * HOUR);
+    expect(operatorTokenTtlMs({ OPERATOR_TOKEN_TTL_HOURS: '1' } as NodeJS.ProcessEnv)).toBe(1 * HOUR);
+  });
+
+  it('falls back to the default on anything it cannot use, rather than failing to start', () => {
+    // A typo in a self-hoster's environment file must not stop the deployment booting; the fallback
+    // is what they had before, so nothing silently gets LONGER than the default either.
+    for (const value of ['', '   ', 'eight', '0', '-5', '721', 'NaN', 'Infinity', '1e999']) {
+      expect(operatorTokenTtlMs({ OPERATOR_TOKEN_TTL_HOURS: value } as NodeJS.ProcessEnv)).toBe(168 * HOUR);
+    }
+  });
+
+  it('refuses to extend beyond thirty days', () => {
+    expect(operatorTokenTtlMs({ OPERATOR_TOKEN_TTL_HOURS: '720' } as NodeJS.ProcessEnv)).toBe(720 * HOUR);
+    expect(operatorTokenTtlMs({ OPERATOR_TOKEN_TTL_HOURS: '1000' } as NodeJS.ProcessEnv)).toBe(168 * HOUR);
   });
 });

@@ -14,12 +14,39 @@ import { verifyPassword } from './password';
 import { currentTenant } from '../tenancy/context';
 
 const TOKEN_PREFIX = 'accs1';
-const DEFAULT_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const DEFAULT_TTL_HOURS = 168; // 7 days
+const MIN_TTL_HOURS = 1;
+const MAX_TTL_HOURS = 720; // 30 days
+
+/**
+ * How long an operator session lasts, in hours.
+ *
+ * The token is a bearer credential held in browser storage, so its lifetime IS the window a stolen
+ * one stays useful. Seven days suits an operator who checks in occasionally; it is far too long for
+ * one working from a shared or untrusted machine, and until now neither could choose.
+ *
+ * Ending a session early is already possible for everyone through `POST /api/auth/revoke-all`, which
+ * rotates the signing secret and invalidates every token at once — there is exactly one operator per
+ * deployment, enforced in the schema, so that is a complete answer to a stolen token rather than a
+ * blunt one. This only decides how long the window is before anyone has to notice.
+ *
+ * An unparseable or out-of-range value falls back to the default rather than failing the process: a
+ * typo in a self-hoster's environment file should not stop their deployment from starting, and the
+ * fallback is the safe end of the range in the sense that it is what they had before.
+ */
+function operatorTokenTtlMs(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = env.OPERATOR_TOKEN_TTL_HOURS?.trim();
+  const hours = raw ? Number(raw) : Number.NaN;
+  const valid = Number.isFinite(hours) && hours >= MIN_TTL_HOURS && hours <= MAX_TTL_HOURS;
+  return (valid ? hours : DEFAULT_TTL_HOURS) * 60 * 60 * 1000;
+}
 
 interface TokenPayload {
   exp: number; // epoch ms
   tid: string;
 }
+
+export { operatorTokenTtlMs };
 
 const cachedSigningSecrets = new Map<string, string | null>();
 
@@ -46,7 +73,7 @@ function b64u(buf: Buffer): string {
 /** Sign a stateless operator token (prefix.payload.hmac) with an explicit secret. */
 export function signToken(
   secret: string,
-  ttlMs: number = DEFAULT_TTL_MS,
+  ttlMs: number = operatorTokenTtlMs(),
   tenantId: string = 'self-hosted',
 ): string {
   const payload: TokenPayload = { exp: Date.now() + ttlMs, tid: tenantId };
@@ -84,7 +111,7 @@ export async function verifyOperatorPassword(presented: string): Promise<boolean
 }
 
 /** Mint an operator bearer token valid for `ttlMs`. Throws if setup hasn't run (no signing secret yet). */
-export async function mintOperatorToken(ttlMs: number = DEFAULT_TTL_MS): Promise<string> {
+export async function mintOperatorToken(ttlMs: number = operatorTokenTtlMs()): Promise<string> {
   const secret = await signingSecret();
   if (!secret) throw new Error('Operator auth unavailable: first-run setup has not completed.');
   return signToken(secret, ttlMs, currentTenant().id);
