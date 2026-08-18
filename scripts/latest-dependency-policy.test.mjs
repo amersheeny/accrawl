@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
+  flutterPackagesBehindLatest,
   aggregateDependencyCheckFailures,
   githubAuthorizationHeaders,
   pnpmEntriesBehindLatest,
@@ -264,4 +265,52 @@ test('production deployments repair fetch-blob to use native DOMException', () =
       file,
     );
   }
+});
+
+/** A package pub reports as behind, with every safety signal clear unless a test says otherwise. */
+function outdatedEntry(overrides = {}) {
+  return {
+    package: 'code_assets',
+    kind: 'transitive',
+    isDiscontinued: false,
+    isCurrentRetracted: false,
+    isCurrentAffectedByAdvisory: false,
+    current: { version: '1.2.1' },
+    upgradable: { version: '1.2.1' },
+    resolvable: { version: '1.2.1' },
+    latest: { version: '2.0.0' },
+    ...overrides,
+  };
+}
+
+test('a transitive package no resolution can move is held, not stale', () => {
+  const { held, stale } = flutterPackagesBehindLatest({ packages: [outdatedEntry()] });
+  assert.deepEqual(stale, []);
+  assert.equal(held.length, 1);
+  assert.equal(held[0].package, 'code_assets');
+});
+
+test('every condition of the upstream-held exemption is load-bearing on its own', () => {
+  // Each case flips exactly one signal, so none of them can be carried by the others.
+  const cases = [
+    ['a direct dependency is ours to move', { kind: 'direct' }],
+    ['a dev dependency is ours to move', { kind: 'dev' }],
+    ['resolvable reaches latest, so nothing upstream is holding it', { resolvable: { version: '2.0.0' } }],
+    ['resolvable is merely newer, so the constraint is not the wall', { resolvable: { version: '1.9.0' } }],
+    ['an advisory against the held version ends the argument', { isCurrentAffectedByAdvisory: true }],
+    ['a retracted version is never acceptable', { isCurrentRetracted: true }],
+    ['a discontinued package is never acceptable', { isDiscontinued: true }],
+  ];
+  for (const [reason, override] of cases) {
+    const { held, stale } = flutterPackagesBehindLatest({ packages: [outdatedEntry(override)] });
+    assert.equal(stale.length, 1, `should still fail: ${reason}`);
+    assert.equal(held.length, 0, `must not be exempt: ${reason}`);
+  }
+});
+
+test('a package already at latest is neither held nor stale', () => {
+  const current = outdatedEntry({ latest: { version: '1.2.1' } });
+  const { held, stale } = flutterPackagesBehindLatest({ packages: [current] });
+  assert.deepEqual(held, []);
+  assert.deepEqual(stale, []);
 });

@@ -20,6 +20,12 @@ function fail(message) {
   throw new Error(`[dependencies] ${message}`);
 }
 
+/** Something the audit permitted but a reader should still see. Printed on every run, because a
+ *  permitted exception that says nothing looks exactly like a check that stopped running. */
+function note(message) {
+  console.log(`[dependencies] ${message}`);
+}
+
 export function aggregateDependencyCheckFailures(results) {
   const messages = results
     .filter((result) => result.status === 'rejected')
@@ -1068,6 +1074,36 @@ async function checkPython(root, config) {
   }
 }
 
+/**
+ * Split `flutter pub outdated` into what must be fixed and what upstream is holding.
+ *
+ * `resolvable` is the newest version pub could reach if every constraint in THIS project were
+ * relaxed. When it equals `current` while `latest` is higher, no edit here reaches the newer
+ * version — another package's own constraint is the wall, and the only remaining moves are to fork
+ * that package or wait for its maintainer. Failing a build in that state makes nothing newer; it
+ * only means nobody can push until someone else acts.
+ *
+ * Such a package is therefore held rather than stale, and ONLY while pub reports it carries no
+ * advisory, is not retracted, and is not discontinued. Those three conditions are the entire safety
+ * argument: being behind is tolerable, being knowingly vulnerable is not.
+ *
+ * A direct dependency never qualifies. That constraint is ours, in our own pubspec, and "upstream
+ * holds it" would be a story about a file we can edit.
+ */
+export function flutterPackagesBehindLatest(outdated) {
+  const behind = (outdated.packages ?? [])
+    .filter((entry) => entry.current?.version !== entry.latest?.version);
+  const heldByUpstream = (entry) => entry.kind === 'transitive'
+    && entry.resolvable?.version === entry.current?.version
+    && entry.isCurrentAffectedByAdvisory === false
+    && entry.isCurrentRetracted === false
+    && entry.isDiscontinued === false;
+  return {
+    held: behind.filter(heldByUpstream),
+    stale: behind.filter((entry) => !heldByUpstream(entry)),
+  };
+}
+
 async function checkFlutter(root, config) {
   const flutterRoot = resolve(root, dirname(config.pubspec));
   const releases = await fetchJson(
@@ -1083,7 +1119,17 @@ async function checkFlutter(root, config) {
   }
 
   const outdated = JSON.parse(execute(flutterRoot, 'flutter', ['pub', 'outdated', '--json']));
-  const stale = outdated.packages.filter((entry) => entry.current?.version !== entry.latest?.version);
+  const { held, stale } = flutterPackagesBehindLatest(outdated);
+
+  // Said out loud on every run. A permitted exception that prints nothing is indistinguishable from
+  // a check that stopped looking, and this one is meant to be noticed and revisited.
+  for (const entry of held) {
+    note(`${entry.package} stays at ${entry.current.version} (latest ${entry.latest.version}): a`
+      + ' transitive dependency the resolver cannot move, held by another package\'s constraint.'
+      + ' Permitted because pub reports no advisory, no retraction and no discontinuation against it.'
+      + ` Run \`flutter pub deps\` in ${dirname(config.pubspec)} to see which package holds it.`);
+  }
+
   if (stale.length > 0) {
     fail(`Flutter packages are behind latest stable: ${stale.map(
       (entry) => `${entry.package}: ${entry.current.version} -> ${entry.latest.version}`,
