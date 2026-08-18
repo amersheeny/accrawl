@@ -1,6 +1,7 @@
 {
   "name": "@accrawl/sdk",
   "version": "0.1.0",
+  "private": true,
   "description": "Official TypeScript client for the Accrawl Provider API \u2014 trigger crawls, poll sessions, submit OTPs, read accounts/transactions/positions, and verify webhooks. Zero runtime dependencies.",
   "license": "AGPL-3.0-only",
   "main": "./dist/index.js",
