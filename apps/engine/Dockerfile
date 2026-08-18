@@ -52,7 +52,7 @@ RUN mkdir -p /tmp/google-chrome-package /chrome-root \
  && xz --decompress --stdout data.tar.xz \
     | tar -xf - -C /chrome-root ./opt/google/chrome
 
-FROM cgr.dev/chainguard/rust:latest-dev@sha256:c0836ade760d0d0718deae8c1ca12dba37b6913f1bf42e2002147a02b25eaf97 AS rav1e-toolchain
+FROM cgr.dev/chainguard/rust:latest-dev@sha256:70a73cab576cb5262ed69944fa8393d3d85f49c82220056f00e84337059fba6e AS rav1e-toolchain
 USER 0
 # gtk-3's current image-loader graph reaches rav1e. Rebuild rav1e's current stable C ABI with the
 # current Rust toolchain and dependency graph: the packaged CLI embeds abandoned/vulnerable crates,
@@ -210,10 +210,10 @@ RUN apk add --no-cache \
     fontconfig=2.18.3-r0 \
     gtk-3=3.24.52-r2 \
     icu-data-full=75.1-r42 \
-    libnss=3.127-r0 \
+    libnss=3.127-r1 \
     mesa=26.2.0-r0 \
     mesa-glx=26.2.0-r0 \
-    nss=3.127-r0 \
+    nss=3.127-r1 \
     libudev=261.2-r1 \
     xdg-utils=1.2.1-r8
 # Replace Wolfi's rav1e payload in place: gtk-3 requires the package record, but Chrome needs only its
