@@ -22,9 +22,13 @@ function git(args) {
   });
 }
 
+// HEAD is listed explicitly because a pull-request checkout is detached and creates no local branch:
+// with only branches and tags selected, a run there reads none of the commits it is checking.
+const PUBLISHED = ['--branches', '--tags', 'HEAD'];
+
 /** How many commits are reachable, so the scan can prove it read the history rather than nothing. */
 function reachableCommitCount() {
-  return Number(git(['rev-list', '--branches', '--tags', '--count']).trim());
+  return Number(git(['rev-list', ...PUBLISHED, '--count']).trim());
 }
 
 test('no provider vocabulary or deployment identity in commit messages', () => {
@@ -34,7 +38,7 @@ test('no provider vocabulary or deployment identity in commit messages', () => {
   const commits = reachableCommitCount();
   assert.ok(commits > 0, 'expected to read the history, read nothing');
 
-  const messages = git(['log', '--branches', '--tags', '--format=%H%x00%B%x00'])
+  const messages = git(['log', ...PUBLISHED, '--format=%H%x00%B%x00'])
     .split('\0');
 
   const findings = [];
@@ -127,7 +131,7 @@ test('no author or committer identity in commit metadata', () => {
   // not. A name and address are attached to all of them, and a rewrite that scrubs only messages and
   // blobs leaves that behind on every commit in the repository.
   const people = git([
-    'log', '--branches', '--tags', '--format=%an%x00%ae%x00%cn%x00%ce%x00%H%x00',
+    'log', ...PUBLISHED, '--format=%an%x00%ae%x00%cn%x00%ce%x00%H%x00',
   ]).split('\0');
 
   const findings = [];
@@ -173,7 +177,7 @@ test('no personal mailbox in commit metadata', () => {
   const NO_REPLY = /^(?:no-?reply|do-?not-?reply)@|@(?:[^@]*\.)?users\.noreply\.github\.com$/iu;
 
   const people = git([
-    'log', '--branches', '--tags', '--format=%ae%x00%ce%x00%H%x00',
+    'log', ...PUBLISHED, '--format=%ae%x00%ce%x00%H%x00',
   ]).split('\0');
 
   const findings = [];
