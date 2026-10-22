@@ -73,8 +73,7 @@ const SECRETS = {
 };
 const DBURL = `postgres://accrawl:accrawl@127.0.0.1:${P.pg}/accrawl`;
 /** The engine connects under its own least-privilege role, exactly as the compose deployment does, so a
- *  statement reaching for something nobody granted fails here rather than in someone's install. Connecting
- *  as the admin role is why a deployment that could record nothing at all still passed this suite. */
+ *  statement reaching for something nobody granted fails here rather than in someone's install. */
 const ENGINE_DB_PASSWORD = 'e2e-engine-role-password';
 const ENGINE_DBURL = `postgres://accrawl_engine:${ENGINE_DB_PASSWORD}@127.0.0.1:${P.pg}/accrawl`;
 const CP = `http://127.0.0.1:${P.cp}`;
@@ -93,14 +92,9 @@ const WEB_DIST = path.join(ROOT, 'apps/web/dist');
  * rather than two minutes later as an OTP that never arrives.
  */
 /**
- * Locate the Android client configuration the Companion build already consumes, and read the four
- * settings out of it.
- *
- * This exists because the relay run CANNOT proceed without building the Companion, and the Companion
- * cannot be built without that configuration — so on any machine where this gate can run at all, the
- * values are already present. Requiring a human to copy four fields out of a file the build reads
- * anyway is a step whose only possible outcomes are "done from memory" or "forgotten", and forgotten
- * is what turns a mandatory gate into a question asked of whoever is nearest.
+ * Read the four push settings from an Android client configuration file, for any the environment leaves
+ * unset. The Companion build does not need this file: the app receives these settings from the deployment
+ * it pairs with.
  *
  * The file is found by its STRUCTURE, never by its name: which push vendor a deployment uses decides
  * what that file is called, and this repository does not name vendors. Set
@@ -356,9 +350,9 @@ async function runRelay(connectionId) {
           && s.otp_requested
           && !s.otp
         ) {
-          // LLM-FIRST relay: we do NOT parse the code here. We hand the control-plane the RAW SMS body (+ the
-          // sender, which it re-binds to the institution's otpSenderPattern, + the request epoch) and let
-          // Gemini extract the code server-side — exactly what the companion now does. `sender` is SMS_FROM,
+          // The relay does not parse the code: it hands the control plane the raw SMS body, the sender (which
+          // the control plane binds to the institution's otpSenderPattern) and the request epoch, and the
+          // control plane extracts the code with its model, as it does for the Companion. `sender` is SMS_FROM,
           // the literal the institution's pattern is pinned to, so the server-side sender binding passes.
           const sms = await (await fetch(`${BANK}/_relay/last-sms`)).json();
           if (
@@ -1552,18 +1546,16 @@ async function main() {
   spawnSvc('control-plane', 'node', ['apps/control-plane/dist/server-main.js'], {
     PORT: String(P.cp), DATABASE_URL: DBURL, ENGINE_URL: `http://127.0.0.1:${P.engine}`,
     RUNS_DIR: path.join(TMP, 'runs'),
-    // The control-plane now LLM-extracts the OTP from the relayed SMS body, so it needs the Gemini key too.
+    // The control plane extracts the OTP from the relayed SMS body with a model call, so it needs the key too.
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-    // Both relay paths pair over loopback HTTP in this harness — the in-process relay has to pair a real
-    // device now that the engine requires a live readiness handshake, and pairing refuses plain HTTP by
-    // default. Scoped to the e2e's own control plane; production keeps the HTTPS requirement.
+    // Both relay paths pair over loopback HTTP in this harness: the engine requires a live readiness
+    // handshake from a paired device, and pairing refuses plain HTTP unless this is set. Production keeps
+    // the HTTPS requirement.
     ACCRAWL_COMPANION_ALLOW_INSECURE_HTTP: '1',
-    // The fake bank is plain HTTP on this host; a real institution must use https. Both halves of that
-    // gate have to be stated: an ABSENT NODE_ENV counts as production, precisely so that the
-    // deployment nobody configured is not the one holding the door open. This harness is a test
-    // environment and now says so instead of relying on the variable being unset. 'development', not
-    // 'test': the app already defaults to development, so this changes nothing else, whereas 'test'
-    // drops the database pool to a single connection and unlocks reset helpers this has no use for.
+    // The fake bank is plain HTTP on this host; a real institution must use https. Allowing it takes both
+    // settings, because an ABSENT NODE_ENV counts as production. 'development', not 'test': it changes
+    // nothing else the app does, whereas 'test' drops the database pool to a single connection and unlocks
+    // reset helpers this run has no use for.
     NODE_ENV: 'development',
     ACCRAWL_ALLOW_INSECURE_LOGIN_URL: '1',
     SETUP_CLAIM_TOKEN,
@@ -1578,9 +1570,9 @@ async function main() {
   await waitForHealth('control-plane', `${CP}/health`);
 
   // 4. Drive the real product API
-  // First-run setup creates the operator. The admin password is no longer an env var — it is set once here
-  // and stored as an argon2id hash; the fresh per-run DB is always uninitialized, so setup returns the
-  // operator token directly (no separate login needed).
+  // First-run setup creates the operator. The admin password is set once here, not read from the
+  // environment, and stored as an argon2id hash; the fresh per-run DB is always uninitialized, so setup
+  // returns the operator token directly (no separate login needed).
   const setup = await api('POST', '/api/setup', { password: SECRETS.ACCRAWL_ADMIN_PASSWORD, setupCode: SETUP_CLAIM_TOKEN });
   if (![200, 201].includes(setup.status)) throw new Error(`first-run setup failed: ${setup.status} ${JSON.stringify(setup.json)}`);
   token = setup.json.token;
@@ -1695,8 +1687,7 @@ async function main() {
 
   const txnStr = JSON.stringify(txns);
   for (const t of TRUTH.transactions) {
-    // Signed, not absolute. Sign is what separates a charge from a refund, so a
-    // crawl that stored +82.31 for a -82.31 debit used to pass this unchanged.
+    // Signed, not absolute: the sign is what separates a charge from a refund.
     const amtOk = txns.some((x) => Object.values(x).some((v) => typeof v === 'number' && approx(v, t.amount))) || txnStr.includes(String(t.amount));
     if (!amtOk) errors.push(`transaction amount ${t.amount} (${t.description}) not found in extracted transactions`);
   }
@@ -1719,22 +1710,16 @@ async function main() {
     await validateCompanionFinancialData(relay.sessionId);
   }
 
-  // 6b. OTP-LEAK assertions (DEFECT-2 + DEFECT-3): the live 2FA code must NOT have been persisted or logged
-  // anywhere the crawl or relay writes it. The real code is the one the engine consumed — read it from
-  // sessions.otp (the relay handoff column, the ONE legitimate place it lives). We then assert it is absent
-  // from:
-  //   (a) the engine process log and emulator SMS-bridge log (DEFECT-3: the old `12****` line leaked the
-  //       first two digits);
-  //   (b) every persisted session_steps.log JSON (the step log must carry the OTP_CODE placeholder, never the
-  //       real digits — i.e. no leak via action value / feedback / description);
-  //   (c) the persisted per-step screenshot JPEGs under RUNS_DIR (DEFECT-2: the post-fill screenshot must not
-  //       show the code) — checked TWO ways: a raw-byte scan for an attribute/alt-text embed, AND OCR of the
-  //       rendered pixels (the DOM mask must keep the digits out of the image; OCR is what actually verifies it).
-  // The consumed code: derive it from the SMS the relay delivered (the bank's verification code). We do NOT
-  // read sessions.otp — the control-plane NULLS that column once the engine consumes the code (correct: don't
-  // leave a live 2FA secret at rest), so it is null by the time we assert. The SMS body the relay captured is
-  // the ground-truth source. Pick the longest 4–10 digit run (the verification code; "5 minutes" etc. are
-  // short incidental numbers). Fall back to sessions.otp only if the relay didn't record a body.
+  // 6b. OTP-leak assertions: the live 2FA code the engine consumed must be absent from
+  //   (a) the engine process log and the emulator SMS-bridge log;
+  //   (b) every persisted session_steps.log JSON (the step log carries the OTP_CODE placeholder, never the
+  //       real digits, in action values, feedback and descriptions);
+  //   (c) the persisted per-step screenshots under RUNS_DIR, checked two ways: a raw-byte scan for an
+  //       attribute or alt-text embed, and OCR of the rendered pixels, which is what shows whether the DOM mask
+  //       kept the digits out of the image.
+  // The code is taken from the SMS the relay delivered: the longest 4–10 digit run in it ("5 minutes" and the
+  // like are shorter). sessions.otp is read only when the relay recorded no body, because the control plane
+  // clears that column once the engine consumes the code, so a live 2FA secret is not left at rest.
   let realOtp = null;
   if (relay.smsBody) {
     const runs = (relay.smsBody.match(/\d{4,10}/g) ?? []).sort((a, b) => b.length - a.length);
@@ -1767,12 +1752,9 @@ async function main() {
     let smsBridgeLog = '';
     try { smsBridgeLog = fs.readFileSync(smsBridgeLogPath, 'utf8'); } catch { /* absent on the in-process relay path */ }
     if (smsBridgeLog.includes(realOtp)) errors.push('LEAK: the SMS bridge log contains the live OTP code');
-    // Guard the SPECIFIC old DEFECT-3 form too: the "[Agent] OTP received: 12****" line that logged the first
-    // OTP digits as a "<digits>****" mask. We check the agent's OTP-received MESSAGE only, with the logger's
-    // leading "[<sessionId>] " prefix stripped — that prefix legitimately carries the session UUID's hex
-    // digits, which is not the code. After stripping it, the message must contain no digit-then-asterisk mask
-    // AND no digit at all (the fixed message is fully digit-free). The exact-code byte check above is the
-    // primary guard; this catches a mask-prefix regression on the agent line specifically.
+    // The agent's "[Agent] OTP received" message must carry no digit at all, so a masked prefix such as
+    // "12****" fails as well as the full code. The logger's "[<sessionId>] " prefix is stripped first: the
+    // session UUID's hex digits are not the code.
     const STRIP_LOG_PREFIX = /^\[[^\]]*\]\s*/; // the SessionLogger's "[<sessionId>] " prefix
     const agentOtpMsgs = engineLog.split('\n')
       .filter((l) => l.includes('[Agent] OTP received'))
@@ -1783,13 +1765,11 @@ async function main() {
     const stepRows = await sql`select log from session_steps where session_id = ${relay.sessionId}`;
     const stepBlob = JSON.stringify(stepRows.map((r) => r.log));
     if (stepBlob.includes(realOtp)) errors.push('LEAK: a persisted session_steps.log contains the live OTP code');
-    // (c) persisted screenshots — TWO independent checks, because the real leak is RENDERED PIXELS:
-    //   (c1) raw bytes — catches a value-attribute / alt-text / EXIF embed of the code string.
-    //   (c2) OCR of the rendered image — the ONLY check that sees the code being VISIBLE in the screenshot,
-    //        which is exactly what a broken DOM mask produces and a byte scan can NEVER detect (pixels aren't
-    //        text). This was the false-"clean" hole: the mask was silently non-functional and the byte scan
-    //        couldn't see the digits it rendered. OCR is REQUIRED here — if it can't run, that's a failure, not
-    //        a pass (a scan that can't see the leak is worse than no scan).
+    // (c) persisted screenshots, two independent checks:
+    //   (c1) raw bytes, which catch a value-attribute, alt-text or EXIF embed of the code string;
+    //   (c2) OCR of the rendered image, the only check that sees the code VISIBLE in a screenshot, which is
+    //        what a broken DOM mask produces and a byte scan cannot detect (pixels are not text). OCR is
+    //        required: if it cannot run, that is a failure, not a pass.
     const runsDir = path.join(TMP, 'runs');
     let shotFiles = [];
     try {
@@ -1834,10 +1814,7 @@ async function teardown() {
   for (const { name, c } of children) { try { c.kill('SIGTERM'); } catch { /* */ } }
   try { await sql?.end({ timeout: 3 }); } catch { /* */ }
   try { await pg?.stop(); } catch { /* */ }
-  // Give the device its space back. A relay run installs two builds and, without this, every run left
-  // them behind — so a device that served several runs eventually refused the next install with
-  // INSTALL_FAILED_INSUFFICIENT_STORAGE, which reads as a broken gate rather than as a full disk.
-  // The run installs them itself, so removing them costs the next run nothing.
+  // The next relay run installs both test builds itself, so they are not kept on the device.
   if (process.env.COMPANION_RELAY) {
     for (const pkg of [PKG, PKG.replace(/\.qa$/, '')]) {
       try { await adb(['uninstall', pkg]); } catch { /* not installed, or the device is already gone */ }
