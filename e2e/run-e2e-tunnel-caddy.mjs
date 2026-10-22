@@ -26,7 +26,7 @@ import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
-import { TRUTH, CREDS } from './truth.mjs';
+import { TRUTH, CREDS, expectedTransactionErrors } from './truth.mjs';
 import { startCompanionDouble } from './companion-double.mjs';
 
 // The code this run's deployment is claimed with. Generated per run: the server refuses setup without
@@ -244,6 +244,7 @@ async function collectAccuracyErrors(connectionId) {
     if (!amtOk) errors.push(`transaction amount ${t.amount} (${t.description}) not found in extracted transactions`);
   }
   if (txns.length < TRUTH.transactions.length) errors.push(`expected >= ${TRUTH.transactions.length} transactions, stored ${txns.length}`);
+  errors.push(...expectedTransactionErrors(txns));
   return { errors, acctCount: accts.length, txnCount: txns.length };
 }
 

@@ -28,7 +28,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import path from 'node:path';
-import { TRUTH, CREDS } from './truth.mjs';
+import { TRUTH, CREDS, expectedTransactionErrors } from './truth.mjs';
 
 /**
  * OCR every persisted screenshot and return the files in which the live OTP code is VISIBLE (rendered pixels).
@@ -1712,6 +1712,7 @@ async function main() {
   if (txns.length !== expectedTransactions) {
     errors.push(`expected exactly ${expectedTransactions} transactions, stored ${txns.length}`);
   }
+  errors.push(...expectedTransactionErrors(txns));
 
   if (process.env.COMPANION_RELAY && errors.length === 0) {
     await validateWebFinancialData(webPairing.page);
