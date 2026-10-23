@@ -26,9 +26,9 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import http from 'node:http';
 import fs from 'node:fs';
-import crypto from 'node:crypto';
 import path from 'node:path';
 import { TRUTH, CREDS, expectedTransactionErrors } from './truth.mjs';
+import { pairDevice } from './pair-device.mjs';
 
 /**
  * OCR every persisted screenshot and return the files in which the live OTP code is VISIBLE (rendered pixels).
@@ -1138,35 +1138,9 @@ async function validateSecureCompanionBuild() {
  * pairing flow: intent → claim → operator approval → complete.
  */
 async function pairInProcessRelayDevice(connectionId) {
-  const intent = await api('POST', '/api/devices/pairing-intents', {
-    name: 'e2e-in-process-relay',
-    connectionGrants: [connectionId],
-  });
-  if (intent.status < 200 || intent.status >= 300) {
-    throw new Error(`relay pairing intent failed: ${intent.status} ${JSON.stringify(intent.json)}`);
-  }
-  const claim = `acclaim_${crypto.randomBytes(32).toString('base64url')}`;
-  const claimed = await api('POST', '/api/devices/pairing/claim', {
-    pairingCode: intent.json.pairingCode,
-    claim,
-  });
-  if (claimed.status < 200 || claimed.status >= 300 || !claimed.json?.verificationCode) {
-    throw new Error(`relay pairing claim failed: ${claimed.status} ${JSON.stringify(claimed.json)}`);
-  }
-  const approval = await api('POST', `/api/devices/pairing-intents/${intent.json.id}/approve`);
-  if (approval.status < 200 || approval.status >= 300) {
-    throw new Error(`relay pairing approval failed: ${approval.status} ${JSON.stringify(approval.json)}`);
-  }
-  const completed = await api('POST', '/api/devices/pairing/complete', {
-    pairingCode: intent.json.pairingCode,
-    claim,
-  });
-  if (completed.status < 200 || completed.status >= 300 || !completed.json?.deviceToken) {
-    // Never echo the body: on success it carries the device credential itself.
-    throw new Error(`relay pairing completion failed: HTTP ${completed.status}`);
-  }
+  const deviceToken = await pairDevice(api, 'e2e-in-process-relay', connectionId);
   log(`relay: paired a virtual device for the readiness handshake`);
-  return completed.json.deviceToken;
+  return deviceToken;
 }
 
 async function setupCompanion(connectionId, webPairing) {
