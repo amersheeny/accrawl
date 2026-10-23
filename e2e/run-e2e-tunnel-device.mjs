@@ -184,7 +184,8 @@ async function collectAccuracyErrors(connectionId) {
     const amtOk = txns.some((x) => Object.values(x).some((v) => typeof v === 'number' && approx(v, t.amount))) || txnStr.includes(String(t.amount));
     if (!amtOk) errors.push(`transaction amount ${t.amount} (${t.description}) not found in extracted transactions`);
   }
-  if (txns.length < TRUTH.transactions.length) errors.push(`expected >= ${TRUTH.transactions.length} transactions, stored ${txns.length}`);
+  const expectedTransactions = TRUTH.transactions.length + TRUTH.card.transactions.length;
+  if (txns.length !== expectedTransactions) errors.push(`expected ${expectedTransactions} transactions, stored ${txns.length}`);
   errors.push(...expectedTransactionErrors(txns));
   return { errors, acctCount: accts.length, txnCount: txns.length };
 }
