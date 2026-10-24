@@ -37,7 +37,7 @@ import type { StepResponse, ExecutableStepResponse, StepErrorCategory } from '..
 import { buildSystemPrompt, buildStepContext } from '../ai/prompts';
 import { takeScreenshot, waitForStability, getCurrentUrl, getPageContent } from '../browser/page-utils';
 import { withTimeout } from '../utils/with-timeout';
-import { executeAction, type ActionResult } from './actions';
+import { executeAction, gotoCheckingAddress, type ActionResult } from './actions';
 import { OtpState, OTP_RECEIVED_LOG } from './otp-state';
 import { recoverFromActionError, type LoopState, type RecoveryContext } from './error-recovery';
 import { prepareOtpRelay, pollForOtp } from '../otp/otp-poller';
@@ -45,9 +45,10 @@ import { updateSessionStatus, appendStepLog, flushSessionLogs, CrawlCancelledErr
 import { DownloadTracker, parseXlsxToText, isDecodableExcelWorkbook } from '../browser/download-handler';
 import { uploadScreenshot } from './screenshot-uploader';
 import { calculateCost } from '../ai/pricing';
-import { assertSafeNavigationUrl, assertConnectedAddressIsPublic } from '../utils/url-safety';
+import { assertSafeNavigationUrl, ConnectedAddressRefusedError } from '../utils/url-safety';
 import type { SessionLogger } from '../utils/logger';
 import { safeBrowserUrl, safeBrowserUrlsInText } from '../utils/safe-browser-url';
+import { isContextSealed } from '../browser/context-seal';
 
 /** Overall backstop for a full page capture (screenshot + HTML). Env-overridable. */
 const CAPTURE_TIMEOUT_MS = Number(process.env.CAPTURE_TIMEOUT_MS ?? '45000');
@@ -167,6 +168,7 @@ export async function runAgentLoop(
   log: SessionLogger,
   _partialRef?: PartialCrawlRef,
   writeGate?: WriteGate,
+  closeBrowser: () => Promise<void> = () => page.context().close(),
 ): Promise<CrawlResponse> {
   const {
     sessionId,
@@ -262,6 +264,7 @@ export async function runAgentLoop(
   browserContext.on('page', async (newPage) => {
     try {
       await newPage.waitForLoadState('domcontentloaded');
+      if (isContextSealed(browserContext)) return;
       log.log(`[Agent] New tab/popup opened: ${safeBrowserUrl(newPage.url())}`);
       activePage = newPage;
       downloadTracker.attachTo(newPage);
@@ -292,10 +295,9 @@ export async function runAgentLoop(
     // (institution config), but loginUrlOverride is operator-settable — refuse
     // loopback/private/link-local/metadata targets regardless of source.
     await assertSafeNavigationUrl(loginUrl);
-    const initialNavigation = await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: INITIAL_NAV_TIMEOUT_MS });
     // The name was checked above; this checks the address the browser actually reached, which is the
     // only one of the two an attacker cannot change after the fact.
-    await assertConnectedAddressIsPublic(initialNavigation, loginUrl);
+    await gotoCheckingAddress(page, loginUrl, INITIAL_NAV_TIMEOUT_MS);
     await waitForStability(page);
 
     while (stepCount < maxSteps && Date.now() < deadline) {
@@ -724,6 +726,8 @@ export async function runAgentLoop(
         }
 
       } catch (execError) {
+        // The refused navigation may already have replaced the page, and recovery would show it to the model.
+        if (execError instanceof ConnectedAddressRefusedError) throw execError;
         const loopState: LoopState = {
           goal, otp, consecutiveErrors, consecutiveSelectorNotFoundErrors, ambiguousSelectorRetries,
           pendingRecoveryWarning, pendingActionFeedback, pendingSpreadsheetText,
@@ -844,6 +848,11 @@ export async function runAgentLoop(
       crawlMemory,
     };
   } catch (error) {
+    if (error instanceof ConnectedAddressRefusedError) {
+      await closeBrowser().catch((closeError: unknown) => {
+        log.error('[Agent] Closing the browser after a refused navigation failed:', closeError);
+      });
+    }
     // Calculate cost even on failure — partial crawls still consume tokens
     const cost = calculateCost(session.getModelId(), session.getUsage());
     log.log(`[Agent] Cost (on error): $${cost.totalCostUsd.toFixed(4)} | in=${cost.inputTokens} out=${cost.outputTokens}`);
@@ -1144,6 +1153,11 @@ const FAILURE_REASON_BY_ERROR_CATEGORY: Record<Exclude<StepErrorCategory, 'other
  * surfaces a schema-drift outage immediately) — it never changes crawl behavior.
  */
 export function classifyCrawlFailure(error: unknown): CrawlFailureReason {
+  // Its message names a host, and a host can contain any of the words the patterns below look for.
+  if (error instanceof ConnectedAddressRefusedError) {
+    return 'internal_error';
+  }
+
   if (error instanceof ApiContractError) {
     return 'api_contract_drift';
   }
@@ -1191,7 +1205,7 @@ export function classifyCrawlFailure(error: unknown): CrawlFailureReason {
   // Navigation that never responded (e.g. WAF tarpit) — page.goto/waitForNavigation
   // timeout. Checked before page_capture_timeout so a navigation timeout isn't
   // mislabeled as a capture timeout.
-  if (/(goto|navigat|waitForNavigation|waitForURL|net::ERR).*?(timeout|timed out)|(timeout|timed out).*?(goto|navigat|waitForNavigation|waitForURL)/i.test(message)) {
+  if (/(goto|navigat|waitForNavigation|waitForURL|waitForLoadState|net::ERR).*?(timeout|timed out)|(timeout|timed out).*?(goto|navigat|waitForNavigation|waitForURL|waitForLoadState)/i.test(message)) {
     return 'navigation_timeout';
   }
   // Navigation failed at the connection level without a timeout token — e.g.

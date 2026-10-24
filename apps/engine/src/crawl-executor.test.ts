@@ -133,6 +133,31 @@ describe('executeCrawl watchdog', () => {
     expect(mocks.contextClose).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps the watchdog waiting for a close the agent loop already started', async () => {
+    vi.useFakeTimers();
+    const closing = deferred<void>();
+    // Playwright reports a context that is still closing as closed, so a second close resolves at once.
+    mocks.contextClose.mockReturnValueOnce(closing.promise);
+    mocks.runAgentLoop.mockImplementation((...args: unknown[]) => {
+      const closeBrowser = args[5] as () => Promise<void>;
+      void closeBrowser();
+      return new Promise<CrawlResponse>(() => {});
+    });
+
+    let settled = false;
+    const resultPromise = executeCrawl(baseRequest).finally(() => { settled = true; });
+    await vi.advanceTimersByTimeAsync(HARD_DEADLINE_MS);
+
+    expect(settled).toBe(false);
+    expect(mocks.completeSession).not.toHaveBeenCalled();
+    expect(activeSessions.has(baseRequest.sessionId)).toBe(true);
+
+    closing.resolve();
+    await expect(resultPromise).resolves.toMatchObject({ failureReason: 'crawl_watchdog' });
+    expect(mocks.contextClose).toHaveBeenCalledOnce();
+    expect(mocks.completeSession).toHaveBeenCalledOnce();
+  });
+
   it('returns the agent loop result and does not fire the watchdog on a fast successful crawl', async () => {
     vi.useFakeTimers();
     mocks.runAgentLoop.mockResolvedValue({
