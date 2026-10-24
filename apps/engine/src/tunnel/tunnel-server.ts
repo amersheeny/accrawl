@@ -20,8 +20,8 @@
  *
  * Auth is the tunnel token, not an identity service: the engine never reads one, nor the devices table —
  * the token + the DB claim are the whole gate. The wire protocol (the {connect|data|close} /
- * {connected|data|close|error} JSON framing) and the SOCKS5↔WS bridge below are the byte-for-byte
- * contract with the companion and are unchanged.
+ * {connected|data|close|error} JSON framing, where {connected} carries the address the phone reached) and
+ * the SOCKS5↔WS bridge below are the byte-for-byte contract with the companion.
  */
 
 import type { Server as HttpServer } from 'http';
@@ -30,6 +30,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { deriveTunnelKey, verifyTunnelToken } from '@accrawl/contracts';
 import { createSocks5Server, type Socks5Server, type Socks5Connection } from './socks5-server';
 import { CrawlCleanupError, executeCrawl } from '../crawl-executor';
+import { canonicalIp, peerKey } from '../browser/tunnel-peers';
 import { getPlatform } from '../platform';
 import { completeSession } from '../agent/session-updater';
 import type { CrawlRequest, CrawlResponse } from '../types';
@@ -38,7 +39,7 @@ import type { CrawlRequest, CrawlResponse } from '../types';
 
 type TunnelMessage =
   | { type: 'connect'; connId: number; host: string; port: number }
-  | { type: 'connected'; connId: number }
+  | { type: 'connected'; connId: number; address?: string }
   | { type: 'data'; connId: number; data: string } // base64
   | { type: 'close'; connId: number }
   | { type: 'error'; connId: number; message: string };
@@ -47,6 +48,8 @@ type TunnelMessage =
 
 interface SocksConnectionEntry {
   socket: NetSocket;
+  /** peerKey() of the host:port the browser asked the phone to open. */
+  target: string;
   sendSuccess: () => void;
   sendFailure: () => void;
   /** The SOCKS socket's 'data' listener, kept so {close}/teardown can detach it (fix: a deleted conn
@@ -87,6 +90,10 @@ interface ActiveTunnel {
    *  underlying TCP socket throttles the whole tunnel, which is correct: it must not advance past the slowest
    *  reader. Add/remove are the pause/resume transitions; see addWsBackpressure / removeWsBackpressure. */
   wsBackpressuredConns: Set<number>;
+  /** peerKey(host, port) → every address the phone reported reaching for it during this crawl. */
+  peerAddresses: Map<string, Set<string>>;
+  /** Set once a 'connected' frame arrives without an address, so the older-app warning is logged once. */
+  warnedNoPeerAddress: boolean;
 }
 
 const activeTunnels = new Map<string, ActiveTunnel>();
@@ -610,6 +617,8 @@ async function handleCompanionConnection(sessionId: string, deviceId: string, ws
           socks5,
           connections: new Map(),
           wsBackpressuredConns: new Set(),
+          peerAddresses: new Map(),
+          warnedNoPeerAddress: false,
         };
         activeTunnels.set(sessionId, tunnel);
       } finally {
@@ -641,6 +650,7 @@ async function handleCompanionConnection(sessionId: string, deviceId: string, ws
       response = await executeCrawl(request, proxyUrl, {
         beforeSessionCompletion: () => closeTunnel(sessionId),
         signal: lifecycle.controller.signal,
+        tunnelPeers: (host, port) => [...(tunnel.peerAddresses.get(peerKey(host, port)) ?? [])],
       });
       console.log(`[Tunnel] Crawl completed for session ${sessionId}: success=${response.success}`);
     } catch (err) {
@@ -710,6 +720,7 @@ function wireSocksBridge(sessionId: string, tunnel: ActiveTunnel): void {
 
     const entry: SocksConnectionEntry = {
       socket: conn.socket,
+      target: peerKey(conn.host, conn.port),
       sendSuccess: conn.sendSuccess,
       sendFailure: conn.sendFailure,
       paused: false,
@@ -783,6 +794,15 @@ function wireSocksBridge(sessionId: string, tunnel: ActiveTunnel): void {
       switch (msg.type) {
         case 'connected':
           // Companion successfully opened TCP connection — tell Playwright SOCKS5 succeeded
+          if (msg.address) {
+            const reached = tunnel.peerAddresses.get(entry.target) ?? new Set<string>();
+            reached.add(msg.address);
+            tunnel.peerAddresses.set(entry.target, reached);
+          } else if (!tunnel.warnedNoPeerAddress) {
+            tunnel.warnedNoPeerAddress = true;
+            console.warn(`[Tunnel] The companion for session ${sessionId} does not report the address it reaches; `
+              + 'this crawl checks only the names it navigates to. Update the Companion app.');
+          }
           entry.sendSuccess();
           break;
 
@@ -965,8 +985,15 @@ function parseTunnelFrame(raw: unknown): TunnelMessage | null {
     return null;
   }
   switch (msg.type) {
-    case 'connected':
-      return { type: 'connected', connId: msg.connId };
+    case 'connected': {
+      if (msg.address === undefined) return { type: 'connected', connId: msg.connId };
+      const address = typeof msg.address === 'string' ? canonicalIp(msg.address) : null;
+      if (!address) {
+        console.warn('[Tunnel] Ignoring companion connected frame whose address is not an IP address');
+        return null;
+      }
+      return { type: 'connected', connId: msg.connId, address };
+    }
     case 'data':
       if (typeof msg.data !== 'string') {
         console.warn('[Tunnel] Ignoring companion data frame with non-string payload');

@@ -385,7 +385,11 @@ class TunnelService : Service() {
                 tlog("relaying → $host:$port")
                 // If the {connected} frame didn't go out (backpressure/closing), the engine never learns this conn
                 // opened — relaying on would leave a live socket + pump the engine can't address. Tear down instead.
-                if (!send(JSONObject().put("type", "connected").put("connId", connId))) {
+                // The engine's browser only ever sees its own local relay, so the address this socket reached is
+                // the one the engine's private-address check reads.
+                val connected = JSONObject().put("type", "connected").put("connId", connId)
+                s.inetAddress?.hostAddress?.let { connected.put("address", it) }
+                if (!send(connected)) {
                     finishConn(connId)
                     closeQuietly(s)
                     return@Runnable
