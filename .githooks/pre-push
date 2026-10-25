@@ -3,9 +3,19 @@
 # clones it will get. Slower, so it runs here rather than on every commit.
 set -eu
 
+# git passes "<local ref> <local sha> <remote ref> <remote sha>" per pushed ref; an all-zero local sha
+# is a deletion, which publishes nothing.
+PUSHED=""
+while read -r _local_ref local_sha _remote_ref _remote_sha; do
+  case "$local_sha" in *[!0]*) PUSHED="$PUSHED $local_sha" ;; esac
+done
+
 node --test scripts/provider-neutral-policy.test.mjs
 # The history checks belong HERE, not only in CI: once a push lands, every clone has the commits, and
-# a scrubbed identity or identifier cannot be taken back out of someone else's copy.
-node --test scripts/provider-neutral-history.test.mjs
+# a scrubbed identity or identifier cannot be taken back out of someone else's copy. They scan what
+# this push publishes; unpublished work on other local branches is not being published by it.
+if [ -n "$PUSHED" ]; then
+  ACCRAWL_HISTORY_REFS="$PUSHED" node --test scripts/provider-neutral-history.test.mjs
+fi
 pnpm deps:check
 pnpm --filter @accrawl/web copy:check
