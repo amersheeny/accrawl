@@ -65,9 +65,13 @@ COMPANION_RELAY=1 e2e/run-e2e.sh
 
 The emulator must be visible. Every ADB action is routed through the lease wrapper, which verifies ownership
 before touching the device. The runner serializes the complete workflow because its Android build and
-embedded-database paths are shared. Companion APKs are built one flavor at a time in an isolated temporary
-workspace, and that workspace is removed after the run so multi-gigabyte Flutter outputs do not remain in
-the repository. Set `ACCRAWL_E2E_KEEP_APKS=1` only when the two debug APKs are needed for diagnosis; the
+embedded-database paths are shared. Companion APKs are built one flavor after the other in a copy of
+`companion/` kept outside the repository, in `~/.cache/accrawl/e2e-companion-source/` (or under
+`$XDG_CACHE_HOME`), so multi-gigabyte Flutter outputs never land in the repository and a later run rebuilds
+only what changed. That copy and its build outputs take about 2.6 GB; deleting the directory reclaims the space,
+and the next run builds from scratch. The two finished APKs are copied to a temporary directory that is removed
+after the run.
+Set `ACCRAWL_E2E_KEEP_APKS=1` only when the two debug APKs are needed for diagnosis; the
 runner prints their temporary directory when it retains them. It serves the built React console, uses the
 real Institutions and Connections forms to add the fake bank, save its credentials, and confirm its sign-in
 domain, then creates the exact-connection pairing request in the Devices page. It sets an Android screen-lock
