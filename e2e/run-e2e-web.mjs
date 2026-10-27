@@ -27,7 +27,7 @@ import http from 'node:http';
 import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
-import { TRUTH, CREDS } from './truth.mjs';
+import { TRUTH, CREDS, expectedTransactionErrors } from './truth.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TMP = '/tmp/accrawl-e2e-web';
@@ -376,6 +376,7 @@ async function main() {
   }
   const expectedTransactions = TRUTH.transactions.length + TRUTH.card.transactions.length;
   if (txns.length !== expectedTransactions) errors.push(`expected ${expectedTransactions} transactions, stored ${txns.length}`);
+  errors.push(...expectedTransactionErrors(txns));
 
   // The connections table should now show the completed crawl (UI reflects the backend result).
   await page.goto(`${WEB}/connections`, { waitUntil: 'networkidle' });

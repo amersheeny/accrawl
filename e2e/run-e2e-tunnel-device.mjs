@@ -33,7 +33,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
-import { TRUTH, CREDS } from './truth.mjs';
+import { TRUTH, CREDS, expectedTransactionErrors } from './truth.mjs';
 
 // The code this run's deployment is claimed with. Generated per run: the server refuses setup without
 // one, so a run that forgot it would fail at the first request rather than silently claim anything.
@@ -168,6 +168,7 @@ async function collectAccuracyErrors(connectionId) {
     if (!amtOk) errors.push(`transaction amount ${t.amount} (${t.description}) not found in extracted transactions`);
   }
   if (txns.length < TRUTH.transactions.length) errors.push(`expected >= ${TRUTH.transactions.length} transactions, stored ${txns.length}`);
+  errors.push(...expectedTransactionErrors(txns));
   return { errors, acctCount: accts.length, txnCount: txns.length };
 }
 
