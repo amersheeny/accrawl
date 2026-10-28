@@ -31,7 +31,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
-import { TRUTH, CREDS } from './truth.mjs';
+import { TRUTH, CREDS, expectedTransactionErrors } from './truth.mjs';
 import { startCompanionDouble } from './companion-double.mjs';
 
 // The code this run's deployment is claimed with. Generated per run: the server refuses setup without
@@ -146,9 +146,7 @@ async function collectAccuracyErrors(connectionId) {
   }
   // +1 for the credit card. It is not a row in TRUTH.accounts because the fake
   // bank does not show it in the accounts table — it appears only as a dashboard
-  // charge tile — but the crawl must record it as its own account. run-e2e.mjs
-  // and run-e2e-web.mjs already expect it; these tunnel suites did not, so a
-  // correct crawl of three products failed them with "expected 2, stored 3".
+  // charge tile — but the crawl must record it as its own account.
   const expectedAccounts = TRUTH.accounts.length + 1;
   if (accts.length !== expectedAccounts) errors.push(`expected ${expectedAccounts} accounts, stored ${accts.length}`);
 
@@ -159,6 +157,7 @@ async function collectAccuracyErrors(connectionId) {
     if (!amtOk) errors.push(`transaction amount ${t.amount} (${t.description}) not found in extracted transactions`);
   }
   if (txns.length < TRUTH.transactions.length) errors.push(`expected >= ${TRUTH.transactions.length} transactions, stored ${txns.length}`);
+  errors.push(...expectedTransactionErrors(txns));
   return { errors, acctCount: accts.length, txnCount: txns.length };
 }
 
