@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "contractId": "td-parity-14",
-  "revision": "2026-08-18.1",
-  "changeRecord": "The login navigation verifies the address the browser actually reached. assertSafeNavigationUrl inspects a hostname and then hands that hostname to Chromium, which resolves it independently, so the check is a prediction rather than a control \u2014 the residual the module already documented as a DNS rebind. page.goto's response reports the peer address, so the initial navigation now asserts that address is public before the page is used, and refuses it otherwise. A private peer is permitted only for a host the deployment named in ACCRAWL_ALLOW_PRIVATE_CRAWL_TARGETS, which replaces the accidental permission that came from the pre-flight check failing open on a name that does not resolve. No prompt, schema, identity, accumulation, extraction or relay behaviour changes: the check runs after the request and before the page is read, and a crawl reaching a public institution is unaffected. Verified by the packaged end-to-end run, which passed the live OTP handshake and extracted the bank data exactly with the check in the path. Pins moved: apps/engine/src/agent/agent-loop.ts. Previous revision: 2026-08-16.5.",
+  "revision": "2026-10-23.1",
+  "changeRecord": "TunnelService reports its relay tally when the engine ends a tunnel. The engine closes every tunnel by terminating its WebSocket, so TunnelService takes onFailure, and the tally of bytes relayed to and from the institution, which it wrote only in onClosed, was never reported for a tunnel that did its job. onFailure now writes the same tally to the Android log, not to the activity log the app shows. No prompt, schema, identity, accumulation, extraction, relay or tunnel behaviour changes. Pins moved: companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/TunnelService.kt. Previous revision: 2026-08-18.1.",
   "baselineRevision": "ee1f6bf05dae9c6deb856cd6703fd00f463338b5",
   "baselineSourceDigests": {
     "transactionPrompt": "f3b4a27eb90dfd67b77c651dc81f0d2e56cba223d202bb17b4d67b9f0c969f0c",
@@ -206,7 +206,7 @@
     },
     {
       "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/TunnelService.kt",
-      "sha256": "46fd736551d1188ed4e9036c42fb8b103fa16c8efe9a3d0e474d41aac873f256"
+      "sha256": "1e52622372d6963bed5d3c6e7803e4e02ba36a612372d0ce9f7b375407c32792"
     },
     {
       "path": "companion/lib/main.dart",
