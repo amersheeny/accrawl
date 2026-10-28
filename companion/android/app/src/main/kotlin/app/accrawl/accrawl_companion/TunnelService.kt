@@ -321,6 +321,9 @@ class TunnelService : Service() {
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             Log.e(TAG, "tunnel ws failure for session $sessionId", t)
+            // The engine ends every tunnel by terminating its socket, so a tunnel that did its job ends here, not in
+            // onClosed; without this its relay tally is never reported.
+            Log.i(TAG, "tunnel ended for session $sessionId — relayed ${bytesToBank.get() / 1024}KB↑ ${bytesFromBank.get() / 1024}KB↓")
             tlog("tunnel error for session $sessionId: ${t.message ?: t.javaClass.simpleName}")
             finish()
         }

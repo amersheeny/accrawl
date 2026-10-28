@@ -7,7 +7,7 @@
  * device-proxy path wired end to end:
  *
  *   1. Seed an institution with useDeviceProxy=true pointing at the fake bank; a connection; verify the
- *      login domain. Pair a real companion device (POST /api/devices/pair → an `acdv_` token).
+ *      login domain. Pair a companion device through the pairing flow (e2e/pair-device.mjs → an `acdv_` token).
  *   2. Trigger the crawl. The control-plane mints a session+device-bound tunnel token + sets
  *      tunnel_requested; the engine PARKS the request (no browser yet). Start the companion DOUBLE
  *      (e2e/companion-double.mjs) — it polls GET /api/sessions/awaiting-tunnel with the device token,
@@ -31,8 +31,9 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
-import { TRUTH, CREDS } from './truth.mjs';
+import { TRUTH, CREDS, expectedTransactionErrors } from './truth.mjs';
 import { startCompanionDouble } from './companion-double.mjs';
+import { pairDevice } from './pair-device.mjs';
 
 // The code this run's deployment is claimed with. Generated per run: the server refuses setup without
 // one, so a run that forgot it would fail at the first request rather than silently claim anything.
@@ -97,10 +98,11 @@ async function api(method, p, body, authToken = token) {
  *  Tracks an EXPLICIT sessionId (the one POST /crawl returned) so it can never latch onto a prior
  *  terminal session for the same connection (e.g. the negative-control run) and break immediately. Falls
  *  back to "newest for this connection" only if no id was given. */
-async function runRelay(connectionId, knownSessionId = null, deadlineMs = 300000) {
+async function runRelay(connectionId, deviceToken, knownSessionId = null, deadlineMs = 300000) {
   const deadline = Date.now() + deadlineMs;
   let sessionId = knownSessionId, submitted = false;
   const statuses = new Set();
+  const acknowledgedEpisodes = new Set();
   if (sessionId) log('relay: tracking session', sessionId);
   while (Date.now() < deadline) {
     if (!sessionId) {
@@ -108,16 +110,27 @@ async function runRelay(connectionId, knownSessionId = null, deadlineMs = 300000
       if (rows[0]) { sessionId = rows[0].id; log('relay: tracking session', sessionId); }
     }
     if (sessionId) {
-      const [s] = await sql`select status, otp_requested, otp from sessions where id = ${sessionId}`;
+      const [s] = await sql`select status, otp_requested, otp, otp_request_epoch from sessions where id = ${sessionId}`;
       if (s) {
         statuses.add(s.status);
-        if (!submitted && s.otp_requested && !s.otp) {
+        // As in run-e2e.mjs: the engine waits for the paired phone to confirm, for each request episode, that it
+        // can receive an SMS now. The double is that phone, so it answers with its own device token.
+        if (s.otp_requested && !acknowledgedEpisodes.has(s.otp_request_epoch ?? 0)) {
+          acknowledgedEpisodes.add(s.otp_request_epoch ?? 0);
+          const ready = await api('POST', `/api/sessions/${sessionId}/relay-status`, { smsPermission: true, ready: true }, deviceToken);
+          log(`relay: POST /sessions/${sessionId}/relay-status { smsPermission: true } -> ${ready.status}`);
+        }
+        // The request is armed before the bank sends its SMS, and a code sent before the session is waiting for
+        // one is refused with 409, so only a 202 counts as submitted.
+        if (!submitted && s.status === 'waiting_for_otp' && s.otp_requested && !s.otp) {
           const sms = await (await fetch(`${BANK}/_relay/last-sms`)).json();
           const code = (sms.body || '').match(/\b(\d{6})\b/)?.[1] ?? sms.code;
-          log('relay: bank sent a verification SMS; submitting its code');
-          const r = await api('POST', `/api/sessions/${sessionId}/otp`, { code });
-          log(`relay: submitted OTP via POST /sessions/${sessionId}/otp -> ${r.status}`);
-          submitted = code ? true : submitted;
+          if (code) {
+            log('relay: bank sent a verification SMS; submitting its code');
+            const r = await api('POST', `/api/sessions/${sessionId}/otp`, { code });
+            log(`relay: submitted OTP via POST /sessions/${sessionId}/otp -> ${r.status}`);
+            if (r.status === 202) submitted = true;
+          }
         }
         if (['completed', 'failed', 'cancelled'].includes(s.status)) break;
       }
@@ -146,9 +159,7 @@ async function collectAccuracyErrors(connectionId) {
   }
   // +1 for the credit card. It is not a row in TRUTH.accounts because the fake
   // bank does not show it in the accounts table — it appears only as a dashboard
-  // charge tile — but the crawl must record it as its own account. run-e2e.mjs
-  // and run-e2e-web.mjs already expect it; these tunnel suites did not, so a
-  // correct crawl of three products failed them with "expected 2, stored 3".
+  // charge tile — but the crawl must record it as its own account.
   const expectedAccounts = TRUTH.accounts.length + 1;
   if (accts.length !== expectedAccounts) errors.push(`expected ${expectedAccounts} accounts, stored ${accts.length}`);
 
@@ -158,7 +169,9 @@ async function collectAccuracyErrors(connectionId) {
     const amtOk = txns.some((x) => Object.values(x).some((v) => typeof v === 'number' && approx(v, t.amount))) || txnStr.includes(String(t.amount));
     if (!amtOk) errors.push(`transaction amount ${t.amount} (${t.description}) not found in extracted transactions`);
   }
-  if (txns.length < TRUTH.transactions.length) errors.push(`expected >= ${TRUTH.transactions.length} transactions, stored ${txns.length}`);
+  const expectedTransactions = TRUTH.transactions.length + TRUTH.card.transactions.length;
+  if (txns.length !== expectedTransactions) errors.push(`expected ${expectedTransactions} transactions, stored ${txns.length}`);
+  errors.push(...expectedTransactionErrors(txns));
   return { errors, acctCount: accts.length, txnCount: txns.length };
 }
 
@@ -196,12 +209,20 @@ async function main() {
     ENGINE_DATABASE_URL: DBURL, GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     ENGINE_SHARED_SECRET: SECRETS.ENGINE_SHARED_SECRET, RUNS_DIR: path.join(TMP, 'runs'),
     HEADLESS: process.env.E2E_HEADFUL ? 'false' : 'true',
+    // As in run-e2e.mjs: the institution is deliberately on loopback, and an undeclared private peer is
+    // refused as a DNS rebind.
+    ACCRAWL_ALLOW_PRIVATE_CRAWL_TARGETS: BANK_HOST,
   });
   spawnSvc('control-plane', 'node', ['apps/control-plane/dist/server-main.js'], {
     PORT: String(P.cp), DATABASE_URL: DBURL, ENGINE_URL: `http://127.0.0.1:${P.engine}`,
     // The phone-reachable tunnel WS base handed to the companion via awaiting-tunnel. The engine serves
     // /tunnel on its own HTTP port; for this single-host e2e the companion reaches it on loopback.
     ENGINE_WS_URL: `ws://127.0.0.1:${P.engine}/tunnel`,
+    // As in run-e2e.mjs: pairing over this loopback HTTP control plane, and an institution at a plain-HTTP
+    // address, are refused unless stated; an absent NODE_ENV counts as production.
+    ACCRAWL_COMPANION_ALLOW_INSECURE_HTTP: '1',
+    NODE_ENV: 'development',
+    ACCRAWL_ALLOW_INSECURE_LOGIN_URL: '1',
     ...SECRETS,
   });
 
@@ -219,6 +240,9 @@ async function main() {
     id: 'northwind', name: 'Northwind Bank', type: 'bank',
     loginUrl: `http://${BANK_HOST}:${P.bank}/login`,
     useDeviceProxy: true, // ← the whole point: this institution's egress MUST go through the device tunnel
+    // A parked device-proxy crawl waits for its companion for this long, so the negative control below fails
+    // closed in 60 s, the shortest crawl the engine accepts; the positive crawl gets the default back first.
+    timeoutSeconds: 60,
     playbook: 'Sign in with the provided username and password. You will then be asked for a 6-digit ' +
       'two-factor code sent by SMS — request the OTP and enter it. After login, open the accounts dashboard ' +
       'and extract every account (name, masked number, balance, currency) and every recent transaction ' +
@@ -231,20 +255,18 @@ async function main() {
   }
   log('device-proxy institution created (useDeviceProxy=true); canonicalDomain =', inst.json.canonicalDomain ?? '(derived server-side)');
 
-  // Pair a REAL companion device — this is the `acdv_` token the double authenticates its awaiting-tunnel
-  // poll with, and the device the control-plane binds the tunnel token to (did).
-  const pair = await api('POST', '/api/devices/pair', { name: 'e2e-companion-double' });
-  if (![200, 201].includes(pair.status)) throw new Error(`device pair failed: ${pair.status} ${JSON.stringify(pair.json)}`);
-  const deviceToken = pair.json.token;
-  if (!deviceToken?.startsWith('acdv_')) throw new Error(`expected an acdv_ device token, got ${deviceToken}`);
-  log('companion device paired; device token prefix =', deviceToken.slice(0, 5));
-
   const conn = await api('POST', '/api/connections', { institutionId, username: CREDS.username, password: CREDS.password });
   if (![200, 201].includes(conn.status)) throw new Error(`create connection failed: ${conn.status} ${JSON.stringify(conn.json)}`);
   const connectionId = conn.json.id;
   const verify = await api('POST', `/api/connections/${connectionId}/verify-domain`, { canonicalDomain: BANK_HOST });
   if (![200, 204].includes(verify.status)) throw new Error(`verify-domain failed: ${verify.status} ${JSON.stringify(verify.json)}`);
   log('connection created + login domain verified', connectionId);
+
+  // Pair a REAL companion device, granted this connection — this is the `acdv_` token the double authenticates
+  // its awaiting-tunnel poll with, and the device the control-plane binds the tunnel token to (did).
+  const deviceToken = await pairDevice(api, 'e2e-companion-double', connectionId);
+  if (!deviceToken.startsWith('acdv_')) throw new Error(`expected an acdv_ device token, got prefix ${deviceToken.slice(0, 5)}`);
+  log('companion device paired; device token prefix =', deviceToken.slice(0, 5));
 
   const errors = [];
 
@@ -265,7 +287,7 @@ async function main() {
     log('negative control: no sessionId returned (early failure) —', JSON.stringify(negCrawl.json));
   }
 
-  // Wait for the parked session to reach a terminal state. The park TTL is 30s; allow margin.
+  // Wait for the parked session to reach a terminal state: it waits 60 s for a companion; allow margin.
   let negFinal = null;
   const negDeadline = Date.now() + 90000;
   while (Date.now() < negDeadline) {
@@ -280,6 +302,7 @@ async function main() {
   else {
     if (negFinal.status === 'completed') errors.push('NEGATIVE CONTROL FAILED: crawl COMPLETED with no companion — the engine bypassed the tunnel (direct egress)!');
     if (negFinal.status !== 'failed') errors.push(`NEGATIVE CONTROL: expected status 'failed' (park timeout), got '${negFinal.status}'`);
+    else if (!/tunnel was not established/.test(negFinal.error ?? '')) errors.push(`NEGATIVE CONTROL: failed for a reason other than the missing tunnel: ${negFinal.error}`);
     if (negFinal.tunnel_requested !== true) errors.push('NEGATIVE CONTROL: tunnel_requested was not set — device-proxy gate did not engage');
     if (negFinal.tunnel_claimed_at) errors.push('NEGATIVE CONTROL: tunnel_claimed_at was set despite no companion — a claim happened without the double');
   }
@@ -289,6 +312,10 @@ async function main() {
     errors.push(`FAIL-CLOSED VIOLATION: ${negData.acctCount} accounts / ${negData.txnCount} transactions were extracted WITHOUT a tunnel (direct egress leaked bank data)`);
   } else {
     log('fail-closed confirmed: 0 accounts / 0 transactions extracted with no companion');
+  }
+  const restored = await api('PATCH', `/api/institutions/${institutionId}`, { timeoutSeconds: 900 });
+  if (restored.status < 200 || restored.status >= 300) {
+    throw new Error(`restoring the crawl timeout failed: ${restored.status} ${JSON.stringify(restored.json)}`);
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -305,7 +332,7 @@ async function main() {
 
   // Drive the OTP handshake while the tunnel carries the login traffic. Track the EXACT positive session
   // so the relay can never latch onto the negative-control's already-terminal session.
-  const relay = await runRelay(connectionId, posSessionId, 300000);
+  const relay = await runRelay(connectionId, deviceToken, posSessionId, 300000);
   log('relay summary:', JSON.stringify(relay));
 
   // Give the double a beat to flush its final relay frames, then snapshot the oracle.
