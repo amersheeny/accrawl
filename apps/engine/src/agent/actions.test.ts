@@ -3,8 +3,16 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { resolveValue, CREDENTIAL_PLACEHOLDERS, generateUniqueSelector, idSelector } from './actions';
+import {
+  resolveValue,
+  CREDENTIAL_PLACEHOLDERS,
+  generateUniqueSelector,
+  idSelector,
+  gotoCheckingAddress,
+} from './actions';
 import { JSDOM } from 'jsdom';
+import { addressChecked, isContextSealed } from '../browser/context-seal';
+import { ConnectedAddressRefusedError } from '../utils/url-safety';
 
 describe('CREDENTIAL_PLACEHOLDERS', () => {
   it('maps USERNAME to username', () => {
@@ -252,5 +260,108 @@ describe('idSelector', () => {
   it('falls back to [id="..."] for digit-leading or special ids', () => {
     expect(idSelector('1781799904576-0-uiGrid-02BW-cell')).toBe('[id="1781799904576-0-uiGrid-02BW-cell"]');
     expect(idSelector('a.b')).toBe('[id="a.b"]');
+  });
+});
+
+describe('gotoCheckingAddress', () => {
+  function browserReaching(ipAddress: string) {
+    const steps: string[] = [];
+    let commit!: () => void;
+    let fail!: (error: Error) => void;
+    const listeners = new Set<(response: unknown) => void>();
+    const mainFrame = {};
+    const context = {
+      close: async () => { steps.push('close'); },
+      newCDPSession: async () => ({ send: async (method: string) => { steps.push(method); }, detach: async () => {} }),
+    };
+    const navigationResponse = (ip: string) => ({
+      serverAddr: async () => ({ ipAddress: ip }),
+      url: () => 'https://bank.example/x',
+      request: () => ({ isNavigationRequest: () => true }),
+      frame: () => mainFrame,
+    });
+    const page = {
+      context: () => context,
+      mainFrame: () => mainFrame,
+      isClosed: () => false,
+      on: (_event: string, listener: (response: unknown) => void) => { listeners.add(listener); },
+      off: (_event: string, listener: (response: unknown) => void) => { listeners.delete(listener); },
+      goto: async (_url: string, options: { waitUntil: string }) => {
+        steps.push(`goto until ${options.waitUntil}`);
+        await new Promise<void>((resolve, reject) => { commit = resolve; fail = reject; });
+        return navigationResponse(ipAddress);
+      },
+      waitForLoadState: async (state: string) => { steps.push(`sealed=${isContextSealed(context as never)} wait for ${state}`); },
+    };
+    return {
+      steps,
+      context,
+      page,
+      commit: () => commit(),
+      fail: (error: Error) => fail(error),
+      respond: (ip: string) => { for (const listener of listeners) listener(navigationResponse(ip)); },
+    };
+  }
+
+  const timedOut = () => new Error('page.goto: Timeout 60000ms exceeded.');
+
+  it('stops a navigation that failed before its document committed, then releases the hold and rethrows', async () => {
+    const browser = browserReaching('10.0.0.5');
+    const navigation = gotoCheckingAddress(browser.page as never, 'https://bank.example/x', 60_000);
+    const held = addressChecked(browser.context as never).then(() => { browser.steps.push('hold released'); });
+    browser.fail(timedOut());
+    await expect(navigation).rejects.toThrow('page.goto: Timeout 60000ms exceeded.');
+    await held;
+    expect(browser.steps).toEqual(['goto until commit', 'Page.stopLoading', 'hold released']);
+    expect(isContextSealed(browser.context as never)).toBe(false);
+  });
+
+  it('refuses a navigation whose response came from a private address although the navigation failed', async () => {
+    const browser = browserReaching('10.0.0.5');
+    const navigation = gotoCheckingAddress(browser.page as never, 'https://bank.example/x', 60_000);
+    browser.respond('10.0.0.5');
+    browser.fail(timedOut());
+    await expect(navigation).rejects.toBeInstanceOf(ConnectedAddressRefusedError);
+    expect(isContextSealed(browser.context as never)).toBe(true);
+  });
+
+  it('leaves a failed navigation whose response came from a public address to its own error', async () => {
+    const browser = browserReaching('93.184.216.34');
+    const navigation = gotoCheckingAddress(browser.page as never, 'https://bank.example/x', 60_000);
+    browser.respond('93.184.216.34');
+    browser.fail(timedOut());
+    await expect(navigation).rejects.toThrow('page.goto: Timeout 60000ms exceeded.');
+    expect(isContextSealed(browser.context as never)).toBe(false);
+  });
+
+  it('checks the address when the document commits, then waits for it to load', async () => {
+    const browser = browserReaching('93.184.216.34');
+    const navigation = gotoCheckingAddress(browser.page as never, 'https://bank.example/x', 60_000);
+    await Promise.resolve();
+    browser.commit();
+    await navigation;
+    expect(browser.steps).toEqual(['goto until commit', 'sealed=false wait for domcontentloaded']);
+  });
+
+  it('seals the context on a refusal without waiting for the page to load or closing the browser itself', async () => {
+    const browser = browserReaching('10.0.0.5');
+    const navigation = gotoCheckingAddress(browser.page as never, 'https://bank.example/x', 60_000);
+    await Promise.resolve();
+    browser.commit();
+    await expect(navigation).rejects.toBeInstanceOf(ConnectedAddressRefusedError);
+    expect(isContextSealed(browser.context as never)).toBe(true);
+    expect(browser.steps).toEqual(['goto until commit']);
+  });
+
+  it('holds request classification until the check has refused the page', async () => {
+    const browser = browserReaching('10.0.0.5');
+    const navigation = gotoCheckingAddress(browser.page as never, 'https://bank.example/x', 60_000).catch(() => undefined);
+    let released = false;
+    const held = addressChecked(browser.context as never).then(() => { released = isContextSealed(browser.context as never); });
+    await Promise.resolve();
+    expect(released).toBe(false);
+    browser.commit();
+    await Promise.all([navigation, held]);
+    expect(released).toBe(true);
   });
 });

@@ -6,14 +6,15 @@
  * PHONE, OTP_CODE) and this module substitutes real values.
  */
 
-import type { Page, Locator } from 'playwright';
+import type { Page, Locator, Response } from 'playwright';
 import type { CrawlRequest } from '../types';
 import type { ExecutableStepResponse } from '../ai/schema';
 import { waitForStability } from '../browser/page-utils';
 import { ActionError } from './errors';
-import { assertSafeNavigationUrl, assertConnectedAddressIsPublic } from '../utils/url-safety';
+import { assertSafeNavigationUrl, assertConnectedAddressIsPublic, ConnectedAddressRefusedError } from '../utils/url-safety';
 import type { SessionLogger } from '../utils/logger';
 import { safeBrowserUrl } from '../utils/safe-browser-url';
+import { checkingAddress, sealContext } from '../browser/context-seal';
 
 /** Result metadata from executing an action — discriminated union on status */
 export type ActionResult =
@@ -333,17 +334,72 @@ export async function executeAction(
       } catch (e) {
         throw new ActionError('missing_field', e instanceof Error ? e.message : 'unsafe navigate target');
       }
-      const navigated = await page.goto(action.url, { waitUntil: 'domcontentloaded', timeout: 60_000 });
       // The check above inspected a NAME; this one inspects the address the browser reached. Between
       // the two, DNS can change its mind, which is the whole of a rebind attack. Refusing here still
       // stops the page's content from reaching the model.
-      await assertConnectedAddressIsPublic(navigated, action.url);
+      await gotoCheckingAddress(page, action.url, 60_000);
       await waitForStability(page, 10_000);
       return { status: 'success', matchCount: 0 };
     }
 
     default:
       throw new Error(`Unhandled executable action ${action.action}`);
+  }
+}
+
+/**
+ * Navigates, checking the address the browser connected to as soon as the document commits rather than once it has
+ * loaded, so a refused page is never left loading, never times out into error recovery, and never has its requests
+ * classified: until the check settles, the write gate holds the context's requests back from the classifier. The
+ * remainder of `timeoutMs` then bounds the wait for the page to load.
+ *
+ * A goto that fails before its document commits, a timeout above all, does not cancel the navigation, and the document
+ * could still commit afterwards, unchecked, while error recovery reads the page. So the navigation is stopped first,
+ * leaving the page it started from, and a response that did arrive for it is checked like a committed one.
+ *
+ * @throws ConnectedAddressRefusedError, after sealing the context so the engine's handlers ignore everything the
+ * refused page does from then on. Closing the browser is left to the crawl's own teardown.
+ */
+export async function gotoCheckingAddress(page: Page, url: string, timeoutMs: number): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  const verify = async (response: Response | null): Promise<void> => {
+    try {
+      await assertConnectedAddressIsPublic(response, url);
+    } catch (error) {
+      if (error instanceof ConnectedAddressRefusedError) sealContext(page.context());
+      throw error;
+    }
+  };
+  const arrived: Response[] = [];
+  const onResponse = (response: Response): void => {
+    if (response.request().isNavigationRequest() && response.frame() === page.mainFrame()) arrived.push(response);
+  };
+  const check = (async () => {
+    page.on('response', onResponse);
+    let response: Response | null;
+    try {
+      response = await page.goto(url, { waitUntil: 'commit', timeout: timeoutMs });
+    } catch (error) {
+      if (!page.isClosed()) await stopNavigation(page);
+      const late = arrived.at(-1);
+      if (late) await verify(late);
+      throw error;
+    } finally {
+      page.off('response', onResponse);
+    }
+    await verify(response);
+  })();
+  checkingAddress(page.context(), check);
+  await check;
+  await page.waitForLoadState('domcontentloaded', { timeout: Math.max(deadline - Date.now(), 1) });
+}
+
+async function stopNavigation(page: Page): Promise<void> {
+  const session = await page.context().newCDPSession(page);
+  try {
+    await session.send('Page.stopLoading');
+  } finally {
+    await session.detach();
   }
 }
 

@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "contractId": "td-parity-14",
-  "revision": "2026-08-18.1",
-  "changeRecord": "The login navigation verifies the address the browser actually reached. assertSafeNavigationUrl inspects a hostname and then hands that hostname to Chromium, which resolves it independently, so the check is a prediction rather than a control \u2014 the residual the module already documented as a DNS rebind. page.goto's response reports the peer address, so the initial navigation now asserts that address is public before the page is used, and refuses it otherwise. A private peer is permitted only for a host the deployment named in ACCRAWL_ALLOW_PRIVATE_CRAWL_TARGETS, which replaces the accidental permission that came from the pre-flight check failing open on a name that does not resolve. No prompt, schema, identity, accumulation, extraction or relay behaviour changes: the check runs after the request and before the page is read, and a crawl reaching a public institution is unaffected. Verified by the packaged end-to-end run, which passed the live OTP handshake and extracted the bank data exactly with the check in the path. Pins moved: apps/engine/src/agent/agent-loop.ts. Previous revision: 2026-08-16.5.",
+  "revision": "2026-10-24.1",
+  "changeRecord": "A navigation refused for the address it reached ends the crawl, and nothing the refused page holds or does reaches the model, a log or the network after the refusal. Since 2026-08-18.1 the first page and the model's navigate action have checked the address only after page.goto had loaded the page, so a refused page could run its scripts before the check, a page that never finished loading skipped the check and timed out into error recovery, and a refused navigate was an ordinary action error: error recovery captured the refused page and sent its screenshot and HTML to the model, and a refused recovery retry let the loop continue to the next step, which captured it the same way. A refused page also stayed open until the crawl had written its logs, so its scripts could keep sending requests, which after login went to the request classifier. Both navigations now go through gotoCheckingAddress, which checks the address when the document commits, before it loads; on a refusal it throws ConnectedAddressRefusedError after sealing the browser context synchronously. A page.goto that fails before its document commits does not cancel the navigation, so gotoCheckingAddress then stops it before releasing the hold, and checks the address of a main-frame response that had already arrived. Until the check settles, the write gate holds the context's state-changing requests: during login or after it, none leaves the browser, and none reaches the request classifier or the blocked-request feedback the model reads. While the context closes, the egress guard, write gate, WebSocket message forwarding, download tracker and popup handler ignore everything the sealed page does, and the write gate logs a classification only for a page that was not refused. The agent loop and error recovery rethrow the refusal before capturing anything; the agent loop's failure path closes the browser through the crawl executor's single close before it writes anything, so the refusal, the watchdog and cancellation wait for the same close. classifyCrawlFailure classifies the refusal by type as internal_error, and a page that commits but never finishes loading stays a navigation_timeout. A refusal by the name check before navigation is unchanged and still recoverable, since nothing has loaded. No prompt, schema, identity, accumulation, extraction, relay or tunnel behaviour changes. Verified through the real crawl executor, agent loop, error recovery, write gate, request classifier and Chrome, with the model, the classifier's network client and the platform's stores replaced by recorders: for a refused first page, a refused navigate before and after login, a refused page that never finishes loading as the first page or after login, a refused page that posts while still loading as the first page or after login, a refused first page whose response arrives after its navigation timed out, and a refused recovery retry, nothing reaches the model, the classifier, a step log, a screenshot upload or the internal host after the refused page is served; a navigate the name check refuses still recovers; and with the context sealed at a chosen moment, a POST, a POST whose classification is in flight or fails, a download, a popup, a WebSocket opened after it and a message on a WebSocket opened before it reach neither the classifier, a log, a step record nor the server. Pins moved: apps/engine/src/agent/agent-loop.ts, apps/engine/src/agent/error-recovery.ts, apps/engine/src/crawl-executor.ts. Previous revision: 2026-10-23.1.",
   "baselineRevision": "ee1f6bf05dae9c6deb856cd6703fd00f463338b5",
   "baselineSourceDigests": {
     "transactionPrompt": "f3b4a27eb90dfd67b77c651dc81f0d2e56cba223d202bb17b4d67b9f0c969f0c",
@@ -114,15 +114,15 @@
     },
     {
       "path": "apps/engine/src/agent/agent-loop.ts",
-      "sha256": "858796b6c1176446c0eee0a2b6f3c681dab0fb004cfe1c91539766b4b5264613"
+      "sha256": "29c9d5edccaf0bc8688a76d72023563c131705aac877c0b036ea0c60d9d5dc8f"
     },
     {
       "path": "apps/engine/src/agent/error-recovery.ts",
-      "sha256": "1d18fa7619f2dd725bfd04b0a10cdca370cd4e71de0f9d35a28633f9a8a053fc"
+      "sha256": "ddc5760c65dbf56196721fea74b2481cacd0f3b82a22fdf927488fd1e800e47e"
     },
     {
       "path": "apps/engine/src/crawl-executor.ts",
-      "sha256": "74ff2d7fa1cb540da97c53a085f863ebc0309e56b07ba9a145f3afe45df8876a"
+      "sha256": "bd8d2c651e124caeb93030fb2edf464ae39129744eb51d1c4d9eaf1398d5aef3"
     },
     {
       "path": "apps/engine/src/utils/transaction-window.ts",
@@ -206,7 +206,7 @@
     },
     {
       "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/TunnelService.kt",
-      "sha256": "46fd736551d1188ed4e9036c42fb8b103fa16c8efe9a3d0e474d41aac873f256"
+      "sha256": "1e52622372d6963bed5d3c6e7803e4e02ba36a612372d0ce9f7b375407c32792"
     },
     {
       "path": "companion/lib/main.dart",

@@ -274,3 +274,71 @@ describe('parameter extraction', () => {
     expect(merged.hints).toEqual(['x', 'y']);
   });
 });
+
+describe('WriteGate and the page a request came from', () => {
+  const from = (refused: () => boolean, checked: Promise<void> = Promise.resolve()) => ({
+    addressChecked: () => checked,
+    refused,
+  });
+  const recording = (lines: string[]) => ({
+    log: (line: string) => lines.push(line),
+    warn: (line: string) => lines.push(line),
+    error: (line: string) => lines.push(line),
+  }) as never;
+
+  it('classifies nothing until the address the page was loaded from has been checked', async () => {
+    const order: string[] = [];
+    let check!: () => void;
+    const checked = new Promise<void>((resolve) => { check = resolve; });
+    const g = gate(async () => { order.push('classified'); return 'read'; });
+    g.setPhase('extract');
+    const decision = g.evaluate(req(), from(() => false, checked.then(() => { order.push('checked'); })));
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(order).toEqual([]);
+    check();
+    expect((await decision).allowed).toBe(true);
+    expect(order).toEqual(['checked', 'classified']);
+  });
+
+  it('never classifies, or reports to the model, a request from a page the check refused', async () => {
+    const vet = vi.fn(async () => 'read' as const);
+    const g = gate(vet);
+    g.setPhase('extract');
+    expect((await g.evaluate(req(), from(() => true))).allowed).toBe(false);
+    expect(vet).not.toHaveBeenCalled();
+    expect(g.drainBlocked()).toEqual([]);
+  });
+
+  it('does not log a verdict that arrives after the page was refused', async () => {
+    let refused = false;
+    const lines: string[] = [];
+    const g = new WriteGate({ vet: async () => { refused = true; return 'read'; }, logger: recording(lines) });
+    g.setPhase('extract');
+    expect((await g.evaluate(req(), from(() => refused))).allowed).toBe(false);
+    expect(lines.filter((line) => line.includes('bank.example'))).toEqual([]);
+  });
+
+  it('lets a login request through only once the address the page was loaded from has been checked', async () => {
+    let check!: () => void;
+    const checked = new Promise<void>((resolve) => { check = resolve; });
+    const g = gate(async () => 'read');
+    let decided = false;
+    const decision = g.evaluate(req(), from(() => false, checked)).then((d) => { decided = true; return d; });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(decided).toBe(false);
+    check();
+    expect(await decision).toEqual({ allowed: true, reason: 'authentication phase' });
+  });
+
+  it('denies a login request from a page the check refused', async () => {
+    expect((await gate(async () => 'read').evaluate(req(), from(() => true))).allowed).toBe(false);
+  });
+
+  it('logs the verdict for a page that was not refused', async () => {
+    const lines: string[] = [];
+    const g = new WriteGate({ vet: async () => 'read', logger: recording(lines) });
+    g.setPhase('extract');
+    await g.evaluate(req(), from(() => false));
+    expect(lines).toContain('[RequestVet] POST https://bank.example/accounts/list → read');
+  });
+});

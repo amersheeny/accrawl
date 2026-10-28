@@ -27,7 +27,7 @@ import http from 'node:http';
 import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
-import { TRUTH, CREDS } from './truth.mjs';
+import { TRUTH, CREDS, expectedTransactionErrors } from './truth.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TMP = '/tmp/accrawl-e2e-web';
@@ -368,14 +368,14 @@ async function main() {
 
   const txnStr = JSON.stringify(txns);
   for (const t of [...TRUTH.transactions, ...TRUTH.card.transactions]) {
-    // Signed, not absolute — see run-e2e.mjs. A sign flip is a financial error,
-    // not a formatting one, and the absolute comparison accepted it.
+    // Signed, not absolute — see run-e2e.mjs.
     const amtOk = txns.some((x) => Object.values(x).some((v) => typeof v === 'number' && approx(v, t.amount))) || txnStr.includes(String(t.amount));
     if (!amtOk) errors.push(`transaction amount ${t.amount} (${t.description}) not found`);
     if (!txnStr.includes(t.description)) errors.push(`transaction "${t.description}" not found`);
   }
   const expectedTransactions = TRUTH.transactions.length + TRUTH.card.transactions.length;
   if (txns.length !== expectedTransactions) errors.push(`expected ${expectedTransactions} transactions, stored ${txns.length}`);
+  errors.push(...expectedTransactionErrors(txns));
 
   // The connections table should now show the completed crawl (UI reflects the backend result).
   await page.goto(`${WEB}/connections`, { waitUntil: 'networkidle' });

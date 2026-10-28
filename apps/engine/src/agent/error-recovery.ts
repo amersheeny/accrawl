@@ -17,6 +17,7 @@ import type { DownloadTracker } from '../browser/download-handler';
 import type { OtpState } from './otp-state';
 import { OTP_RECEIVED_FROM_RECOVERY_LOG } from './otp-state';
 import { ActionError } from './errors';
+import { ConnectedAddressRefusedError } from '../utils/url-safety';
 import { executeAction } from './actions';
 import { waitForStability, getVisibleInteractiveElements, getCurrentUrl } from '../browser/page-utils';
 import { buildStepContext } from '../ai/prompts';
@@ -348,6 +349,9 @@ async function executeRetryAction(
     const spreadsheetText = await checkForSpreadsheetDownload(ctx.downloadTracker, ctx.log);
     if (spreadsheetText) state.pendingSpreadsheetText = spreadsheetText;
   } catch (retryError) {
+    // The refused navigation may already have replaced the page, and continuing would show it to the model at the next
+    // step.
+    if (retryError instanceof ConnectedAddressRefusedError) return { type: 'throw', error: retryError };
     const retryMsg = retryError instanceof Error ? retryError.message : String(retryError);
     ctx.log.warn(`[Agent] Retry action also failed: ${retryMsg}`);
 
