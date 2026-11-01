@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   canonicalUpdateKey,
   deterministicAccountId,
@@ -75,6 +75,17 @@ function plan() {
 }
 
 describe('planCrawlResults', () => {
+  // The planner keeps only transactions inside a window counted back from the real clock, so the fixture's
+  // booking date needs a clock that does not move.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-08-01T12:00:00Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('plans accounts, transactions, and positions in one promotion', () => {
     const result = plan();
     expect(result.result).toMatchObject({
