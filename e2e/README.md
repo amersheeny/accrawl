@@ -38,18 +38,19 @@ so no `/etc/hosts` change is needed.
 By default the OTP is relayed in-process. `COMPANION_RELAY=1` instead routes it through the **real Accrawl
 Companion app on an Android emulator** — proving the full phone-relay path, not a stub:
 
-**You do not supply the push settings.** The Companion carries no push project of its own — it asks
-this run's control plane, which must answer all four values or none. The run reads them straight out
-of the Android client configuration already present in the Companion build tree, selecting the entry
-whose application id matches the flavor this run installs. Building the app for a relay run requires
-that configuration anyway, so on any machine where this gate can run, the values are already there.
-
-Nothing to copy, and nothing to remember. Override only if that file lives elsewhere:
+**Push settings.** The Companion carries no push project of its own — it asks this run's control plane,
+which must answer all four values or none. The run takes them from the environment (or `.env`), and reads
+any that are missing from an Android client configuration: a JSON file directly inside one of the
+Companion's source-set directories, `companion/android/app/src/<source set>/`, that has an entry for the
+application id this run installs and holds all four values: the project id and sender id in its project
+section, the app id and API key in that entry. Building the Companion does not use that file, so it
+is there only if someone put it there; with neither the file nor the four values, the run stops and names
+the values it is missing.
 
 | Setting | When you need it |
 | --- | --- |
-| `COMPANION_PUSH_CLIENT_CONFIG` | Path to the Android client configuration, when it is not in the build tree |
-| `COMPANION_PUSH_PROJECT_ID`, `COMPANION_PUSH_CLIENT_APP_ID`, `COMPANION_PUSH_CLIENT_API_KEY`, `COMPANION_PUSH_CLIENT_SENDER_ID` | Only to point a run at a different project than the build's |
+| `COMPANION_PUSH_CLIENT_CONFIG` | Path to the Android client configuration, when it is anywhere else |
+| `COMPANION_PUSH_PROJECT_ID`, `COMPANION_PUSH_CLIENT_APP_ID`, `COMPANION_PUSH_CLIENT_API_KEY`, `COMPANION_PUSH_CLIENT_SENDER_ID` | The four values themselves, instead of the file or to override it |
 
 The run **asserts the app registered for push before the crawl starts**, so invented values fail
 fast — they must belong to a real project.
