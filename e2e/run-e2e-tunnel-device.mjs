@@ -155,9 +155,7 @@ async function collectAccuracyErrors(connectionId) {
   }
   // +1 for the credit card. It is not a row in TRUTH.accounts because the fake
   // bank does not show it in the accounts table — it appears only as a dashboard
-  // charge tile — but the crawl must record it as its own account. run-e2e.mjs
-  // and run-e2e-web.mjs already expect it; these tunnel suites did not, so a
-  // correct crawl of three products failed them with "expected 2, stored 3".
+  // charge tile — but the crawl must record it as its own account.
   const expectedAccounts = TRUTH.accounts.length + 1;
   if (accts.length !== expectedAccounts) errors.push(`expected ${expectedAccounts} accounts, stored ${accts.length}`);
 
@@ -353,7 +351,7 @@ async function main() {
   // STRONGER than a bare WS-open and inherently buffer-rotation-proof: the terminal "tunnel closed … relayed
   // X KB↑ Y KB↓" line is emitted right before capture (never lost to rotation). The earlier "tunnel up"/
   // "opening tunnel" lines corroborate the connect but are logged at claim time, so we don't gate on them alone
-  // (they can rotate out of a busy buffer — the very false-negative this replaces).
+  // (they can rotate out of a busy buffer).
   const bankRe = new RegExp(`relaying → ${BANK_HOST.replace(/[.]/g, '\\.')}:`);
   const relayedM = tunnelLog.match(/relayed\s+(\d+)KB↑\s+(\d+)KB↓/);
   const relayedBytes = relayedM ? Number(relayedM[1]) + Number(relayedM[2]) : 0;

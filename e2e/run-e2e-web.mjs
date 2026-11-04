@@ -368,8 +368,7 @@ async function main() {
 
   const txnStr = JSON.stringify(txns);
   for (const t of [...TRUTH.transactions, ...TRUTH.card.transactions]) {
-    // Signed, not absolute — see run-e2e.mjs. A sign flip is a financial error,
-    // not a formatting one, and the absolute comparison accepted it.
+    // Signed, not absolute — see run-e2e.mjs.
     const amtOk = txns.some((x) => Object.values(x).some((v) => typeof v === 'number' && approx(v, t.amount))) || txnStr.includes(String(t.amount));
     if (!amtOk) errors.push(`transaction amount ${t.amount} (${t.description}) not found`);
     if (!txnStr.includes(t.description)) errors.push(`transaction "${t.description}" not found`);
