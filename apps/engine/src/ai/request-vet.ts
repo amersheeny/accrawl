@@ -23,7 +23,6 @@
 import { Type } from '@google/genai';
 import { getClient } from './providers/gemini';
 import type { RequestVerdict, RequestVet, VettableRequest } from '../browser/write-gate';
-import type { SessionLogger } from '../utils/logger';
 
 /**
  * Default vet model. The cheapest tier is correct here: the task is a two-way classification over a
@@ -73,7 +72,6 @@ export function parseVerdict(raw: string | undefined): RequestVerdict {
 
 export interface RequestVetOptions {
   model?: string;
-  logger?: SessionLogger;
 }
 
 /**
@@ -82,7 +80,6 @@ export interface RequestVetOptions {
  */
 export function createRequestVet(options: RequestVetOptions = {}): RequestVet {
   const model = options.model ?? process.env.REQUEST_VET_MODEL ?? DEFAULT_REQUEST_VET_MODEL;
-  const log = options.logger ?? console;
 
   return async function vetRequest(request: VettableRequest): Promise<RequestVerdict> {
     const response = await getClient().models.generateContent({
@@ -95,8 +92,6 @@ export function createRequestVet(options: RequestVetOptions = {}): RequestVet {
         responseSchema: { type: Type.STRING, enum: ['read', 'write'] },
       },
     });
-    const verdict = parseVerdict(response.text);
-    log.log(`[RequestVet] ${request.method.toUpperCase()} ${request.safeUrl} → ${verdict}`);
-    return verdict;
+    return parseVerdict(response.text);
   };
 }

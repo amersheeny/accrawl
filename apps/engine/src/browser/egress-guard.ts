@@ -26,6 +26,7 @@ import {
   queryParameters,
   type WriteGate,
 } from './write-gate';
+import { addressChecked, isContextSealed } from './context-seal';
 
 /** Schemes that never leave the machine — in-page/inert, always allowed. */
 const INERT_SCHEME = /^(about|data|blob):/i;
@@ -88,6 +89,14 @@ export function isUrlAllowed(url: string, suffixes: string[]): boolean {
   return suffixes.some((s) => hostWithin(h, s));
 }
 
+/** Abort a request raised by a sealed context's page. The page chose its URL, so neither the URL nor an error that
+ *  could quote it is logged. */
+function abortRefusedPageRequest(route: Route, log: SessionLogger | Console): void {
+  route.abort('blockedbyclient').catch((error: unknown) => {
+    log.warn(`[Egress] Aborting a refused page's request failed (${error instanceof Error ? error.name : typeof error})`);
+  });
+}
+
 /**
  * Install the egress guard on a context BEFORE any navigation. Intercepts every HTTP(S) request and
  * (where supported) WebSocket; aborts anything off the pinned host suffixes.
@@ -102,6 +111,7 @@ async function routeThroughWriteGate(
   request: Request,
   writeGate: WriteGate,
   log: SessionLogger | Console,
+  context: BrowserContext,
 ): Promise<void> {
   const url = request.url();
   const safeUrl = safeBrowserUrl(url);
@@ -120,7 +130,11 @@ async function routeThroughWriteGate(
       safeUrl,
       parameterNames: parameters.names,
       operationHints: parameters.hints,
-    });
+    }, { addressChecked: () => addressChecked(context), refused: () => isContextSealed(context) });
+    if (isContextSealed(context)) {
+      abortRefusedPageRequest(route, log);
+      return;
+    }
     if (decision.allowed) {
       await route.continue();
       return;
@@ -128,6 +142,10 @@ async function routeThroughWriteGate(
     log.warn(`[WriteGate] BLOCKED ${request.method()} ${safeUrl} — ${decision.reason}`);
     await route.abort('blockedbyclient');
   } catch (error) {
+    if (isContextSealed(context)) {
+      abortRefusedPageRequest(route, log);
+      return;
+    }
     log.warn(
       `[WriteGate] Routing failed for ${request.method()} ${safeUrl} `
       + `(${error instanceof Error ? error.message : String(error)}) — denying.`,
@@ -152,6 +170,10 @@ export async function installEgressGuard(
   await context.addInitScript(disableWebRtcInPage);
 
   await context.route('**/*', (route: Route, request: Request) => {
+    if (isContextSealed(context)) {
+      abortRefusedPageRequest(route, log);
+      return;
+    }
     const url = request.url();
     if (!isUrlAllowed(url, suffixes)) {
       log.warn(
@@ -162,7 +184,7 @@ export async function installEgressGuard(
     }
     // Money cannot move without a state-changing method, so only those pay for the gate.
     if (writeGate && isNonIdempotent(request.method())) {
-      void routeThroughWriteGate(route, request, writeGate, log);
+      void routeThroughWriteGate(route, request, writeGate, log, context);
       return;
     }
     void route.continue();
@@ -172,13 +194,30 @@ export async function installEgressGuard(
   const ctx = context as unknown as {
     routeWebSocket?: (
       pattern: string,
-      handler: (ws: { url(): string; connectToServer(): void; close(): void }) => void,
+      handler: (ws: {
+        url(): string;
+        connectToServer(): { send(message: string | Buffer): void };
+        onMessage(handler: (message: string | Buffer) => void): void;
+        close(): void;
+      }) => void,
     ) => Promise<void>;
   };
   if (typeof ctx.routeWebSocket === 'function') {
     await ctx.routeWebSocket('**/*', (ws) => {
+      if (isContextSealed(context)) {
+        ws.close();
+        return;
+      }
       if (isUrlAllowed(ws.url(), suffixes)) {
-        ws.connectToServer();
+        const server = ws.connectToServer();
+        // A handler replaces Playwright's automatic forwarding, so every message the page sends is checked here.
+        ws.onMessage((message) => {
+          if (isContextSealed(context)) {
+            ws.close();
+            return;
+          }
+          server.send(message);
+        });
       } else {
         log.warn(
           `[Egress] BLOCKED off-domain WebSocket ${safeBrowserUrl(ws.url())}`,

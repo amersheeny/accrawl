@@ -26,10 +26,9 @@ export const TRUTH = {
     { date: daysBefore(8), description: 'Transfer to Savings', amount: -500.0 },
   ],
   // A credit card that is NOT a row in the accounts table: the dashboard shows it only as a charge
-  // tile ("balance due") linking to /cards — the shape real banks use, and exactly the shape that
-  // used to be dropped as a "sub-breakdown" of the checking account. The crawl must record it as its
-  // OWN account, type credit, balance = amount OWED as a POSITIVE number (the schema sign rule),
-  // and extract its transactions from the /cards page.
+  // tile ("balance due") linking to /cards — the shape real banks use. The crawl must record it as its
+  // OWN account, not as part of the checking account: type credit, balance = amount OWED as a POSITIVE
+  // number (the schema sign rule), and extract its transactions from the /cards page.
   card: {
     name: 'Platinum Card',
     number: '****9012',

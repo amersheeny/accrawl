@@ -54,7 +54,7 @@ const WebSocketImpl = loadWebSocket();
  *
  * @param {object} opts
  * @param {string} opts.controlPlaneUrl  Base URL of the control-plane (e.g. http://127.0.0.1:4102).
- * @param {string} opts.deviceToken      An `acdv_` device token from POST /api/devices/pair.
+ * @param {string} opts.deviceToken      An `acdv_` device token from the pairing flow (e2e/pair-device.mjs).
  * @param {Record<string,string>} [opts.hostMap]  host → host rewrite applied before the socket connect
  *                                                 (stands in for the phone's DNS; e.g. bank host → 127.0.0.1).
  * @param {number} [opts.pollIntervalMs] Awaiting-tunnel poll cadence (default 1000; the phone uses 6000).
