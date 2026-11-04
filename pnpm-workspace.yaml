@@ -49,4 +49,5 @@ overrides:
   uuid: ^14.0.1
 
 patchedDependencies:
+  async-exit-hook@2.0.1: patches/async-exit-hook@2.0.1.patch
   drizzle-kit@0.31.10: patches/drizzle-kit@0.31.10.patch
