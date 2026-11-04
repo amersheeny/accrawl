@@ -321,6 +321,9 @@ class TunnelService : Service() {
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             Log.e(TAG, "tunnel ws failure for session $sessionId", t)
+            // The engine ends every tunnel by terminating its socket, so a tunnel that did its job ends here, not in
+            // onClosed; without this its relay tally is never reported.
+            Log.i(TAG, "tunnel ended for session $sessionId — relayed ${bytesToBank.get() / 1024}KB↑ ${bytesFromBank.get() / 1024}KB↓")
             tlog("tunnel error for session $sessionId: ${t.message ?: t.javaClass.simpleName}")
             finish()
         }
@@ -382,7 +385,11 @@ class TunnelService : Service() {
                 tlog("relaying → $host:$port")
                 // If the {connected} frame didn't go out (backpressure/closing), the engine never learns this conn
                 // opened — relaying on would leave a live socket + pump the engine can't address. Tear down instead.
-                if (!send(JSONObject().put("type", "connected").put("connId", connId))) {
+                // The engine's browser only ever sees its own local relay, so the address this socket reached is
+                // the one the engine's private-address check reads.
+                val connected = JSONObject().put("type", "connected").put("connId", connId)
+                s.inetAddress?.hostAddress?.let { connected.put("address", it) }
+                if (!send(connected)) {
                     finishConn(connId)
                     closeQuietly(s)
                     return@Runnable

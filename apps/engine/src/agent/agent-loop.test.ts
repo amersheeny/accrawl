@@ -28,6 +28,7 @@ import type {
 import { OTP_RECEIVED_LOG, OTP_RECEIVED_FROM_RECOVERY_LOG } from './otp-state';
 import type { StepResponse } from '../ai/schema';
 import { ApiContractError } from '../ai/providers/errors';
+import { ConnectedAddressRefusedError } from '../utils/url-safety';
 
 describe('classifyCrawlFailure', () => {
   it('classifies an ApiContractError as api_contract_drift', () => {
@@ -85,6 +86,16 @@ describe('classifyCrawlFailure', () => {
     expect(classifyCrawlFailure(new Error('Timeout 30000ms exceeded waitForNavigation'))).toBe(
       'navigation_timeout',
     );
+    expect(classifyCrawlFailure(new Error('page.waitForLoadState: Timeout 179843ms exceeded.'))).toBe(
+      'navigation_timeout',
+    );
+  });
+
+  it('classifies a refused connected address by its type, whatever words its host contains', () => {
+    const refusal = new ConnectedAddressRefusedError(
+      'navigate target resolves to a private/internal address (timeout.bank.example -> 10.0.0.5)',
+    );
+    expect(classifyCrawlFailure(refusal)).toBe('internal_error');
   });
 
   it('falls back to internal_error for unmatched errors', () => {

@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "contractId": "td-parity-14",
-  "revision": "2026-08-18.1",
-  "changeRecord": "The login navigation verifies the address the browser actually reached. assertSafeNavigationUrl inspects a hostname and then hands that hostname to Chromium, which resolves it independently, so the check is a prediction rather than a control \u2014 the residual the module already documented as a DNS rebind. page.goto's response reports the peer address, so the initial navigation now asserts that address is public before the page is used, and refuses it otherwise. A private peer is permitted only for a host the deployment named in ACCRAWL_ALLOW_PRIVATE_CRAWL_TARGETS, which replaces the accidental permission that came from the pre-flight check failing open on a name that does not resolve. No prompt, schema, identity, accumulation, extraction or relay behaviour changes: the check runs after the request and before the page is read, and a crawl reaching a public institution is unaffected. Verified by the packaged end-to-end run, which passed the live OTP handshake and extracted the bank data exactly with the check in the path. Pins moved: apps/engine/src/agent/agent-loop.ts. Previous revision: 2026-08-16.5.",
+  "revision": "2026-10-24.2",
+  "changeRecord": "Crawls through a phone's tunnel are checked against the address the phone reached. Since 2026-08-18.1 the initial navigation and the model's navigate action assert that the browser's peer address is public, but through the device-proxy tunnel that peer is always the engine's own SOCKS5 relay at 127.0.0.1, so every device-proxy crawl to a host not declared private was refused at its first page. TunnelService now reports, in the connected frame it already sends, the address its socket reached; the engine accepts only an IP address there, canonicalises it, and records it against the host and port the browser asked for; crawl-executor marks a proxied browser context as tunnelled; and for that context the check reads the phone's reports for the host the response came from, which is also the host a declaration must name, and refuses with ConnectedAddressRefusedError, so a refusal through the tunnel ends the crawl as revision 2026-10-24.1 made every such refusal do. A companion that reports nothing leaves the pre-flight name check standing alone, as every crawl had before 2026-08-18.1. No prompt, schema, identity, accumulation, extraction or OTP-relay behaviour changes, and a direct crawl is checked exactly as before. Verified through the engine's real tunnel server, SOCKS5 relay, crawl executor, agent loop, error recovery and Chrome, with a scripted model whose inputs are recorded: a reported internal address ends the crawl before the model is shown the page, on the first page, a navigate, a recovery retry and a redirect to an undeclared host; a public one is allowed; a redirect to a declared host is followed; and mutations that restore the previous check are each rejected by those tests. Pins moved: apps/engine/src/crawl-executor.ts, companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/TunnelService.kt. Previous revision: 2026-10-24.1.",
   "baselineRevision": "ee1f6bf05dae9c6deb856cd6703fd00f463338b5",
   "baselineSourceDigests": {
     "transactionPrompt": "f3b4a27eb90dfd67b77c651dc81f0d2e56cba223d202bb17b4d67b9f0c969f0c",
@@ -114,15 +114,15 @@
     },
     {
       "path": "apps/engine/src/agent/agent-loop.ts",
-      "sha256": "858796b6c1176446c0eee0a2b6f3c681dab0fb004cfe1c91539766b4b5264613"
+      "sha256": "29c9d5edccaf0bc8688a76d72023563c131705aac877c0b036ea0c60d9d5dc8f"
     },
     {
       "path": "apps/engine/src/agent/error-recovery.ts",
-      "sha256": "1d18fa7619f2dd725bfd04b0a10cdca370cd4e71de0f9d35a28633f9a8a053fc"
+      "sha256": "ddc5760c65dbf56196721fea74b2481cacd0f3b82a22fdf927488fd1e800e47e"
     },
     {
       "path": "apps/engine/src/crawl-executor.ts",
-      "sha256": "74ff2d7fa1cb540da97c53a085f863ebc0309e56b07ba9a145f3afe45df8876a"
+      "sha256": "e76b3a54c7c3d5838ec65a3796eb59a1e39001cd864b5f6c2d45d96c209b38c0"
     },
     {
       "path": "apps/engine/src/utils/transaction-window.ts",
@@ -206,7 +206,7 @@
     },
     {
       "path": "companion/android/app/src/main/kotlin/app/accrawl/accrawl_companion/TunnelService.kt",
-      "sha256": "46fd736551d1188ed4e9036c42fb8b103fa16c8efe9a3d0e474d41aac873f256"
+      "sha256": "6d3cbc5bb3dbcc66a0ff452af4ca90ef05e1deb483194d61010442b304947c50"
     },
     {
       "path": "companion/lib/main.dart",
