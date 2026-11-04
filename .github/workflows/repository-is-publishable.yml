@@ -22,6 +22,11 @@ jobs:
         with:
           # The history checks read every commit, so a shallow clone would pass by seeing almost none.
           fetch-depth: 0
+          # On a pull request, the default checkout is a merge commit the platform synthesizes, carrying
+          # the opener's identity, and it never lands. Check the commit the pull request proposes instead.
+          # On a push this is empty, which keeps the default: the pushed branch at the pushed commit. A
+          # branch name here would instead check out whatever the branch points at when the job starts.
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
