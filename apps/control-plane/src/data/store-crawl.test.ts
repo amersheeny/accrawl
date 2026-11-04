@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import path from 'node:path';
 import fs from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
@@ -35,6 +35,12 @@ describe('storeCrawlResults (pglite)', () => {
     }
   });
   afterAll(async () => { await client.close(); });
+  // The id-less storage floor is measured back from today, and these fixtures are dated June 2026.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-06-21T12:00:00Z'));
+  });
+  afterEach(() => { vi.useRealTimers(); });
   beforeEach(async () => {
     await client.exec('truncate institutions cascade');
     await client.exec(`insert into institutions (id,name,login_url,canonical_domain,type) values ('b','B','https://b.com','b.com','bank')`);
