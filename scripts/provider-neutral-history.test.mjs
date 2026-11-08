@@ -8,23 +8,47 @@
  */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { DEPLOYMENT_IDENTIFIERS, PROVIDER_TOKENS, matches } from './provider-neutral-tokens.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
+// A replacement ref would let a local substitute stand in for a commit the push still sends as it is.
+const GIT = (root) => ['--no-replace-objects', '-C', root];
+// A hook exports GIT_DIR and its siblings so that git finds the repository being pushed, and they outrank -C:
+// commands on that repository need them, and a command given any other root must drop them or it reads that one.
+const LOCAL = new Set(execFileSync('git', ['rev-parse', '--local-env-vars'], { encoding: 'utf8' }).split('\n'));
+const FOREIGN_ENV = Object.fromEntries(Object.entries(process.env).filter(([name]) => !LOCAL.has(name)));
+const envFor = (root) => (root === ROOT ? process.env : FOREIGN_ENV);
 
-function git(args) {
-  return execFileSync('git', ['-C', ROOT, ...args], {
+function git(args, root = ROOT) {
+  return execFileSync('git', [...GIT(root), ...args], {
     encoding: 'utf8',
+    env: envFor(root),
     maxBuffer: 256 * 1024 * 1024,
   });
 }
 
+// The pre-push hook sets ACCRAWL_HISTORY_REFS to the commits being pushed, so a push is judged on what
+// it publishes rather than on every local branch. Anything but full commit ids fails closed: a stray
+// option such as `--all` would silently widen or narrow the scan.
+const PUSHED = (process.env.ACCRAWL_HISTORY_REFS ?? '').split(/\s+/u).filter(Boolean);
+for (const ref of PUSHED) {
+  if (!/^[0-9a-f]{40}$/u.test(ref)) throw new Error(`ACCRAWL_HISTORY_REFS must hold full commit ids, got ${ref}`);
+}
+
+// HEAD is listed explicitly because a pull-request checkout is detached and creates no local branch:
+// with only branches and tags selected, a run there reads none of the commits it is checking.
+const PUBLISHED = PUSHED.length > 0 ? PUSHED : ['--branches', '--tags', 'HEAD'];
+
 /** How many commits are reachable, so the scan can prove it read the history rather than nothing. */
 function reachableCommitCount() {
-  return Number(git(['rev-list', '--branches', '--tags', '--count']).trim());
+  return Number(git(['rev-list', ...PUBLISHED, '--count']).trim());
 }
 
 test('no provider vocabulary or deployment identity in commit messages', () => {
@@ -34,7 +58,7 @@ test('no provider vocabulary or deployment identity in commit messages', () => {
   const commits = reachableCommitCount();
   assert.ok(commits > 0, 'expected to read the history, read nothing');
 
-  const messages = git(['log', '--branches', '--tags', '--format=%H%x00%B%x00'])
+  const messages = git(['log', ...PUBLISHED, '--format=%H%x00%B%x00'])
     .split('\0');
 
   const findings = [];
@@ -54,7 +78,8 @@ test('no provider vocabulary or deployment identity in commit messages', () => {
 });
 
 /**
- * Every blob ever committed, as text, keyed by object id.
+ * The ids of the blobs the history search reads: every non-empty blob smaller than 32 MiB in the repository,
+ * or every such blob the given pushed commits reach.
  *
  * The history is searched HERE rather than by `git log -S`, because git's pickaxe uses POSIX regular
  * expressions and the identifiers are JavaScript ones. Handing it `identifier.source` was worse than
@@ -65,8 +90,16 @@ test('no provider vocabulary or deployment identity in commit messages', () => {
  * Reading the blobs and applying the same matcher the working-tree scan uses means one engine, one
  * behaviour, and a shape that cannot mean two different things in two places.
  */
-function historyBlobs() {
-  const listing = git(['cat-file', '--batch-all-objects', '--batch-check=%(objectname) %(objecttype) %(objectsize)']);
+function historyBlobs(root = ROOT, pushed = PUSHED) {
+  const check = '--batch-check=%(objectname) %(objecttype) %(objectsize)';
+  const listing = pushed.length > 0
+    ? execFileSync('git', [...GIT(root), 'cat-file', check], {
+      encoding: 'utf8',
+      env: envFor(root),
+      maxBuffer: 256 * 1024 * 1024,
+      input: git(['rev-list', '--objects', ...pushed], root).split('\n').map((line) => line.split(' ')[0]).filter(Boolean).join('\n'),
+    })
+    : git(['cat-file', '--batch-all-objects', check], root);
   const ids = [];
   for (const line of listing.split('\n')) {
     const [id, type, size] = line.split(' ');
@@ -76,8 +109,8 @@ function historyBlobs() {
   return ids;
 }
 
-function blobText(id) {
-  const bytes = execFileSync('git', ['-C', ROOT, 'cat-file', 'blob', id], { maxBuffer: 256 * 1024 * 1024 });
+function blobText(id, root = ROOT) {
+  const bytes = execFileSync('git', [...GIT(root), 'cat-file', 'blob', id], { env: envFor(root), maxBuffer: 256 * 1024 * 1024 });
   if (!bytes.includes(0)) return bytes.toString('utf8');
   if (bytes.length > 2 && bytes[0] === 0x1f && bytes[1] === 0x8b && bytes[2] === 0x08) {
     try {
@@ -105,21 +138,50 @@ test('no deployment identity anywhere in history', () => {
   );
 });
 
-test('the history search actually finds what is there', () => {
-  // A search that returns nothing and a repository that is clean look identical, and this check spent
-  // its whole life in the first state believing it was in the second. Searching for something certainly
-  // present proves the machinery runs; a clean result means nothing without it.
-  const ids = historyBlobs();
-  assert.ok(ids.length > 50, `expected to read the history's objects, saw ${ids.length}`);
-  const hits = ids.filter((id) => {
-    const text = blobText(id);
-    return text !== null && /"name":\s*"@accrawl\//u.test(text);
-  });
-  assert.ok(
-    hits.length > 0,
-    'the history search found nothing for a string that is certainly committed — it is not reading, so '
-    + 'a clean result from it means nothing',
-  );
+test('the history search reads every non-empty blob under 32 MiB of every commit it judges', () => {
+  // A search that returns nothing and a clean history look identical, so the listing is checked against
+  // the tree of every commit being judged, which also holds for a small or empty history.
+  const listed = new Set(historyBlobs());
+  const inTrees = new Set();
+  for (const commit of git(['rev-list', ...PUBLISHED]).split('\n').filter(Boolean)) {
+    for (const line of git(['ls-tree', '-r', '-l', commit]).split('\n').filter(Boolean)) {
+      const [, type, id, size] = line.split(/\s+/u);
+      if (type === 'blob' && Number(size) > 0 && Number(size) < 32 * 1024 * 1024) inTrees.add(id);
+    }
+  }
+  const missed = [...inTrees].filter((id) => !listed.has(id));
+  assert.deepEqual(missed, [], `the history search skipped ${missed.length} blob(s) of the commits it judges`);
+});
+
+test('the history search finds text that only an earlier commit holds', () => {
+  // Listing every blob proves nothing if their text is never read, so the search runs where the answer
+  // is known: a repository whose only copy of a marker sits in a commit its tip has since removed.
+  const fixture = mkdtempSync(join(tmpdir(), 'accrawl-history-'));
+  try {
+    const env = {
+      ...FOREIGN_ENV,
+      GIT_AUTHOR_NAME: 'fixture',
+      GIT_AUTHOR_EMAIL: 'fixture@example.invalid',
+      GIT_COMMITTER_NAME: 'fixture',
+      GIT_COMMITTER_EMAIL: 'fixture@example.invalid',
+    };
+    const run = (args, input = '') => execFileSync('git', ['-C', fixture, ...args], { encoding: 'utf8', env, input }).trim();
+    run(['init', '-q']);
+    const marker = `marker-${randomUUID()}`;
+    const blob = run(['hash-object', '-w', '--stdin'], marker);
+    const added = run(['commit-tree', '--no-gpg-sign', '-m', 'add', run(['mktree'], `100644 blob ${blob}\tnote.txt\n`)]);
+    const removed = run(['commit-tree', '--no-gpg-sign', '-p', added, '-m', 'remove', run(['mktree'])]);
+
+    for (const pushed of [[removed], []]) {
+      const found = historyBlobs(fixture, pushed).filter((id) => {
+        const text = blobText(id, fixture);
+        return text !== null && matches(text, marker);
+      });
+      assert.deepEqual(found, [blob], `the history search missed the removed marker (pushed: ${pushed.length})`);
+    }
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
 });
 
 test('no author or committer identity in commit metadata', () => {
@@ -127,7 +189,7 @@ test('no author or committer identity in commit metadata', () => {
   // not. A name and address are attached to all of them, and a rewrite that scrubs only messages and
   // blobs leaves that behind on every commit in the repository.
   const people = git([
-    'log', '--branches', '--tags', '--format=%an%x00%ae%x00%cn%x00%ce%x00%H%x00',
+    'log', ...PUBLISHED, '--format=%an%x00%ae%x00%cn%x00%ce%x00%H%x00',
   ]).split('\0');
 
   const findings = [];
@@ -173,7 +235,7 @@ test('no personal mailbox in commit metadata', () => {
   const NO_REPLY = /^(?:no-?reply|do-?not-?reply)@|@(?:[^@]*\.)?users\.noreply\.github\.com$/iu;
 
   const people = git([
-    'log', '--branches', '--tags', '--format=%ae%x00%ce%x00%H%x00',
+    'log', ...PUBLISHED, '--format=%ae%x00%ce%x00%H%x00',
   ]).split('\0');
 
   const findings = [];
