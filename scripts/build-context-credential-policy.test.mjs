@@ -16,7 +16,8 @@
  * most need it — which is the same silent failure in a different coat.
  */
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -46,21 +47,49 @@ const TEMPLATE = /\.(example|sample|template)$/;
 /** Directories that are not part of any build context to begin with. */
 const NOT_SEARCHED = new Set(['.git', 'node_modules', 'build', 'dist', '.dart_tool', '.gradle']);
 
-function credentialFiles(dir = ROOT, found = []) {
-  for (const entry of readdirSync(dir)) {
-    if (NOT_SEARCHED.has(entry)) continue;
-    const full = path.join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      credentialFiles(full, found);
-      continue;
+function credentialFiles(root = ROOT) {
+  const found = [];
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir)) {
+      if (NOT_SEARCHED.has(entry)) continue;
+      const full = path.join(dir, entry);
+      if (statSync(full).isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (TEMPLATE.test(entry)) continue;
+      if (CREDENTIAL_SHAPES.some((shape) => shape.test(entry))) {
+        found.push(path.relative(root, full));
+      }
     }
-    if (TEMPLATE.test(entry)) continue;
-    if (CREDENTIAL_SHAPES.some((shape) => shape.test(entry))) {
-      found.push(path.relative(ROOT, full));
-    }
-  }
+  };
+  walk(root);
   return found;
 }
+
+/**
+ * One file of every credential shape, each in a directory nothing else excludes, plus files the
+ * search must skip.
+ */
+const CREDENTIAL_FIXTURE = [
+  'companion/android/key.properties',
+  'companion/android/app/src/qa/client-services.json',
+  'deploy/service-account.json',
+  'deploy/ci-service_account-prod.json',
+  'deploy/my-credentials.json',
+  'tooling/application_default_credentials.json',
+  'companion/android/upload.jks',
+  'companion/android/release.keystore',
+  'certs/client.p12',
+  'certs/client.pfx',
+  'certs/server.pem',
+  'home/.ssh/id_ed25519',
+  'deploy/id_rsa',
+  'deploy/id_dsa',
+  'deploy/id_ecdsa',
+  'deploy/id_ed25519',
+];
+const NOT_CREDENTIALS = ['companion/android/key.properties.example', 'node_modules/pkg/test.pem', 'docs/readme.md'];
 
 // Docker's ignore matching, which is not glob matching. A pattern is matched segment by segment: `*`
 // and `?` stay inside one segment and never cross a slash, while a doubled star matches any number of
@@ -135,11 +164,23 @@ test('every credential-shaped file in the tree is excluded from the build contex
   );
 });
 
-test('the credential search actually finds the files it is meant to defend', () => {
+test('the credential search finds every credential shape at any depth, and only those', () => {
   // A search that silently matches nothing would make the test above vacuously green.
-  const found = credentialFiles();
-  assert.ok(
-    found.length > 0,
-    'no credential-shaped files were found at all — the search is broken, not the tree clean',
-  );
+  const root = mkdtempSync(path.join(os.tmpdir(), 'credential-search-'));
+  try {
+    for (const file of [...CREDENTIAL_FIXTURE, ...NOT_CREDENTIALS]) {
+      mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+      writeFileSync(path.join(root, file), 'placeholder\n');
+    }
+    assert.deepEqual(credentialFiles(root).sort(), [...CREDENTIAL_FIXTURE].sort());
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('the build context excludes every credential shape at any depth', () => {
+  const patterns = dockerignorePatterns();
+  const placements = [...new Set(CREDENTIAL_FIXTURE.flatMap((file) => [file, path.posix.basename(file)]))];
+  const exposed = placements.filter((file) => !isIgnored(patterns, file));
+  assert.deepEqual(exposed, [], `.dockerignore lets these credential shapes into the build context:\n${exposed.join('\n')}`);
 });

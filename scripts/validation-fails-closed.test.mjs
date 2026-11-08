@@ -17,7 +17,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, chmodSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, chmodSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -107,6 +107,39 @@ test('the container-backed IMAP test skips without a runtime and fails on a brok
     /installed but not usable/u,
     'the failure must say the runtime is installed but unusable',
   );
+});
+
+test('a process that loads the embedded Postgres keeps the failure status it set', () => {
+  const r = spawnSync(process.execPath, ['--input-type=module', '-e', "import 'embedded-postgres'; process.exitCode = 3;"], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  assert.equal(r.status, 3, `the status a process sets must survive its exit hooks:\n${r.stderr}`);
+});
+
+test('a process that loads the embedded Postgres exits with the status it holds at the end', () => {
+  const lateChange = "process.exitCode = 3; process.once('beforeExit', () => { queueMicrotask(() => process.nextTick(() => { process.exitCode = 4; })); });";
+  const r = spawnSync(process.execPath, ['--input-type=module', '-e', `import 'embedded-postgres'; ${lateChange}`], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  assert.equal(r.status, 4, `a status set after the exit hook is scheduled must still win:\n${r.stderr}`);
+});
+
+test('a failing control-plane test fails the control-plane suite', () => {
+  const cwd = join(ROOT, 'apps/control-plane');
+  const dir = mkdtempSync(join(cwd, 'fails-closed-probe-'));
+  try {
+    writeFileSync(
+      join(dir, 'probe.test.ts'),
+      "import { it, expect } from 'vitest';\nit('fails', () => { expect(1).toBe(2); });\n",
+    );
+    const r = spawnSync('npx', ['vitest', 'run', dir], { cwd, encoding: 'utf8' });
+    assert.match(`${r.stdout}${r.stderr}`, /1 failed/u, 'the planted test must have run and failed');
+    assert.notEqual(r.status, 0, 'a suite with a failing test must not report success');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('the harness refuses a relay run that cannot reach its emulator, and says so', () => {
