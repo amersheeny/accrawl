@@ -213,20 +213,14 @@ test('no author or committer identity in commit metadata', () => {
   );
 });
 
-test('no personal mailbox in commit metadata', () => {
-  // The check above scans for DEPLOYMENT identifiers. It does not notice a real personal mailbox,
-  // which is a different leak and the one that actually reaches every clone: publishing this project
-  // scrubbed the author and committer on every existing commit, and nothing then stopped the next
-  // commit from putting a real name and address straight back.
+test('no personal mailbox in commit metadata outside the author field', () => {
+  // Only the author field may carry a personal address; the committer and the message, trailers included,
+  // may not. GitHub's "Rebase and merge" writes the merging account's chosen address into the committer of
+  // every commit it lands, so that account must use a no-reply one.
   //
   // The rule is a SHAPE, deliberately — writing the scrubbed address into a tracked file to match on
   // would publish the very thing being scrubbed. GitHub's own privacy addresses end in
-  // `users.noreply.github.com`, so requiring a no-reply mailbox states the property directly: no
-  // commit in this repository publishes a mailbox that reaches a person.
-  //
-  // A contributor who wants their own address in the history is a deliberate decision to take then,
-  // by relaxing this test with the reason written beside it — not something to discover after the
-  // fact from a published clone.
+  // `users.noreply.github.com`, so requiring a no-reply mailbox states the property directly.
   //
   // Exactly two forms are accepted, and the shape has to be anchored to them. Searching anywhere in
   // the address for "noreply" accepts a routable mailbox that merely contains it — a personal address
@@ -234,24 +228,50 @@ test('no personal mailbox in commit metadata', () => {
   // leak this exists to stop.
   const NO_REPLY = /^(?:no-?reply|do-?not-?reply)@|@(?:[^@]*\.)?users\.noreply\.github\.com$/iu;
 
-  const people = git([
-    'log', ...PUBLISHED, '--format=%ae%x00%ce%x00%H%x00',
+  // In the committer name and the message, the only mailbox allowed is one at GitHub's no-reply host. The
+  // exception is judged by the host alone because text glued in front of a no-reply local part can always pass
+  // for a boundary. A package version (glob@11.0.1) and a handle (@someone) have no host after the "@"; the git
+  // user of an SSH remote (git@host:path, ssh://git@host/path) is not a mailbox. A host name ends at the first
+  // "..", which no host contains, so prose punctuation after an address does not hide it.
+  const HOST = /^(?:[\p{L}\p{M}\p{N}-]+\.)+(?:[\p{L}\p{M}]{2,}|xn--[a-z0-9-]+)$/iu;
+  const ADDRESS_LITERAL = /^\[(?:\d{1,3}(?:\.\d{1,3}){3}|IPv6:[\da-f:.]+)\]/iu;
+  const GITHUB_NO_REPLY_HOST = /(?:^|\.)users\.noreply\.github\.com$/iu;
+  const SCP_REMOTE_USER = /(?:^|[\s<(["'`])git$/u;
+  const SSH_URL_USER = /(?:^|[\s<(["'`])(?:git\+)?ssh(?:\+git)?:\/\/git$/iu;
+  const carriesDisallowedMailbox = (text) => [...text.matchAll(/@/gu)].some(({ index }) => {
+    if (ADDRESS_LITERAL.test(text.slice(index + 1))) return true;
+    const host = /^[\p{L}\p{M}\p{N}.-]*/u.exec(text.slice(index + 1))[0].split('..')[0].replace(/[.-]+$/u, '');
+    if (!HOST.test(host) || GITHUB_NO_REPLY_HOST.test(host)) return false;
+    const before = text.slice(0, index);
+    const sshRemote = SSH_URL_USER.test(before)
+      || (SCP_REMOTE_USER.test(before) && /^:[^\s:]/u.test(text.slice(index + 1 + host.length)));
+    return !sshRemote;
+  });
+
+  const records = git([
+    'log', ...PUBLISHED, '--format=%H%x00%cn%x00%ce%x00%B%x00',
   ]).split('\0');
 
   const findings = [];
-  for (let index = 0; index + 2 < people.length; index += 3) {
-    const [authorEmail, committerEmail, commit] = people.slice(index, index + 3);
-    for (const [what, email] of [['author', authorEmail], ['committer', committerEmail]]) {
-      if (email && !NO_REPLY.test(email)) {
-        // Report the domain only: naming the mailbox here would put it in the log of a public repo.
-        findings.push(`${commit.trim().slice(0, 12)}: ${what} uses a routable mailbox`);
-      }
+  for (let index = 0; index + 3 < records.length; index += 4) {
+    const [commit, committerName, committer, message] = records.slice(index, index + 4);
+    const id = commit.trim().slice(0, 12);
+    const committerEmail = committer.trim();
+    // Naming the mailbox in a finding would put it in the log of a public repo.
+    if (committerEmail && !NO_REPLY.test(committerEmail)) {
+      findings.push(`${id}: committer address is not a no-reply address`);
+    }
+    if (carriesDisallowedMailbox(committerName)) {
+      findings.push(`${id}: committer name carries a mailbox outside GitHub's no-reply host`);
+    }
+    if (carriesDisallowedMailbox(message)) {
+      findings.push(`${id}: message carries a mailbox outside GitHub's no-reply host`);
     }
   }
   assert.deepEqual(
     findings,
     [],
-    `${findings.length} commit(s) publish a mailbox that reaches a person:\n${findings.join('\n')}`,
+    `${findings.length} commit(s) publish a mailbox outside the author field:\n${findings.join('\n')}`,
   );
 });
 
