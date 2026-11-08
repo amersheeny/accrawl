@@ -12,6 +12,7 @@ import type { ExecutableStepResponse } from '../ai/schema';
 import { waitForStability } from '../browser/page-utils';
 import { ActionError } from './errors';
 import { assertSafeNavigationUrl, assertConnectedAddressIsPublic, ConnectedAddressRefusedError } from '../utils/url-safety';
+import { tunnelPeersOf } from '../browser/tunnel-peers';
 import type { SessionLogger } from '../utils/logger';
 import { safeBrowserUrl } from '../utils/safe-browser-url';
 import { checkingAddress, sealContext } from '../browser/context-seal';
@@ -364,7 +365,7 @@ export async function gotoCheckingAddress(page: Page, url: string, timeoutMs: nu
   const deadline = Date.now() + timeoutMs;
   const verify = async (response: Response | null): Promise<void> => {
     try {
-      await assertConnectedAddressIsPublic(response, url);
+      await assertConnectedAddressIsPublic(response, url, process.env, tunnelPeersOf(page));
     } catch (error) {
       if (error instanceof ConnectedAddressRefusedError) sealContext(page.context());
       throw error;

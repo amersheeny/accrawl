@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { Page } from 'playwright';
 import type { CrawlRequest, CrawlResponse } from './types';
+import { tunnelPeersOf } from './browser/tunnel-peers';
 
 // ESM hoists imports above top-level statements, so the executor reads
 // WATCHDOG_GRACE_MS at load with its default (30s). With fake timers the wall
@@ -409,5 +411,36 @@ describe('executeCrawl watchdog', () => {
     expect(mocks.contextClose).toHaveBeenCalledOnce();
     expect(activeSessions.has(baseRequest.sessionId)).toBe(false);
     expect(mocks.completeSession).not.toHaveBeenCalled();
+  });
+});
+
+describe('executeCrawl through a phone tunnel', () => {
+  /** Run one crawl and return what the agent loop's page says about tunnel peers for bank.example:443. */
+  async function peersSeenByAgentLoop(proxyUrl?: string, tunnelPeers?: () => string[]) {
+    const fakeContext = { close: mocks.contextClose, route: vi.fn(), addInitScript: vi.fn() };
+    mocks.createContext.mockResolvedValue(fakeContext);
+    mocks.createPage.mockResolvedValue({ close: mocks.pageClose, context: () => fakeContext });
+    let seen: readonly string[] | 'unmarked' = 'unmarked';
+    mocks.runAgentLoop.mockImplementation(async (page: Page) => {
+      const peers = tunnelPeersOf(page);
+      seen = peers ? peers('bank.example', 443) : 'unmarked';
+      return { success: true, stepsExecuted: 1 };
+    });
+    await expect(executeCrawl(baseRequest, proxyUrl, tunnelPeers ? { tunnelPeers } : {}))
+      .resolves.toMatchObject({ success: true });
+    return seen;
+  }
+
+  it('lets the agent loop read the addresses the tunnel reported', async () => {
+    await expect(peersSeenByAgentLoop('socks5://127.0.0.1:1080', () => ['93.184.216.34']))
+      .resolves.toEqual(['93.184.216.34']);
+  });
+
+  it('marks a proxied crawl as tunnelled even with no reports, so the relay is never read as the bank', async () => {
+    await expect(peersSeenByAgentLoop('socks5://127.0.0.1:1080')).resolves.toEqual([]);
+  });
+
+  it('leaves a direct crawl to the browser\'s own peer address', async () => {
+    await expect(peersSeenByAgentLoop()).resolves.toBe('unmarked');
   });
 });

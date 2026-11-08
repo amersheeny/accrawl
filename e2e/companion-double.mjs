@@ -15,7 +15,7 @@
  *   engine → phone:  {type:'connect', connId, host, port}
  *                    {type:'data',    connId, data:<base64>}
  *                    {type:'close',   connId}
- *   phone → engine:  {type:'connected', connId}
+ *   phone → engine:  {type:'connected', connId, address}
  *                    {type:'data',      connId, data:<base64>}
  *                    {type:'close',     connId}
  *                    {type:'error',     connId, message}
@@ -27,8 +27,9 @@
  * Host mapping: with a SOCKS5 proxy, Chrome performs REMOTE DNS — it sends the bank's hostname (not a
  * pre-resolved IP) to the proxy. The real phone resolves the bank's public hostname over its own network;
  * here the fake bank lives on loopback, so `hostMap` rewrites the bank host → 127.0.0.1 before the socket
- * connect. This is purely the double's DNS step standing in for the phone's; the engine/SOCKS5 path is
- * untouched and never learns the IP.
+ * connect. This is purely the double's DNS step standing in for the phone's: the SOCKS5 target the engine
+ * asked for is unchanged, and the {connected} frame reports the address the socket actually reached, as the
+ * phone does.
  */
 import net from 'node:net';
 import { createRequire } from 'node:module';
@@ -169,7 +170,7 @@ export function startCompanionDouble(opts) {
     // engine never opens this socket; the bank's bytes physically traverse the double.
     const socket = net.connect({ host: mappedHost, port }, () => {
       sockets.set(connId, socket);
-      send({ type: 'connected', connId });
+      send({ type: 'connected', connId, address: socket.remoteAddress });
     });
 
     socket.on('data', (chunk) => {

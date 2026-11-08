@@ -28,6 +28,7 @@ const mocks = vi.hoisted(() => ({
   completeSession: vi.fn().mockResolvedValue(undefined),
   capturedProxyUrl: undefined as string | undefined,
   capturedCrawlRequest: undefined as Record<string, unknown> | undefined,
+  capturedTunnelPeers: undefined as ((host: string, port: number) => readonly string[]) | undefined,
   executeCrawlResolve: undefined as ((response: unknown) => void) | undefined,
   executeCrawlReject: undefined as ((error: unknown) => void) | undefined,
   transportFenceCompleted: false,
@@ -53,10 +54,12 @@ vi.mock('../crawl-executor', () => ({
     options?: {
       beforeSessionCompletion?: () => Promise<void>;
       signal?: AbortSignal;
+      tunnelPeers?: (host: string, port: number) => readonly string[];
     },
   ) => {
     mocks.capturedCrawlRequest = req as Record<string, unknown>;
     mocks.capturedProxyUrl = proxyUrl;
+    mocks.capturedTunnelPeers = options?.tunnelPeers;
     // Keep the tunnel alive until the test signals completion, then mirror the
     // real executor's transport-fence ordering before returning its response.
     return new Promise<unknown>((resolve, reject) => {
@@ -233,6 +236,7 @@ beforeEach(async () => {
   mocks.completeSession.mockClear();
   mocks.capturedProxyUrl = undefined;
   mocks.capturedCrawlRequest = undefined;
+  mocks.capturedTunnelPeers = undefined;
   mocks.executeCrawlResolve = undefined;
   mocks.executeCrawlReject = undefined;
   mocks.transportFenceCompleted = false;
@@ -713,6 +717,49 @@ describe('tunnel-server', () => {
       expect(msg.host).toBe('example.com');
       expect(msg.port).toBe(443);
       expect(typeof msg.connId).toBe('number');
+
+      socksSocket.destroy();
+      ws.close();
+      await closeTunnel(sessionId);
+    });
+
+    it('records the address the companion reports reaching, for the crawl to check', async () => {
+      const sessionId = 'sess-peer-1';
+      parkAndArmClaim(sessionId);
+      const ws = await connectCompanion(sessionId, mintToken(sessionId));
+      const proxyPort = await waitForSocksReady();
+      expect(mocks.capturedTunnelPeers?.('example.com', 443)).toEqual([]);
+
+      const connectMsg = readMessage(ws);
+      const socksSocket = await socks5Connect(proxyPort, 'Example.com', 443);
+      const connId = (await connectMsg).connId as number;
+      const reply = new Promise<Buffer>((resolve) => socksSocket.once('data', (data) => resolve(Buffer.from(data))));
+      ws.send(JSON.stringify({ type: 'connected', connId, address: '0:0:0:0:0:0:0:1' }));
+      expect((await reply)[1]).toBe(0x00);
+
+      expect(mocks.capturedTunnelPeers?.('example.com', 443)).toEqual(['::1']);
+      expect(mocks.capturedTunnelPeers?.('example.com', 80)).toEqual([]);
+
+      socksSocket.destroy();
+      ws.close();
+      await closeTunnel(sessionId);
+    });
+
+    it('ignores a connected frame whose address is not an IP address', async () => {
+      const sessionId = 'sess-peer-2';
+      parkAndArmClaim(sessionId);
+      const ws = await connectCompanion(sessionId, mintToken(sessionId));
+      const proxyPort = await waitForSocksReady();
+
+      const connectMsg = readMessage(ws);
+      const socksSocket = await socks5Connect(proxyPort, 'example.com', 443);
+      const connId = (await connectMsg).connId as number;
+      const reply = new Promise<Buffer>((resolve) => socksSocket.once('data', (data) => resolve(Buffer.from(data))));
+      ws.send(JSON.stringify({ type: 'connected', connId, address: 'bank.example' }));
+      ws.send(JSON.stringify({ type: 'connected', connId, address: '93.184.216.34' }));
+      expect((await reply)[1]).toBe(0x00);
+
+      expect(mocks.capturedTunnelPeers?.('example.com', 443)).toEqual(['93.184.216.34']);
 
       socksSocket.destroy();
       ws.close();

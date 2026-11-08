@@ -107,8 +107,9 @@ describe('assertSafeNavigationUrl', () => {
 });
 
 describe('assertConnectedAddressIsPublic', () => {
-  const response = (ipAddress: string | null) => ({
+  const response = (ipAddress: string | null, url = 'https://bank.example/x') => ({
     serverAddr: async () => (ipAddress ? { ipAddress } : null),
+    url: () => url,
   });
 
   it('catches the rebind the name check cannot: public at lookup, internal at connect', async () => {
@@ -168,5 +169,59 @@ describe('assertConnectedAddressIsPublic', () => {
     const nameRefusal = await assertSafeNavigationUrl('http://10.0.0.5/', pub).catch((error: unknown) => error);
     expect(nameRefusal).toBeInstanceOf(Error);
     expect(nameRefusal).not.toBeInstanceOf(ConnectedAddressRefusedError);
+  });
+
+  describe('through a phone tunnel', () => {
+    // The browser's peer is the engine's own SOCKS relay, whatever the phone reached.
+    const relayed = (url = 'https://bank.example/x') => response('127.0.0.1', url);
+    const reported = (byTarget: Record<string, string[]>) => (host: string, port: number) => byTarget[`${host}:${port}`] ?? [];
+
+    it('checks the address the phone reached instead of the relay', async () => {
+      const peers = reported({ 'bank.example:443': ['93.184.216.34'] });
+      await expect(assertConnectedAddressIsPublic(relayed(), 'https://bank.example/x', {}, peers)).resolves.toBeUndefined();
+    });
+
+    it('refuses an internal address the phone reached, naming it', async () => {
+      const peers = reported({ 'bank.example:443': ['93.184.216.34', '10.0.0.5'] });
+      await expect(assertConnectedAddressIsPublic(relayed(), 'https://bank.example/x', {}, peers))
+        .rejects.toThrow('navigate target resolves to a private/internal address (bank.example -> 10.0.0.5)');
+      await expect(assertConnectedAddressIsPublic(relayed(), 'https://bank.example/x', {}, peers))
+        .rejects.toBeInstanceOf(ConnectedAddressRefusedError);
+    });
+
+    it('looks up the origin of the response that arrived, with its port', async () => {
+      const peers = reported({ 'login.bank.example:8443': ['192.168.1.1'] });
+      await expect(assertConnectedAddressIsPublic(
+        relayed('https://login.bank.example:8443/start'), 'https://bank.example/x', {}, peers,
+      )).rejects.toThrow(/login\.bank\.example -> 192\.168\.1\.1/);
+    });
+
+    it('leaves the name check standing alone when the phone reported nothing', async () => {
+      await expect(assertConnectedAddressIsPublic(relayed(), 'https://bank.example/x', {}, reported({})))
+        .resolves.toBeUndefined();
+    });
+
+    it('still honours a declared private host', async () => {
+      const declared = { ACCRAWL_ALLOW_PRIVATE_CRAWL_TARGETS: 'bank.example' } as NodeJS.ProcessEnv;
+      const peers = reported({ 'bank.example:443': ['10.0.0.5'] });
+      await expect(assertConnectedAddressIsPublic(relayed(), 'https://bank.example/x', declared, peers))
+        .resolves.toBeUndefined();
+    });
+
+    it('exempts a declared host the navigation was redirected to', async () => {
+      const declared = { ACCRAWL_ALLOW_PRIVATE_CRAWL_TARGETS: 'intranet.bank.example' } as NodeJS.ProcessEnv;
+      const peers = reported({ 'intranet.bank.example:443': ['10.0.0.5'] });
+      await expect(assertConnectedAddressIsPublic(
+        relayed('https://intranet.bank.example/home'), 'https://bank.example/x', declared, peers,
+      )).resolves.toBeUndefined();
+    });
+
+    it('does not let the starting host\'s declaration cover the host it redirected to', async () => {
+      const declared = { ACCRAWL_ALLOW_PRIVATE_CRAWL_TARGETS: 'bank.example' } as NodeJS.ProcessEnv;
+      const peers = reported({ 'intranet.bank.example:443': ['10.0.0.5'] });
+      await expect(assertConnectedAddressIsPublic(
+        relayed('https://intranet.bank.example/home'), 'https://bank.example/x', declared, peers,
+      )).rejects.toThrow(/intranet\.bank\.example -> 10\.0\.0\.5/);
+    });
   });
 });

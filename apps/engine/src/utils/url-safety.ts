@@ -19,6 +19,7 @@
  * remaining window is low-risk.
  */
 import { lookup as dnsLookup } from 'node:dns/promises';
+import type { TunnelPeers } from '../browser/tunnel-peers';
 
 const BLOCKED_HOSTNAMES = new Set([
   'localhost',
@@ -129,15 +130,35 @@ function declaredPrivateTargets(env: NodeJS.ProcessEnv = process.env): Set<strin
  * but before the page's content reaches the model, which is the disclosure that matters: a crawl that
  * fetched an internal address and then refused to hand it on has not leaked it.
  *
+ * Through a phone's tunnel the browser's peer is always the engine's own relay, so the caller passes
+ * `tunnelPeers`, the addresses the phone reported reaching, and those are checked instead, for the host the
+ * response came from, after any redirect; a declaration exempts that host, not the one the navigation started
+ * at. A phone that reports none leaves the pre-flight check standing alone, as a transport that cannot say
+ * does here.
+ *
  * @throws ConnectedAddressRefusedError when the peer is private and the host is not declared.
  */
 export function assertConnectedAddressIsPublic(
-  response: { serverAddr(): Promise<{ ipAddress: string } | null> } | null,
+  response: { serverAddr(): Promise<{ ipAddress: string } | null>; url(): string } | null,
   url: string,
   env: NodeJS.ProcessEnv = process.env,
+  tunnelPeers?: TunnelPeers,
 ): Promise<void> {
   return (async () => {
     if (!response) return; // no navigation happened (same-document, or a download)
+    if (tunnelPeers) {
+      let reached: URL;
+      try {
+        reached = new URL(response.url());
+      } catch {
+        return;
+      }
+      const reachedHost = reached.hostname.toLowerCase().replace(/^\[|\]$/gu, '');
+      if (declaredPrivateTargets(env).has(reachedHost)) return;
+      const port = Number(reached.port) || (reached.protocol === 'https:' ? 443 : 80);
+      for (const ip of tunnelPeers(reachedHost, port)) assertIpIsPublic(ip, reachedHost, ConnectedAddressRefusedError);
+      return;
+    }
     let host: string;
     try {
       host = new URL(url).hostname.toLowerCase().replace(/^\[|\]$/gu, '');

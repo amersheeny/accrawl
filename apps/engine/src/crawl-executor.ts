@@ -11,6 +11,7 @@
 
 import type { BrowserContext } from 'playwright';
 import { createContext, createPage } from './browser/browser-pool';
+import { markTunnelled, type TunnelPeers } from './browser/tunnel-peers';
 import { installEgressGuard } from './browser/egress-guard';
 import { WriteGate } from './browser/write-gate';
 import { createRequestVet } from './ai/request-vet';
@@ -33,6 +34,8 @@ export interface CrawlExecutionOptions {
    * its browser context yet. Once aborted, no setup await may publish a page or
    * begin the agent loop. */
   signal?: AbortSignal;
+  /** With a proxy: the addresses the phone at the end of the tunnel reported reaching. */
+  tunnelPeers?: TunnelPeers;
 }
 
 /** Active crawl sessions — maps sessionId → browser context for force-kill */
@@ -226,6 +229,7 @@ async function executeCrawlImpl(
     stopHeartbeat = startHeartbeat(request.sessionId);
     // Create browser context and page (pass country for locale/timezone, optional proxy)
     context = await createContext(request.country, proxyUrl);
+    if (proxyUrl) markTunnelled(context, options.tunnelPeers ?? (() => []));
     // Register as soon as a live context exists. Setup can fail before page
     // creation; retaining this handle is what lets cancellation retry a failed
     // teardown instead of orphaning a browser that was never registered.
