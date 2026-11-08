@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { assertSafeNavigationUrl, assertConnectedAddressIsPublic, type HostResolver } from './url-safety';
+import {
+  assertSafeNavigationUrl,
+  assertConnectedAddressIsPublic,
+  ConnectedAddressRefusedError,
+  type HostResolver,
+} from './url-safety';
 
 // Deterministic resolvers so tests never hit real DNS. `pub` makes any hostname resolve to a public IP so the
 // pre-resolution (scheme / IP-literal / blocked-hostname) checks are exercised in isolation.
@@ -155,5 +160,13 @@ describe('assertConnectedAddressIsPublic', () => {
   it('says nothing when there is no navigation or no peer address to inspect', async () => {
     await expect(assertConnectedAddressIsPublic(null, 'https://bank.example/x')).resolves.toBeUndefined();
     await expect(assertConnectedAddressIsPublic(response(null), 'https://bank.example/x')).resolves.toBeUndefined();
+  });
+
+  it('refuses with its own error type, while the name check before loading anything keeps a plain error', async () => {
+    await expect(assertConnectedAddressIsPublic(response('10.0.0.5'), 'https://bank.example/x'))
+      .rejects.toBeInstanceOf(ConnectedAddressRefusedError);
+    const nameRefusal = await assertSafeNavigationUrl('http://10.0.0.5/', pub).catch((error: unknown) => error);
+    expect(nameRefusal).toBeInstanceOf(Error);
+    expect(nameRefusal).not.toBeInstanceOf(ConnectedAddressRefusedError);
   });
 });

@@ -240,7 +240,7 @@ async function executeCrawlImpl(
     // §2 write gate: the same interception point refuses state-changing requests once login is done.
     // It starts in the login phase because authentication genuinely needs to post credentials; the
     // agent loop closes it on loginComplete.
-    const writeGate = new WriteGate({ vet: createRequestVet({ logger: log }), logger: log });
+    const writeGate = new WriteGate({ vet: createRequestVet(), logger: log });
     await installEgressGuard(context, request.loginUrl, request.allowedDomains, log, writeGate);
     throwIfAborted();
     page = await createPage(context);
@@ -271,7 +271,7 @@ async function executeCrawlImpl(
     });
 
     response = await Promise.race([
-      runAgentLoop(page, request, log, undefined, writeGate),
+      runAgentLoop(page, request, log, undefined, writeGate, closeContextOnce),
       watchdog,
     ]);
     if (watchdogTimer) clearTimeout(watchdogTimer);

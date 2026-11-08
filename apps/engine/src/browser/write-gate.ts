@@ -202,6 +202,16 @@ export interface WriteGateOptions {
 
 const DEFAULT_VET_TIMEOUT_MS = 15_000;
 
+const REFUSED_PAGE_DECISION: WriteGateDecision = { allowed: false, reason: 'the page that raised it was refused' };
+
+/** The page a request came from, as far as the gate needs to know it. */
+export interface RequestOrigin {
+  /** Settles once the address the page's latest navigation reached has been checked. */
+  addressChecked(): Promise<void>;
+  /** Whether that check, or one before it, refused the page. */
+  refused(): boolean;
+}
+
 export class WriteGate {
   private currentPhase: CrawlPhase = 'login';
   private readonly verdicts = new Map<string, RequestVerdict>();
@@ -260,9 +270,19 @@ export class WriteGate {
     return { allowed: false, reason };
   }
 
-  async evaluate(request: VettableRequest): Promise<WriteGateDecision> {
+  /**
+   * Given the request's `origin`, no state-changing request leaves, and nothing model-facing happens, before the page's
+   * address has been checked: no classification, and no blocked-request entry, which the agent loop reports to the
+   * model. A request from a page refused before or during classification is denied without being classified further,
+   * recorded or logged, because each of those would carry the refused page's request.
+   */
+  async evaluate(request: VettableRequest, origin?: RequestOrigin): Promise<WriteGateDecision> {
     if (!isNonIdempotent(request.method)) {
       return { allowed: true, reason: 'idempotent method' };
+    }
+    if (origin) {
+      await origin.addressChecked();
+      if (origin.refused()) return REFUSED_PAGE_DECISION;
     }
     if (this.currentPhase === 'login') {
       return { allowed: true, reason: 'authentication phase' };
@@ -284,6 +304,7 @@ export class WriteGate {
     try {
       verdict = await this.withTimeout(this.vet(request));
     } catch (error) {
+      if (origin?.refused()) return REFUSED_PAGE_DECISION;
       // Deny-biased: a vet that fails tells us nothing, and nothing is not permission. The verdict is
       // deliberately NOT cached, so a transient model failure does not blacklist a real read endpoint
       // for the rest of the crawl.
@@ -292,7 +313,9 @@ export class WriteGate {
       );
       return this.deny(request, 'request vet did not return a verdict');
     }
+    if (origin?.refused()) return REFUSED_PAGE_DECISION;
 
+    this.log.log(`[RequestVet] ${request.method.toUpperCase()} ${request.safeUrl} → ${verdict}`);
     this.verdicts.set(key, verdict);
     return verdict === 'read'
       ? { allowed: true, reason: 'vetted as a data read' }

@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { disableWebRtcInPage, installEgressGuard } from './egress-guard';
+import { WriteGate } from './write-gate';
+import { sealContext } from './context-seal';
 
 type AnyWin = Record<string, unknown>;
 
@@ -69,5 +71,48 @@ describe('egress guard — WebRTC denial + install wiring', () => {
     expect(serialized.includes(fragmentSecret)).toBe(false);
     expect(serialized.includes('?')).toBe(false);
     expect(serialized.includes('#')).toBe(false);
+  });
+
+  it('does not log the URL of a request whose routing fails after its page was refused', async () => {
+    let routeHandler: ((route: unknown, request: unknown) => void) | undefined;
+    const warnings: string[] = [];
+    const ctx = {
+      addInitScript: vi.fn(async () => {}),
+      route: vi.fn(async (_pattern: string, handler: typeof routeHandler) => {
+        routeHandler = handler;
+      }),
+    };
+    const quiet = { log: () => {}, warn: () => {}, error: () => {}, getLines: () => [] };
+    const gate = new WriteGate({ vet: async () => 'read', logger: quiet as never });
+    gate.setPhase('extract');
+    await installEgressGuard(
+      ctx as never,
+      'https://login.bank.example',
+      [],
+      { log: () => {}, warn: (message: string) => warnings.push(message) } as never,
+      gate,
+    );
+    const abort = vi.fn(async () => undefined);
+    await new Promise<void>((continued) => {
+      routeHandler?.(
+        {
+          abort,
+          continue: async () => {
+            sealContext(ctx as never);
+            continued();
+            throw new Error('route.continue: Target page, context or browser has been closed');
+          },
+        },
+        {
+          method: () => 'POST',
+          url: () => 'https://login.bank.example/transfer-SEALED-ONLY',
+          postData: () => 'account=SEALED-ONLY',
+          headers: () => ({ 'content-type': 'application/x-www-form-urlencoded' }),
+        },
+      );
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(JSON.stringify(warnings)).not.toContain('SEALED-ONLY');
+    expect(abort).toHaveBeenCalledWith('blockedbyclient');
   });
 });

@@ -12,6 +12,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import type { SessionLogger } from '../utils/logger';
+import { isContextSealed } from './context-seal';
 
 /**
  * Tracks downloads on a page. Attach to a page before triggering actions
@@ -28,6 +29,7 @@ export class DownloadTracker {
     this.page = page;
     this.log = logger ?? { log: console.log, warn: console.warn, error: console.error, getLines: () => [] };
     this.listener = (download) => {
+      if (isContextSealed(download.page().context())) return;
       this.log.log(`[Download] File download started: ${download.suggestedFilename()}`);
       this.downloads.push(download);
     };
