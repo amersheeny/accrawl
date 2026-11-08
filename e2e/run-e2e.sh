@@ -148,26 +148,8 @@ if [ -n "${COMPANION_RELAY:-}" ]; then
   cd "$companion_workspace"
   companion_workspace="$PWD"
   cd "$companion_build_root"
-  companion_source="$companion_workspace/source"
-  mkdir -p "$companion_source"
-  rsync -a \
-    --exclude=.dart_tool \
-    --exclude=build \
-    companion/ "$companion_source/"
-  build_companion_apks() {
-    cd "$companion_source" || return
-    flutter pub get || return
-    flutter build apk --flavor qa --debug --target-platform "$flutter_target" || return
-    cp build/app/outputs/flutter-apk/app-qa-debug.apk "$companion_workspace/app-qa-debug.apk" || return
-    flutter clean || return
-    flutter pub get || return
-    flutter build apk --flavor secure --debug --target-platform "$flutter_target" || return
-    cp build/app/outputs/flutter-apk/app-secure-debug.apk "$companion_workspace/app-secure-debug.apk" || return
-    flutter clean || return
-    cd "$companion_build_root" || return
-  }
-  build_companion_apks >/tmp/accrawl-e2e-companion-build.log 2>&1 || {
-    cd "$companion_build_root"
+  "$script_dir/build-companion-apks.sh" "$flutter_target" "$companion_workspace" \
+    >/tmp/accrawl-e2e-companion-build.log 2>&1 || {
     echo "companion build failed:"
     tail -40 /tmp/accrawl-e2e-companion-build.log
     exit 1
