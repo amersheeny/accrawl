@@ -1,0 +1,14 @@
+diff --git a/index.js b/index.js
+index 2bb54a2c444d3b0ddb96ba9af7dc374ed51e2735..c3facd470916329f34d635b3f995e0780035b4ae 100644
+--- a/index.js
++++ b/index.js
+@@ -21,7 +21,8 @@ function exit(exit, code, err) {
+ 
+ 		if (exit === true) {
+ 			// All handlers should be called even if the exit-hook handler was registered first
+-			process.nextTick(process.exit.bind(null, code));
++			// Code 0 is a natural end (beforeExit, pm2 shutdown): exit with the status the process holds then.
++			process.nextTick(() => process.exit(code === 0 ? process.exitCode : code));
+ 		}
+ 	}
+ 

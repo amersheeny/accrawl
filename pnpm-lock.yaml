@@ -23,6 +23,7 @@ overrides:
   uuid: ^14.0.1
 
 patchedDependencies:
+  async-exit-hook@2.0.1: 9c21f0b7f7b4b22023dce296409902aafd3adbbb1507f47244eedc7de36194e2
   drizzle-kit@0.31.10: 9fcde3f310ef2a9ae80fb8101632670c4d63d79a355a9e40d6740b1a0bf64d82
 
 importers:
@@ -3466,7 +3467,7 @@ snapshots:
 
   assertion-error@2.0.1: {}
 
-  async-exit-hook@2.0.1: {}
+  async-exit-hook@2.0.1(patch_hash=9c21f0b7f7b4b22023dce296409902aafd3adbbb1507f47244eedc7de36194e2): {}
 
   atomic-sleep@1.0.0: {}
 
@@ -3628,7 +3629,7 @@ snapshots:
 
   embedded-postgres@18.4.0-beta.17:
     dependencies:
-      async-exit-hook: 2.0.1
+      async-exit-hook: 2.0.1(patch_hash=9c21f0b7f7b4b22023dce296409902aafd3adbbb1507f47244eedc7de36194e2)
       pg: 8.23.0
     optionalDependencies:
       '@embedded-postgres/darwin-arm64': 18.4.0-beta.17
